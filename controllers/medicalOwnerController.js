@@ -3,7 +3,7 @@ const MedicalOwner = require('../model/medical');
 const Message = require('../model/message');
 const User = require('../model/user');
 const { createTokenForUser } = require('../service/authentication');
-
+const mongoose = require('mongoose');
 exports.renderSignupPage = (req, res) => {
   res.render('signup'); // Ensure 'signup.ejs' exists
 };
@@ -87,22 +87,65 @@ exports.signInAndGetConnectedUsers = async (req, res) => {
     res.render('signin', { error: 'Something went wrong during login' });
   }
 };
-
+///////////////////////////////////////
 exports.getDashboard = async (req, res) => {
   const currentUser = req.user;
   if (!currentUser || currentUser.role !== 'medicalOwner') {
     console.error('Unauthorized dashboard access:', currentUser?._id);
-    return res.status(401).send('Unauthorized');
+    return res.status(401).render('error', { error: 'Unauthorized access. Please sign in.' });
   }
   try {
     const messages = await Message.find({
       receiver: currentUser._id,
       receiverModel: 'MedicalOwner',
+      senderModel: 'User',
+      sender: { $ne: currentUser._id }, // Exclude current MedicalOwner
     }).distinct('sender');
-    const users = await User.find({ _id: { $in: messages } }).lean();
-    res.render('home', { users });
+    const users = await User.find({
+      _id: { $in: messages, $ne: currentUser._id }, // Exclude current MedicalOwner
+    }).lean();
+    res.render('home', { users, user: currentUser });
   } catch (error) {
-    console.error('Error fetching dashboard:', error.message);
-    res.render('medicalDashboard', { users: [] });
+    console.error('Error fetching dashboard:', error.message, { stack: error.stack });
+    res.render('home', { users: [], user: currentUser });
+  }
+};
+/////////////////////////////////////////////
+exports.handleGetRealtimeChat = async (req, res) => {
+  try {
+    const currentUser = req.user;
+    const receiverId = req.params.userId;
+
+    if (String(receiverId) === String(currentUser._id)) {
+      return res.status(400).send("Cannot chat with yourself");
+    }
+
+    let receiver = await User.findById(receiverId).lean();
+    let receiverRole = 'User';
+    if (!receiver) {
+      receiver = await MedicalOwner.findById(receiverId).lean();
+      if (receiver) receiverRole = 'MedicalOwner';
+    }
+    if (!receiver) return res.status(404).send("Receiver not found");
+
+    const room = [String(currentUser._id), String(receiver._id)].sort().join('_');
+    const messages = await Message.find({
+      $or: [
+        { sender: currentUser._id, receiver: receiver._id },
+        { sender: receiver._id, receiver: currentUser._id }
+      ]
+    }).sort('timestamp');
+
+    res.render('realtime-chat', {
+      receiver,
+      receiverRole,
+      messages,
+      currentUser,
+      currentRole: currentUser.role === 'medical' ? 'MedicalOwner' : 'User',
+      room,
+      receiverId
+    });
+  } catch (err) {
+    res.status(500).send("Something went wrong");
   }
 };

@@ -1,177 +1,155 @@
+<!-- views/medicalDashboard.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Medical Owner Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
   <style>
-    body {
-      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fa 100%);
-      margin: 0;
-      padding: 0;
-      line-height: 1.6;
-    }
-    .container {
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 30px;
-      background: #ffffff;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 50, 0.1);
-    }
-    h2 {
-      color: #1a3c6d;
-      font-size: 2rem;
-      font-weight: 600;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .user-card {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #f9fbff;
-      border-radius: 15px;
-      padding: 15px 20px;
-      margin: 15px 0;
-      border: 1px solid #e0e7ff;
-      box-shadow: 0 4px 12px rgba(0, 0, 50, 0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      animation: fadeIn 0.5s ease-in;
-    }
-    .user-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0, 0, 50, 0.15);
-    }
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .profile-initials {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: #4c78ff;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      box-shadow: 0 2px 8px rgba(76, 120, 255, 0.3);
-    }
-    .user-info img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #e0e7ff;
-      box-shadow: 0 2px 8px rgba(0, 0, 50, 0.1);
-    }
-    .user-info div {
-      color: #1a3c6d;
-      font-size: 1.1rem;
-      font-weight: 500;
-    }
-    .chat-btn {
-      padding: 10px 20px;
-      background: #4c78ff;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
-    }
-    .chat-btn:hover {
-      background: #3b65e6;
-      transform: translateY(-2px);
-    }
-    .chat-btn:active {
-      background: #2a52cc;
-      transform: translateY(0);
-    }
-    .no-users {
-      color: #64748b;
-      font-size: 1.1rem;
-      text-align: center;
-      margin: 30px 0;
-      padding: 20px;
-      background: #f9fbff;
-      border-radius: 15px;
-      border: 1px solid #e0e7ff;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @media (max-width: 600px) {
-      .container {
-        margin: 20px;
-        padding: 20px;
-      }
-      h2 {
-        font-size: 1.5rem;
-      }
-      .user-card {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 15px;
-      }
-      .user-info {
-        margin-bottom: 10px;
-      }
-      .chat-btn {
-        width: 100%;
-        text-align: center;
-      }
-      .user-info img, .profile-initials {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
-      }
-      .user-info div {
-        font-size: 1rem;
-      }
-    }
+    #chat-container { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; }
+    #message-input { width: 80%; padding: 5px; }
+    #send-button { padding: 5px 10px; }
+    #typing-indicator { color: gray; }
+    #map { height: 400px; width: 100%; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Users Who Messaged You</h2>
-
-    <% if (users && users.length > 0) { %>
-      <% users.forEach(user => { %>
-        <div class="user-card">
-          <div class="user-info">
-            <% if (!user.profileImage) { %>
-              <div class="profile-initials">
-                <% 
-                  // Handle missing or undefined FullName
-                  const fullName = user.FullName || 'Unknown User';
-                  const nameParts = fullName.split(' ');
-                  const initials = nameParts[0] ? nameParts[0][0] + (nameParts[1] ? nameParts[1][0] : '') : '??';
-                %>
-                <%= initials %>
-              </div>
-            <% } else { %>
-              <img src="<%= user.profileImage %>" alt="User" />
-            <% } %>
-            <div><%= user.FullName || 'Unknown User' %></div>
-          </div>
-          <a href="/user/realtime-chat/<%= user._id %>">
-            <button class="chat-btn">Chat</button>
-          </a>
-        </div>
-      <% }) %>
-    <% } else { %>
-      <p class="no-users">No users have messaged you yet.</p>
+  <h1>Welcome, <%= user.fullName %></h1>
+  <h2>Connected Users</h2>
+  <ul>
+    <% users.forEach(user => { %>
+      <% if (user._id) { %>
+        <li>
+          <a href="/medical/realtime-chat/<%= user._id %>"><%= user.FullName || user.fullName || 'Unknown User' %></a>
+        </li>
+      <% } %>
+    <% }); %>
+    <% if (users.length === 0) { %>
+      <p>No connected users available.</p>
     <% } %>
-  </div>
+  </ul>
+
+  <h2>Live Map</h2>
+  <div id="map"></div>
+
+  <h2>Chat</h2>
+  <div id="chat-container"></div>
+  <input type="text" id="message-input" placeholder="Type a message...">
+  <button id="send-button">Send</button>
+  <div id="typing-indicator"></div>
+
+  <script>
+    const socket = io();
+    const user = {
+      id: '<%= user._id %>',
+      role: '<%= user.role %>',
+      fullName: '<%= user.fullName %>'
+    };
+
+    // Authenticate on connection
+    socket.emit('authenticate', {
+      userId: user.id,
+      role: user.role,
+      fullName: user.fullName
+    });
+
+    // Initialize map (using Leaflet as an example)
+    const map = L.map('map').setView([21.25, 78.27], 13); // Default to Amravati
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const markers = {};
+
+    // Send location updates
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          socket.emit('locationUpdate', { lat: latitude, lng: longitude });
+          if (markers[user.id]) {
+            markers[user.id].setLatLng([latitude, longitude]);
+          } else {
+            markers[user.id] = L.marker([latitude, longitude])
+              .addTo(map)
+              .bindPopup(`${user.fullName} (You)`);
+          }
+        },
+        (err) => console.error('Geolocation error:', err),
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    }
+
+    // Handle user movement
+    socket.on('userMoved', ({ userId, role, fullName, lat, lng }) => {
+      if (markers[userId]) {
+        markers[userId].setLatLng([lat, lng]);
+      } else {
+        markers[userId] = L.marker([lat, lng])
+          .addTo(map)
+          .bindPopup(`${fullName} (${role})`);
+      }
+    });
+
+    // Handle user disconnection
+    socket.on('userDisconnected', ({ userId }) => {
+      if (markers[userId]) {
+        map.removeLayer(markers[userId]);
+        delete markers[userId];
+      }
+    });
+
+    // Chat functionality
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const typingIndicator = document.getElementById('typing-indicator');
+    let currentRoom = null;
+
+    // Join chat room when navigating to a chat
+    function joinChat(receiverId) {
+      currentRoom = [user.id, receiverId].sort().join('_');
+      socket.emit('joinRoom', { room: currentRoom });
+    }
+
+    // Send message
+    sendButton.addEventListener('click', () => {
+      const message = messageInput.value.trim();
+      if (message && currentRoom) {
+        socket.emit('chatMessage', {
+          room: currentRoom,
+          senderId: user.id,
+          senderModel: user.role === 'medicalOwner' ? 'MedicalOwner' : 'User',
+          receiverId: currentRoom.split('_').find(id => id !== user.id),
+          receiverModel: user.role === 'medicalOwner' ? 'User' : 'MedicalOwner',
+          message
+        });
+        messageInput.value = '';
+      }
+    });
+
+    // Handle typing
+    messageInput.addEventListener('input', () => {
+      if (currentRoom) {
+        socket.emit('typing', { room: currentRoom, sender: user.fullName });
+      }
+    });
+
+    // Receive messages
+    socket.on('chatMessage', ({ senderId, senderModel, message, timestamp }) => {
+      const messageElement = document.createElement('div');
+      messageElement.textContent = `${senderModel === 'MedicalOwner' ? 'Medical Owner' : 'User'} (${senderId === user.id ? 'You' : 'Other'}): ${message}`;
+      chatContainer.appendChild(messageElement);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+
+    // Show typing indicator
+    socket.on('typing', ({ sender }) => {
+      typingIndicator.textContent = `${sender} is typing...`;
+      setTimeout(() => { typingIndicator.textContent = ''; }, 2000);
+    });
+  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </body>
 </html>

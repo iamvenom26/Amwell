@@ -41,14 +41,36 @@ app.use('/medical', medicalAuthRoutes);
 // Socket.IO Configuration
 const Message = require('./model/message');
 const connectedUsers = {}; // Store connected users for location tracking
-
 io.on('connection', (socket) => {
   console.log(`🛰️ User connected: ${socket.id}`);
+  let isAuthenticated = false;
+
+  // Handle user authentication on connection
+  socket.on('authenticate', ({ userId, role, fullName }) => {
+    if (isAuthenticated) {
+      console.log(`Already authenticated for socket ${socket.id}, ignoring`);
+      return;
+    }
+    if (!userId || !role || !fullName) {
+      console.error('Authentication failed: Missing userId, role, or fullName', { userId, role, fullName });
+      return;
+    }
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.error('Invalid userId:', userId);
+      return;
+    }
+    if (!['user', 'medicalOwner'].includes(role)) {
+      console.error('Invalid role:', role);
+      return;
+    }
+    connectedUsers[socket.id] = { userId, role, fullName };
+    isAuthenticated = true;
+    console.log(`Authenticated ${role}: ${fullName} (${userId})`);
+  });
 
   // Chat: Join a specific room
   socket.on('joinRoom', ({ room }) => {
     socket.join(room);
-    console.log(`User ${socket.id} joined room: ${room}`);
   });
 
   // Chat: Handle chat messages
@@ -61,7 +83,6 @@ io.on('connection', (socket) => {
         receiverModel,
         message,
       });
-
       io.to(room).emit('chatMessage', {
         senderId,
         senderModel,
@@ -69,36 +90,61 @@ io.on('connection', (socket) => {
         timestamp: newMsg.timestamp,
       });
     } catch (err) {
-      console.error('❌ Error saving message:', err.message);
+      console.error("Error saving message:", err.message);
     }
   });
 
   // Chat: Handle typing indicator
   socket.on('typing', ({ room, sender }) => {
+    if (!isAuthenticated) {
+      console.error('Typing failed: User not authenticated', { socketId: socket.id });
+      return;
+    }
+    if (!room || !sender) {
+      console.error('Invalid typing data:', { room, sender });
+      return;
+    }
     socket.to(room).emit('typing', { sender });
   });
 
   // Location: Handle location updates
   socket.on('locationUpdate', (coords) => {
-    const { userId, fullName, lat, lng } = coords;
-    connectedUsers[socket.id] = { userId, fullName, lat, lng };
-    // Broadcast to other clients
-    socket.broadcast.emit('userMoved', { userId, fullName, lat, lng });
-    console.log(`Location update from ${fullName}: lat=${lat}, lng=${lng}`);
+    if (!isAuthenticated) {
+      console.error('Location update failed: User not authenticated', { socketId: socket.id });
+      return;
+    }
+    const user = connectedUsers[socket.id];
+    if (!user) {
+      console.error('Location update failed: User not found', { socketId: socket.id });
+      return;
+    }
+    const { lat, lng } = coords;
+    if (typeof lat !== 'number' || typeof lng !== 'number') {
+      console.error('Invalid coordinates:', { lat, lng });
+      return;
+    }
+    connectedUsers[socket.id] = { ...user, lat, lng };
+    socket.broadcast.emit('userMoved', {
+      userId: user.userId,
+      role: user.role,
+      fullName: user.fullName,
+      lat,
+      lng,
+    });
+    console.log(`Location update from ${user.fullName} (${user.role}): lat=${lat}, lng=${lng}`);
   });
 
   // Location: Handle disconnection
   socket.on('disconnect', () => {
     const user = connectedUsers[socket.id];
     if (user) {
-      io.emit('userDisconnected', user.userId);
+      io.emit('userDisconnected', { userId: user.userId, role: user.role });
       delete connectedUsers[socket.id];
-      console.log(`User disconnected: ${user.fullName} (${user.userId})`);
+      console.log(`User disconnected: ${user.fullName} (${user.userId}, ${user.role})`);
     }
     console.log(`🛑 User disconnected: ${socket.id}`);
   });
 });
-
 // Start Server
 server.listen(PORT, () => {
   console.log(`🚀 Server running at: http://localhost:${PORT}`);

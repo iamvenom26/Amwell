@@ -1,190 +1,99 @@
+<!-- views/realtime-chat.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Realtime Chat</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f4f8;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      padding: 40px;
-      max-width: 800px;
-      margin: auto;
-    }
-
-    h2 {
-      color: #2c3e50;
-      margin-bottom: 20px;
-    }
-
-    .chat-container {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      margin-bottom: 20px;
-      height: 400px;
-      overflow-y: scroll;
-    }
-
-    .message {
-      padding: 10px;
-      margin: 5px 0;
-      background: #f1f1f1;
-      border-radius: 5px;
-    }
-
-    .message.sent {
-      background: #38b6ff;
-      color: white;
-      text-align: right;
-    }
-
-    .message.received {
-      background: #e1e1e1;
-    }
-
-    #typing-indicator {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 10px;
-    }
-
-    .input-group {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-    }
-
-    .message-input {
-      width: 85%;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    .send-btn {
-      width: 12%;
-      padding: 10px;
-      background: #38b6ff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .send-btn:hover {
-      background-color: #3498db;
-    }
+    #chat-container { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; }
+    #message-input { width: 80%; padding: 5px; }
+    #send-button { padding: 5px 10px; }
+    #typing-indicator { color: gray; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Chat with <%= receiver.fullName %></h2>
-
-    <div class="chat-container" id="chat-container">
-      <% messages.forEach(message => { %>
-        <div class="message <%= message.senderModel === currentRole ? 'sent' : 'received' %>">
-          <p><%= message.message %></p>
-          <small><%= new Date(message.timestamp).toLocaleTimeString() %></small>
-        </div>
-      <% }) %>
-    </div>
-
-    <div id="typing-indicator"></div>
-
-    <div class="input-group">
-      <input type="text" id="message" class="message-input" placeholder="Type a message..." />
-      <button class="send-btn" onclick="sendMessage()">Send</button>
-    </div>
+ 
+  <h1>Chat with <%= receiver.FullName || receiver.fullName %></h1>
+  <div id="chat-container">
+    <% messages.forEach(msg => { %>
+      <div>
+        <strong><%= msg.senderModel %> (<%= msg.sender.toString() === currentUser._id.toString() ? 'You' : 'Other' %>):</strong>
+        <%= msg.message %>
+        <small>(<%= msg.timestamp.toLocaleString() %>)</small>
+      </div>
+    <% }); %>
   </div>
+  <input type="text" id="message-input" placeholder="Type a message...">
+  <button id="send-button">Send</button>
+  <div id="typing-indicator"></div>
 
   <script>
-    
-
-    const currentUserId = "<%= currentUser._id %>";
-    const receiverId = "<%= receiverId %>";
-    const senderModel = "<%= currentRole %>";
-    const receiverModel = "<%= receiverRole %>";
-
-    const room = [currentUserId, receiverId].sort().join('_');
-    console.log(`Generated room name on client: ${room}`);
-    console.log(`Sender Model: ${senderModel}, Receiver Model: ${receiverModel}`);
-    function someFunction() {if (currentUserId === receiverId) {
-      alert("You cannot chat with yourself.");
-      return;
-    }
-    }
-    
     const socket = io();
+    const currentUser = {
+      id: '<%= currentUser._id %>',
+      role: '<%= currentRole.toLowerCase() %>',
+      fullName: '<%= currentUser.fullName || currentUser.FullName %>'
+    };
+    const room = '<%= room %>';
+    const receiverId = '<%= receiverId %>';
+    const senderModel = '<%= currentRole %>';
+    const receiverModel = '<%= receiverRole %>';
+
+    // Authenticate
+    socket.emit('authenticate', {
+      userId: currentUser.id,
+      role: currentUser.role,
+      fullName: currentUser.fullName
+    });
+
+    // Join room
     socket.emit('joinRoom', { room });
-    console.log(`Joining room: ${room}`);
+
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const typingIndicator = document.getElementById('typing-indicator');
 
     // Send message
-    function sendMessage() {
-      console.log("Send button clicked"); // Debugging log
-
-      const input = document.getElementById('message');
-      if (!input) {
-        console.error("Input field not found");
-        return;
+    sendButton.addEventListener('click', () => {
+      const message = messageInput.value.trim();
+      if (message) {
+        socket.emit('chatMessage', {
+          room,
+          senderId: currentUser.id,
+          senderModel,
+          receiverId,
+          receiverModel,
+          message
+        });
+        messageInput.value = '';
       }
+    });
 
-      const message = input.value.trim();
-      if (!message) return;
+    // Handle typing
+    messageInput.addEventListener('input', () => {
+      socket.emit('typing', { room, sender: currentUser.fullName });
+    });
 
-      socket.emit('chatMessage', {
-        room,
-        senderId: currentUserId,
-        senderModel,
-        receiverId,
-        receiverModel,
-        message
-      });
-
-      input.value = '';
-    }
-
-    // Append incoming messages
-    socket.on('chatMessage', function (data) {
-      const chatContainer = document.getElementById('chat-container');
-      const messageDiv = document.createElement('div');
-      messageDiv.className = 'message ' + (data.senderId === currentUserId ? 'sent' : 'received');
-      messageDiv.innerHTML = `
-        <p>${data.message}</p>
-        <small>${new Date(data.timestamp).toLocaleTimeString()}</small>
+    // Receive messages
+    socket.on('chatMessage', ({ senderId, senderModel, message, timestamp }) => {
+      const messageElement = document.createElement('div');
+      messageElement.innerHTML = `
+        <strong>${senderModel} (${senderId === currentUser.id ? 'You' : 'Other'}):</strong>
+        ${message}
+        <small>(${new Date(timestamp).toLocaleString()})</small>
       `;
-      chatContainer.appendChild(messageDiv);
+      chatContainer.appendChild(messageElement);
       chatContainer.scrollTop = chatContainer.scrollHeight;
     });
 
     // Show typing indicator
-    document.getElementById('message').addEventListener('input', function () {
-      socket.emit('typing', { room, sender: currentUserId, senderName: "<%= currentUser.fullName %>" });
-    });
-
-    socket.on('typing', function (data) {
-      const typingDiv = document.getElementById('typing-indicator');
-      typingDiv.innerText = `${data.senderName} is typing...`;
-      clearTimeout(typingDiv.timeout);
-      typingDiv.timeout = setTimeout(() => {
-        typingDiv.innerText = '';
-      }, 3000); // Increased timeout
-    });
-
-    // Send message on Enter key press
-    document.getElementById('message').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
+    socket.on('typing', ({ sender }) => {
+      typingIndicator.textContent = `${sender} is typing...`;
+      setTimeout(() => { typingIndicator.textContent = ''; }, 2000);
     });
   </script>
 </body>
 </html>
+
