@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medical Owner Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fa 100%);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 50, 0.1);
+    }
+    h2 {
+      color: #1a3c6d;
+      font-size: 2rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .user-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f9fbff;
+      border-radius: 15px;
+      padding: 15px 20px;
+      margin: 15px 0;
+      border: 1px solid #e0e7ff;
+      box-shadow: 0 4px 12px rgba(0, 0, 50, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: fadeIn 0.5s ease-in;
+    }
+    .user-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 50, 0.15);
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .profile-initials {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #4c78ff;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(76, 120, 255, 0.3);
+    }
+    .user-info img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #e0e7ff;
+      box-shadow: 0 2px 8px rgba(0, 0, 50, 0.1);
+    }
+    .user-info div {
+      color: #1a3c6d;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    .chat-btn {
+      padding: 10px 20px;
+      background: #4c78ff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .chat-btn:hover {
+      background: #3b65e6;
+      transform: translateY(-2px);
+    }
+    .chat-btn:active {
+      background: #2a52cc;
+      transform: translateY(0);
+    }
+    .no-users {
+      color: #64748b;
+      font-size: 1.1rem;
+      text-align: center;
+      margin: 30px 0;
+      padding: 20px;
+      background: #f9fbff;
+      border-radius: 15px;
+      border: 1px solid #e0e7ff;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+      h2 {
+        font-size: 1.5rem;
+      }
+      .user-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+      }
+      .user-info {
+        margin-bottom: 10px;
+      }
+      .chat-btn {
+        width: 100%;
+        text-align: center;
+      }
+      .user-info img, .profile-initials {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+      .user-info div {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Users Who Messaged You</h2>
+
+    <% if (users && users.length > 0) { %>
+      <% users.forEach(user => { %>
+        <div class="user-card">
+          <div class="user-info">
+            <% if (!user.profileImage) { %>
+              <div class="profile-initials">
+                <% 
+                  // Handle missing or undefined FullName
+                  const fullName = user.FullName || 'Unknown User';
+                  const nameParts = fullName.split(' ');
+                  const initials = nameParts[0] ? nameParts[0][0] + (nameParts[1] ? nameParts[1][0] : '') : '??';
+                %>
+                <%= initials %>
+              </div>
+            <% } else { %>
+              <img src="<%= user.profileImage %>" alt="User" />
+            <% } %>
+            <div><%= user.FullName || 'Unknown User' %></div>
+          </div>
+          <a href="/user/realtime-chat/<%= user._id %>">
+            <button class="chat-btn">Chat</button>
+          </a>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p class="no-users">No users have messaged you yet.</p>
+    <% } %>
+  </div>
+</body>
+</html>

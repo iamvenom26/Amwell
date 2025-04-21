@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login & Signup - LULU</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #1a1f40, #162c56);
+      color: white;
+      overflow: hidden;
+    }
+
+    .container {
+      position: relative;
+      width: 800px;
+      height: 500px;
+      background: #0f1a2e;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .form-container {
+      position: absolute;
+      width: 50%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+      transition: all 0.6s ease-in-out;
+    }
+
+    .login-container {
+      left: 0;
+      background: #162c56;
+    }
+
+    .signup-container {
+      right: 0;
+      background: #1a1f40;
+      opacity: 0;
+      transform: translateX(100%);
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .form-title {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    input {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      background: #243a5e;
+      color: white;
+      font-size: 1rem;
+    }
+
+    input::placeholder {
+      color: #b3c2e3;
+    }
+
+    button {
+      width: 80%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #4976d6;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #355ecf;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.3s;
+    }
+
+    .back-btn:hover {
+      color: #4976d6;
+    }
+
+    .switch-text {
+      font-size: 0.9rem;
+      margin-top: 15px;
+    }
+
+    .switch-btn {
+      color: #63a0ff;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .switch-btn:hover {
+      color: #4976d6;
+      text-decoration: underline;
+    }
+
+    .container.signing-up .login-container {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    .container.signing-up .signup-container {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-btn">Back to Home</a>
+  <div class="container">
+    <!-- Login Section -->
+    <div class="form-container login-container">
+      <form action="/user/signin" method="post">
+        <h2 class="form-title">Login</h2>
+        <input type="email" placeholder="Email Address" name="email" required />
+        <input type="password" placeholder="Password" name="password" required />
+        <button type="submit">Login</button>
+        <p class="switch-text">Don't have an account? <span class="switch-btn" data-switch="signup">Sign Up</span></p>
+      </form>
+    </div>
+
+    <!-- Signup Section -->
+    <div class="form-container signup-container">
+      <form action="/user/signup" method="POST">
+        <h2 class="form-title">Sign Up</h2>
+        <input type="text" placeholder="Full Name" name="FullName" required />
+        <input type="email" placeholder="Email Address" name="email" required />
+        <input type="password" placeholder="Password" name="password" required />
+        <input type="text" placeholder="Mobile Number" name="mobileNumber" required />
+        <button type="submit">Sign Up</button>
+        <p class="switch-text">Already have an account? <span class="switch-btn" data-switch="login">Login</span></p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.querySelector(".container");
+      const switchBtns = document.querySelectorAll(".switch-btn");
+
+      switchBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const switchTo = btn.dataset.switch;
+          if (switchTo === "signup") {
+            container.classList.add("signing-up");
+          } else {
+            container.classList.remove("signing-up");
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

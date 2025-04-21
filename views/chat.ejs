@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amwell Chatbot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fa 100%);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 50, 0.1);
+      position: relative;
+    }
+    h2 {
+      color: #1a3c6d;
+      font-size: 2rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .chat-box {
+      background: #f9fbff;
+      padding: 20px;
+      border-radius: 15px;
+      max-height: 600px;
+      overflow-y: auto;
+      border: 1px solid #e0e7ff;
+      margin-bottom: 20px;
+    }
+    .chat-box::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chat-box::-webkit-scrollbar-thumb {
+      background: #a3bffa;
+      border-radius: 4px;
+    }
+    .chat-box::-webkit-scrollbar-track {
+      background: #f0f7ff;
+    }
+    .message {
+      display: flex;
+      flex-direction: column;
+      max-width: 75%;
+      margin: 10px 15px;
+      padding: 15px 20px;
+      border-radius: 15px;
+      animation: fadeIn 0.3s ease-in;
+      position: relative;
+    }
+    .message.sent {
+      background: #4c78ff;
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+      box-shadow: 0 4px 12px rgba(76, 120, 255, 0.3);
+    }
+    .message.received {
+      background: #e6f0fa;
+      color: #1a3c6d;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 50, 0.1);
+    }
+    .message p, .message ul, .message ol, .message blockquote {
+      margin: 8px 0;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+    .message h1, .message h2, .message h3 {
+      color: #1a3c6d;
+      margin: 10px 0 8px;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+    .message ul, .message ol {
+      padding-left: 25px;
+    }
+    .message code {
+      background: #e0e7ff;
+      padding: 3px 7px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #1a3c6d;
+    }
+    .message pre {
+      background: #1a3c6d;
+      color: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 50, 0.2);
+    }
+    .message small {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 5px;
+      opacity: 0.7;
+    }
+    .input-group {
+      display: flex;
+      gap: 15px;
+      background: #f0f7ff;
+      padding: 15px;
+      border-radius: 15px;
+      border: 1px solid #e0e7ff;
+      box-shadow: 0 4px 12px rgba(0, 0, 50, 0.05);
+    }
+    .message-input {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: #ffffff;
+      font-size: 1rem;
+      color: #1a3c6d;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 50, 0.05);
+      transition: box-shadow 0.3s ease;
+    }
+    .message-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px #a3bffa;
+    }
+    .message-input::placeholder {
+      color: #94a3b8;
+    }
+    .send-btn {
+      padding: 15px 30px;
+      background: #4c78ff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .send-btn:hover {
+      background: #3b65e6;
+      transform: translateY(-2px);
+    }
+    .send-btn:active {
+      background: #2a52cc;
+      transform: translateY(0);
+    }
+    .clear-btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background: #ff4d4f;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .clear-btn:hover {
+      background: #e6393b;
+    }
+    .loading {
+      display: none;
+      font-size: 0.9rem;
+      color: #4c78ff;
+      text-align: center;
+      margin: 10px 0;
+      animation: pulse 1.5s infinite;
+    }
+    .loading.show {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+      .chat-box {
+        max-height: 400px;
+        padding: 15px;
+      }
+      .message {
+        max-width: 85%;
+        padding: 10px 15px;
+      }
+      .input-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .message-input, .send-btn {
+        width: 100%;
+        font-size: 0.9rem;
+      }
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Chat with <%= bot ? bot.fullName : 'Amwell Bot' %></h2>
+    <div class="chat-box" id="chat-box">
+      <% messages.forEach(message => { %>
+        <div class="message <%= message.senderModel === 'User' ? 'sent' : 'received' %>">
+          <% if (message.senderModel === 'User') { %>
+            <p><%= message.message %></p>
+          <% } else { %>
+            <%- message.message %>
+          <% } %>
+          <small>
+            <%= new Date(message.timestamp).toLocaleString('en-US', { 
+              month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true 
+            }) %>
+          </small>
+        </div>
+      <% }) %>
+      <div class="loading" id="loading">Amwell Bot is typing...</div>
+    </div>
+    <button class="clear-btn" onclick="clearChat()">Clear Chat</button>
+    <form id="chat-form" action="/user/chatbot" method="POST">
+      <div class="input-group">
+        <input
+          type="text"
+          name="message"
+          class="message-input"
+          placeholder="Type your medical query..."
+          required
+        />
+        <button type="submit" class="send-btn">Send</button>
+      </div>
+    </form>
+  </div>
+  <script>
+    // Auto-scroll to latest message
+    const chatBox = document.getElementById('chat-box');
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Show loading indicator on form submit
+    const form = document.getElementById('chat-form');
+    const loading = document.getElementById('loading');
+    form.addEventListener('submit', () => {
+      loading.classList.add('show');
+    });
+
+    // Clear chat (client-side, requires server-side support)
+    function clearChat() {
+      if (confirm('Are you sure you want to clear the chat history?')) {
+        fetch('/user/clear-chatbot', { method: 'POST' })
+          .then(response => {
+            if (response.ok) {
+              chatBox.innerHTML = '<div class="loading" id="loading">Amwell Bot is typing...</div>';
+              chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+              alert('Failed to clear chat. Please try again.');
+            }
+          })
+          .catch(error => {
+            console.error('Error clearing chat:', error);
+            alert('An error occurred. Please try again.');
+          });
+      }
+    }
+  </script>
+</body>
+</html>

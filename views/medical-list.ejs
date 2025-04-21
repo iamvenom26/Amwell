@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nearby Medical Stores</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f0f0f0;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .store-card {
+      background: #fff;
+      margin: 10px auto;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 600px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .store-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    h2 {
+      margin: 0 0 10px;
+      color: #007bff;
+    }
+    p {
+      margin: 5px 0;
+      color: #555;
+    }
+    .no-stores {
+      text-align: center;
+      color: #888;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Nearby Medical Stores</h1>
+  <% if (stores.length === 0) { %>
+    <p class="no-stores">No stores found nearby.</p>
+  <% } else { %>
+    <% stores.forEach(store => { %>
+      <a href="/user/realtime-chat/<%= store._id %>" class="store-card">
+        <h2><%= store.storeName %></h2>
+        <p><strong>Owner:</strong> <%= store.fullName %></p>
+        <p><strong>Contact:</strong> <%= store.contactNumber %></p>
+        <p><strong>Address:</strong> <%= store.address %></p>
+      </a>
+    <% }) %>
+  <% } %>
+</body>
+</html>
