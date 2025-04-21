@@ -6,11 +6,125 @@
   <title>Realtime Chat</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    #chat-container { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; }
-    #message-input { width: 80%; padding: 5px; }
-    #send-button { padding: 5px 10px; }
-    #typing-indicator { color: gray; }
+    body {
+      background: #f4f7fa;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #2d3e50;
+      margin-top: 32px;
+      margin-bottom: 18px;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+    #chat-container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(44, 62, 80, 0.08);
+      border: 1px solid #e0e6ed;
+      padding: 24px 18px 18px 18px;
+      width: 420px;
+      max-width: 95vw;
+      height: 400px;
+      overflow-y: auto;
+      margin-bottom: 18px;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chat-message {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #f0f4f8;
+      max-width: 80%;
+      word-break: break-word;
+      transition: background 0.2s;
+    }
+    .chat-message.you {
+      align-self: flex-end;
+      background: #d1e7ff;
+    }
+    .chat-message .meta {
+      font-size: 0.92em;
+      color: #6c7a89;
+      margin-bottom: 2px;
+    }
+    .chat-message .text {
+      font-size: 1.08em;
+      color: #2d3e50;
+    }
+    .chat-message .timestamp {
+      font-size: 0.8em;
+      color: #b0b8c1;
+      margin-top: 2px;
+      text-align: right;
+    }
+    #input-area {
+      display: flex;
+      width: 420px;
+      max-width: 95vw;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    #message-input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #cfd8dc;
+      border-radius: 8px;
+      font-size: 1em;
+      background: #f9fbfc;
+      outline: none;
+      transition: border 0.2s;
+    }
+    #message-input:focus {
+      border: 1.5px solid #4a90e2;
+      background: #fff;
+    }
+    #send-button {
+      background: linear-gradient(90deg, #4a90e2 0%, #357ab8 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0 24px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+    }
+    #send-button:hover {
+      background: linear-gradient(90deg, #357ab8 0%, #4a90e2 100%);
+    }
+    #typing-indicator {
+      color: #7b8a99;
+      font-size: 0.98em;
+      margin-top: 2px;
+      min-height: 22px;
+      width: 420px;
+      max-width: 95vw;
+      text-align: left;
+      padding-left: 4px;
+    }
+    @media (max-width: 500px) {
+      #chat-container, #input-area, #typing-indicator {
+        width: 98vw;
+        min-width: 0;
+        max-width: 98vw;
+      }
+    }
   </style>
+  
 </head>
 <body>
  
