@@ -5,6 +5,7 @@ const path = require('path');
 const User = require('../model/user');
 const MedicalOwner = require('../model/medical');
 const user = require('../model/user');
+const mapController = require('../controllers/maps');
 
 const router = Router();
 
@@ -44,9 +45,14 @@ router.get('/realtime-chat/:userId',userController.handleGetRealtimeChat);
 router.get('/show-chat', userController.getAllUsersExceptCurrent);
 router.post('/chatbot', userController.handleGeminiChat);
 router.get('/get-chat', userController.renderChatPage);
-router.get('/get-map',userController.getLiveMap);
+router.get('/get-map', mapController.showNearbyAmbulances);
 router.get('/get-medical', userController.getNearMedical);
 router.post('/clear-chatbot', userController.clearChatbot);
+router.get('/connect-ambulance/:ambulanceId', userController.connectAmbulance);
+router.get('/chat-ambulance/:ambulanceId', userController.chatWithAmbulance);
+
+//////////////////////
+
 ///////////////////////
 // 💬 Realtime Chat Route
 

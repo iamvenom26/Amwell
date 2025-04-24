@@ -352,3 +352,55 @@ exports.clearChatbot = async (req, res) => {
     res.status(500).json({ error: 'Failed to clear chat' });
   }
 };
+
+const Ambulance = require('../model/ambulance');
+
+exports.connectAmbulance = async (req, res) => {
+  try {
+    const user = req.user;
+    const ambulanceId = req.params.ambulanceId;
+
+    // Find the ambulance
+    const ambulance = await Ambulance.findById(ambulanceId);
+    if (!ambulance) {
+      return res.status(404).send('Ambulance not found');
+    }
+
+    // Create a connection message or initialize a chat room
+    const message = await Message.create({
+      sender: user._id,
+      receiver: ambulance._id,
+      receiverModel: 'Ambulance',
+      content: 'User has connected to the ambulance.',
+    });
+
+    // Redirect to the chat page
+    res.redirect(`/user/chat-ambulance/${ambulanceId}`);
+  } catch (err) {
+    console.error('Error connecting to ambulance:', err);
+    res.status(500).send('Server error');
+  }
+};
+exports.chatWithAmbulance = async (req, res) => {
+  try {
+    const user = req.user;
+    const ambulanceId = req.params.ambulanceId;
+
+    // Fetch messages between the user and the ambulance
+    const messages = await Message.find({
+      $or: [
+        { sender: user._id, receiver: ambulanceId },
+        { sender: ambulanceId, receiver: user._id },
+      ],
+    }).sort('createdAt');
+
+    res.render('chat/ambulanceChat', {
+      user,
+      ambulanceId,
+      messages,
+    });
+  } catch (err) {
+    console.error('Error loading chat:', err);
+    res.status(500).send('Server error');
+  }
+};

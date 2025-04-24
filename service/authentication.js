@@ -2,14 +2,19 @@
 const jwt = require('jsonwebtoken');
 const User = require('../model/user');
 const MedicalOwner = require('../model/medical');
+const Ambulance = require('../model/ambulance'); // Add Ambulance model
 
 function createTokenForUser(user) {
   const payload = {
     _id: user._id, // Use _id
     email: user.email,
-    fullName: user.fullName || user.FullName,
+    fullName: user.fullName || user.FullName || user.driverName, // Handle Ambulance
     profileImage: user.profileImage || '/default.png',
-    role: user instanceof User ? 'user' : 'medicalOwner', // Consistent role
+    role: user instanceof User
+      ? 'user'
+      : user instanceof MedicalOwner
+      ? 'medicalOwner'
+      : 'ambulance', // Add Ambulance role
   };
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 }
@@ -31,7 +36,13 @@ async function validateToken(token) {
       return { ...user, role: 'medicalOwner' };
     }
 
-    throw new Error('User or MedicalOwner not found');
+    // Try Ambulance model
+    user = await Ambulance.findById(payload._id).lean();
+    if (user) {
+      return { ...user, role: 'ambulance' };
+    }
+
+    throw new Error('User, MedicalOwner, or Ambulance not found');
   } catch (error) {
     throw new Error('Token validation failed: ' + error.message);
   }

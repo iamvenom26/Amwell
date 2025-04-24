@@ -7,7 +7,7 @@ const { checkForAthenticationCookie } = require('./middleware/authetication');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
-
+const ambulanceRoutes = require('./routes/ambulanceAuth');
 require('dotenv').config();
 
 const app = express();
@@ -37,6 +37,7 @@ app.get('/', (req, res) => {
 
 app.use('/user', userRoutes);
 app.use('/medical', medicalAuthRoutes);
+app.use('/ambulance',ambulanceRoutes );
 
 // Socket.IO Configuration
 const Message = require('./model/message');

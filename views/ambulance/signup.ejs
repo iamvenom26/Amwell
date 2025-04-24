@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Ambulance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: linear-gradient(135deg, #f4f9ff 0%, #eef5ff 100%);
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    input {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Register Your Ambulance</h2>
+
+    <form id="signupForm" action="/ambulance/signup" method="POST">
+      <input name="driverName" placeholder="Driver Name" required />
+      <input name="ambulanceName" placeholder="Ambulance Name/Number" required />
+      <input name="vehicleNumber" placeholder="Vehicle Number" required />
+      <input name="email" type="email" placeholder="Email" required />
+      <input name="contactNumber" placeholder="Contact Number" required />
+      <input name="licenseNumber" placeholder="Driver License Number" required />
+      <input name="password" type="password" placeholder="Password" required />
+      
+      <!-- Hidden fields for location -->
+      <input type="hidden" name="latitude" id="latitude" />
+      <input type="hidden" name="longitude" id="longitude" />
+
+      <button type="submit">Register</button>
+    </form>
+  </div>
+
+  <script>
+    window.onload = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            document.getElementById('latitude').value = position.coords.latitude;
+            document.getElementById('longitude').value = position.coords.longitude;
+          },
+          (err) => {
+            alert("Failed to get your location. Please allow location access.");
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,63 +1,257 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Nearby Medical Stores</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f0f0f0;
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --text-color: #333;
+      --light-bg: #f5f6fa;
+    }
+
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 20px;
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
+                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
+      color: white;
+      overflow-x: hidden;
     }
-    .store-card {
-      background: #fff;
-      margin: 10px auto;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 600px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
+
+    .header {
+      background-color: rgba(44, 62, 80, 0.9);
+      padding: 1rem 0;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      color: white;
       text-decoration: none;
-      color: inherit;
-      transition: transform 0.2s, box-shadow 0.2s;
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      transition: all 0.3s ease;
     }
+
+    .nav-link:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--secondary-color);
+    }
+
+    .main-content {
+      max-width: 1200px;
+      margin: 120px auto 40px;
+      padding: 0 2rem;
+      flex: 1;
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .page-title h1 {
+      font-size: 2.5rem;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-title p {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.1rem;
+    }
+
+    .stores-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    .store-card {
+      background: rgba(15, 26, 46, 0.9);
+      border-radius: 15px;
+      padding: 2rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: white;
+    }
+
     .store-card:hover {
-      transform: scale(1.02);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+      background: rgba(15, 26, 46, 0.95);
     }
-    h2 {
-      margin: 0 0 10px;
-      color: #007bff;
+
+    .store-name {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    p {
-      margin: 5px 0;
-      color: #555;
+
+    .store-name i {
+      color: var(--secondary-color);
     }
+
+    .store-info {
+      margin: 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .store-info i {
+      color: var(--secondary-color);
+      font-size: 1.2rem;
+    }
+
     .no-stores {
       text-align: center;
-      color: #888;
-      font-size: 18px;
+      padding: 3rem;
+      background: rgba(15, 26, 46, 0.9);
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .no-stores i {
+      font-size: 3rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .footer {
+      background-color: rgba(44, 62, 80, 0.9);
+      color: white;
+      padding: 2rem 0 1rem 0;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 0 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        margin: 100px auto 2rem;
+        padding: 0 1rem;
+      }
+
+      .stores-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .store-card {
+        padding: 1.5rem;
+      }
+
+      .nav-links {
+        gap: 1rem;
+      }
+
+      .nav-link {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+      }
+
+      .page-title h1 {
+        font-size: 2rem;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Nearby Medical Stores</h1>
-  <% if (stores.length === 0) { %>
-    <p class="no-stores">No stores found nearby.</p>
-  <% } else { %>
-    <% stores.forEach(store => { %>
-      <a href="/user/realtime-chat/<%= store._id %>" class="store-card">
-        <h2><%= store.storeName %></h2>
-        <p><strong>Owner:</strong> <%= store.fullName %></p>
-        <p><strong>Contact:</strong> <%= store.contactNumber %></p>
-        <p><strong>Address:</strong> <%= store.address %></p>
-      </a>
-    <% }) %>
-  <% } %>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav-container">
+      <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-title">
+      <h1><i class="fas fa-clinic-medical"></i> Nearby Medical Stores</h1>
+      <p>Find and connect with medical stores in your area</p>
+    </div>
+    
+    <div class="stores-grid">
+      <% if (stores.length === 0) { %>
+        <div class="no-stores">
+          <i class="fas fa-store-slash"></i>
+          <h2>No Stores Found</h2>
+          <p>We couldn't find any medical stores in your area.</p>
+        </div>
+      <% } else { %>
+        <% stores.forEach(store => { %>
+          <a href="/user/realtime-chat/<%= store._id %>" class="store-card">
+            <h2 class="store-name">
+                <i class="fas fa-store-alt"></i>
+                <%= store.storeName %>
+            </h2>
+            <p class="store-info">
+                <i class="fas fa-user"></i>
+                <strong>Owner:</strong> <%= store.fullName %>
+            </p>
+            <p class="store-info">
+                <i class="fas fa-phone-alt"></i>
+                <strong>Contact:</strong> <%= store.contactNumber %>
+            </p>
+            <p class="store-info">
+                <i class="fas fa-map-marker-alt"></i>
+                <strong>Address:</strong> <%= store.address %>
+            </p>
+          </a>
+        <% }) %>
+      <% } %>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2024 AmWell Healthcare. All rights reserved.</p>
+    </div>
+  </footer>
 </body>
 </html>

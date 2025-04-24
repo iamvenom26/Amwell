@@ -3,131 +3,110 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login & Signup - LULU</title>
+  <title>Login & Signup - AmWell Healthcare</title>
   <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --text-color: #333;
+      --light-bg: #f5f6fa;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
     body {
       margin: 0;
-      font-family: 'Arial', sans-serif;
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #1a1f40, #162c56);
+      flex-direction: column;
+      background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
+                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
       color: white;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
     .container {
       position: relative;
       width: 800px;
       height: 500px;
-      background: #0f1a2e;
+      background: rgba(15, 26, 46, 0.9);
       border-radius: 15px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
       overflow: hidden;
       display: flex;
+      margin: 120px auto 40px;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(rgba(41, 128, 185, 0.8), rgba(44, 62, 80, 0.8)),
+                  url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;
+      opacity: 0.9;
+      transition: all 0.6s ease-in-out;
+      z-index: 1;
+      background-size: 120% auto;
+      animation: slideBackground 15s ease-in-out infinite;
+    }
+
+    .container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(rgba(44, 62, 80, 0.8), rgba(41, 128, 185, 0.8)),
+                  url('https://images.unsplash.com/photo-1585435557343-3b092031a831?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;
+      opacity: 0.9;
+      transition: all 0.6s ease-in-out;
+      z-index: 1;
+      background-size: 120% auto;
+      animation: slideBackground 15s ease-in-out infinite reverse;
+    }
+
+    .container.signing-up::before {
+      transform: translateX(-100%);
+    }
+
+    .container.signing-up::after {
+      transform: translateX(100%);
     }
 
     .form-container {
-      position: absolute;
+      position: relative;
       width: 50%;
       height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 2rem;
       box-sizing: border-box;
       transition: all 0.6s ease-in-out;
+      z-index: 2;
     }
 
     .login-container {
       left: 0;
-      background: #162c56;
+      background: rgba(22, 44, 86, 0.95);
     }
 
     .signup-container {
       right: 0;
-      background: #1a1f40;
+      background: rgba(26, 31, 64, 0.95);
       opacity: 0;
       transform: translateX(100%);
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-    }
-
-    .form-title {
-      font-size: 2rem;
-      margin-bottom: 20px;
-      color: #ffffff;
-      text-transform: uppercase;
-    }
-
-    input {
-      width: 80%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 5px;
-      background: #243a5e;
-      color: white;
-      font-size: 1rem;
-    }
-
-    input::placeholder {
-      color: #b3c2e3;
-    }
-
-    button {
-      width: 80%;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      background: #4976d6;
-      color: white;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    button:hover {
-      background: #355ecf;
-    }
-
-    .back-btn {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      color: white;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: 0.3s;
-    }
-
-    .back-btn:hover {
-      color: #4976d6;
-    }
-
-    .switch-text {
-      font-size: 0.9rem;
-      margin-top: 15px;
-    }
-
-    .switch-btn {
-      color: #63a0ff;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s ease;
-    }
-
-    .switch-btn:hover {
-      color: #4976d6;
-      text-decoration: underline;
     }
 
     .container.signing-up .login-container {
@@ -138,6 +117,110 @@
     .container.signing-up .signup-container {
       transform: translateX(0);
       opacity: 1;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .form-title {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: white;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border: none;
+      border-radius: 5px;
+      background: rgba(36, 58, 94, 0.9);
+      color: white;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      background: rgba(36, 58, 94, 1);
+      box-shadow: 0 0 0 2px var(--secondary-color);
+    }
+
+    input::placeholder {
+      color: #b3c2e3;
+    }
+
+    button {
+      width: 100%;
+      padding: 1rem;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: var(--secondary-color);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    .switch-text {
+      font-size: 0.9rem;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .switch-btn {
+      color: var(--secondary-color);
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .switch-btn:hover {
+      color: #63a0ff;
+      text-decoration: underline;
+    }
+
+    @keyframes slideBackground {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        width: 90%;
+        height: auto;
+        min-height: 500px;
+        margin: 100px auto 2rem;
+      }
+
+      .form-container {
+        width: 100%;
+        padding: 1.5rem;
+      }
+
+      .form-title {
+        font-size: 1.5rem;
+      }
+
+      input, button {
+        padding: 0.8rem;
+      }
     }
   </style>
 </head>

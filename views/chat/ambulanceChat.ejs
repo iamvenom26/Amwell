@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat with Ambulance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    .chat-container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .messages {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .sent {
+      background: #007bff;
+      color: white;
+      text-align: right;
+    }
+    .received {
+      background: #f1f1f1;
+      color: black;
+      text-align: left;
+    }
+    .input-container {
+      display: flex;
+    }
+    .input-container input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .input-container button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <h1>Chat with Ambulance</h1>
+    <div class="messages">
+      <% messages.forEach(message => { %>
+        <div class="message <%= message.sender.toString() === user._id.toString() ? 'sent' : 'received' %>">
+          <%= message.content %>
+        </div>
+      <% }); %>
+    </div>
+    <form action="/user/send-message/<%= ambulanceId %>" method="POST" class="input-container">
+      <input type="text" name="content" placeholder="Type a message..." required>
+      <button type="submit">Send</button>
+    </form>
+  </div>
+</body>
+</html>

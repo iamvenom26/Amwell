@@ -1,4 +1,4 @@
-// In middleware/authetication.js
+  // In middleware/authetication.js
 const { validateToken } = require("../service/authentication");
 
 function checkForAthenticationCookie(cookieName, validRoles = []) {
