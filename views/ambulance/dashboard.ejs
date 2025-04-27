@@ -87,6 +87,11 @@
             border: 1px solid #c3e6cb;
             display: none;
         }
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
         #distance-info, .distance-info {
             margin-top: 10px;
             padding: 10px;
@@ -98,6 +103,15 @@
         .speech-toggle {
             margin-bottom: 10px;
         }
+        .status-container {
+            margin-bottom: 20px;
+        }
+        #status-select {
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -108,10 +122,45 @@
         </div>
         <p><strong>Vehicle Number:</strong> <%= ambulance.vehicleNumber %></p>
         
+        <div class="status-container">
+            <label for="status-select"><strong>Status:</strong></label>
+            <select id="status-select">
+                <option value="ONLINE" <%= ambulance.status === 'ONLINE' ? 'selected' : '' %>>Online</option>
+                <option value="BUSY" <%= ambulance.status === 'BUSY' ? 'selected' : '' %>>Busy</option>
+                <option value="OFFLINE" <%= ambulance.status === 'OFFLINE' ? 'selected' : '' %>>Offline</option>
+            </select>
+        </div>
+        
         <div id="map"></div>
         <div id="status-message" class="status-message"></div>
         <div id="requests-container">
-            <div class="no-requests">Waiting for new requests...</div>
+            <% if (typeof requests === 'undefined' || !requests || requests.length === 0) { %>
+                <div class="no-requests">Waiting for new requests...</div>
+            <% } else { %>
+                <% requests.forEach(request => { %>
+                    <div class="request <%= request && request.status === 'accepted' ? 'accepted' : '' %>" 
+                         data-request-id="<%= request._id %>" 
+                         data-user-id="<%= request.userId %>">
+                        <p><strong>User Name:</strong> <%= request.FullName || 'Unknown' %></p>
+                        <p><strong>Address:</strong> <%= request.userAddress || 'Location shared on map' %></p>
+                        <% if (request && request.status === 'accepted') { %>
+                            <div class="status">Status: Accepted</div>
+                        <% } %>
+                        <div class="btn-container">
+                            <% if (request && request.status === 'pending') { %>
+                                <button class="accept">Accept Request</button>
+                                <button class="reject">Reject Request</button>
+                            <% } %>
+                            <button class="chat" style="display: <%= request && request.status === 'accepted' ? 'inline-block' : 'none' %>;">Chat with User</button>
+                        </div>
+                        <% if (request && request.status === 'accepted' && request.userLocation) { %>
+                            <div class="distance-info">
+                                <!-- Distance and ETA will be populated by JavaScript -->
+                            </div>
+                        <% } %>
+                    </div>
+                <% }) %>
+            <% } %>
         </div>
     </div>
 
@@ -127,8 +176,24 @@
         let ambulanceMarker;
         let userMarker;
         let watchId;
+        let initialRequests = [];
+        try {
+            initialRequests = JSON.parse(
+                '<%- JSON.stringify((requests || []).map(req => ({
+                    _id: req._id.toString(),
+                    userId: req.userId.toString(),
+                    userName: req.userName,
+                    userAddress: req.userAddress,
+                    userLocation: req.userLocation,
+                    status: req.status
+                }))) %>
+            );
+        } catch (err) {
+            console.error('[Ambulance Dashboard] Failed to parse initialRequests:', err);
+            initialRequests = [];
+        }
 
-        console.log('[Ambulance Dashboard] Template variables:', { ambulanceId, driverName });
+        console.log('[Ambulance Dashboard] Template variables:', { ambulanceId, driverName, initialRequests });
 
         socket.on('connect', () => {
             console.log('[Ambulance Dashboard] Socket connected:', socket.id);
@@ -141,21 +206,37 @@
 
         socket.on('authSuccess', ({ message }) => {
             console.log('[Ambulance Dashboard] Authentication successful:', message);
+            if (Array.isArray(initialRequests)) {
+                initialRequests.forEach(request => {
+                    if (request.userLocation && request.userLocation.lat && request.userLocation.lng) {
+                        updateUserLocation(request);
+                    }
+                });
+            }
         });
 
         socket.on('authError', ({ message }) => {
             console.error('[Ambulance Dashboard] Authentication failed:', message);
             alert('Authentication failed: ' + message);
-            document.getElementById('status-message').textContent = 'Error: Authentication failed. Please refresh the page.';
-            document.getElementById('status-message').style.display = 'block';
-            document.getElementById('status-message').className = 'status-message status-rejected';
+            showStatusMessage('Error: Authentication failed. Please refresh the page.', 'rejected');
         });
 
         socket.on('connect_error', (err) => {
             console.error('[Ambulance Dashboard] Socket connection error:', err.message);
-            document.getElementById('status-message').textContent = 'Error: Cannot connect to server. Please check your connection.';
-            document.getElementById('status-message').style.display = 'block';
-            document.getElementById('status-message').className = 'status-message status-rejected';
+            showStatusMessage('Error: Cannot connect to server. Please check your connection.', 'rejected');
+        });
+
+        socket.on('statusUpdated', ({ status }) => {
+            console.log('[Ambulance Dashboard] Status updated:', status);
+            document.getElementById('status-select').value = status;
+            showNotification('Status Updated', `Ambulance status set to ${status}.`);
+            speak(`Ambulance status set to ${status}.`);
+        });
+
+        socket.on('statusError', ({ message }) => {
+            console.error('[Ambulance Dashboard] Status update failed:', message);
+            showStatusMessage(message, 'rejected');
+            speak(message);
         });
 
         if (Notification.permission !== 'granted') {
@@ -176,39 +257,62 @@
             }
         }
 
+        function showStatusMessage(message, type) {
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = message;
+            statusMessage.style.display = 'block';
+            statusMessage.className = `status-message status-${type}`;
+        }
+
         function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 14,
-                center: { lat: 0, lng: 0 }
-            });
-
-            if ("geolocation" in navigator) {
-                watchId = navigator.geolocation.watchPosition((position) => {
-                    const { latitude: lat, longitude: lng } = position.coords;
-                    console.log('[Ambulance Dashboard] Ambulance location:', { lat, lng });
-                    
-                    if (!ambulanceMarker) {
-                        ambulanceMarker = new google.maps.Marker({
-                            position: { lat, lng },
-                            map: map,
-                            icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                            title: 'Ambulance Location'
-                        });
-                        map.setCenter({ lat, lng });
-                    } else {
-                        ambulanceMarker.setPosition({ lat, lng });
-                    }
-
-                    socket.emit('locationUpdate', { lat, lng });
-                }, (error) => {
-                    console.error('[Ambulance Dashboard] Error getting location:', error);
-                    speak('Error: Could not get ambulance location.');
+            try {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 14,
+                    center: { lat: 0, lng: 0 }
                 });
-            } else {
-                console.error('[Ambulance Dashboard] Geolocation not supported');
-                speak('Error: Geolocation not supported.');
+
+                if ("geolocation" in navigator) {
+                    watchId = navigator.geolocation.watchPosition((position) => {
+                        const { latitude: lat, longitude: lng } = position.coords;
+                        console.log('[Ambulance Dashboard] Ambulance location:', { lat, lng });
+                        
+                        if (!ambulanceMarker) {
+                            ambulanceMarker = new google.maps.Marker({
+                                position: { lat, lng },
+                                map: map,
+                                icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                                title: 'Ambulance Location'
+                            });
+                            map.setCenter({ lat, lng });
+                        } else {
+                            ambulanceMarker.setPosition({ lat, lng });
+                        }
+
+                        socket.emit('locationUpdate', { lat, lng });
+                    }, (error) => {
+                        console.error('[Ambulance Dashboard] Error getting location:', error);
+                        showStatusMessage('Error: Could not get ambulance location.', 'rejected');
+                        speak('Error: Could not get ambulance location.');
+                    });
+                } else {
+                    console.error('[Ambulance Dashboard] Geolocation not supported');
+                    showStatusMessage('Error: Geolocation not supported.', 'rejected');
+                    speak('Error: Geolocation not supported.');
+                }
+            } catch (err) {
+                console.error('[Ambulance Dashboard] Map initialization failed:', err);
+                showStatusMessage('Error: Failed to load map.', 'rejected');
             }
         }
+
+        document.getElementById('status-select').addEventListener('change', (e) => {
+            const newStatus = e.target.value;
+            console.log('[Ambulance Dashboard] Changing status to:', newStatus);
+            socket.emit('updateStatus', {
+                ambulanceId,
+                status: newStatus
+            });
+        });
 
         socket.on('newAmbulanceRequest', (data) => {
             console.log('[Ambulance Dashboard] Received newAmbulanceRequest:', data);
@@ -221,12 +325,15 @@
 
             if (!data.userId || !data.userName || !data.requestId) {
                 console.error('[Ambulance Dashboard] Invalid request data:', data);
+                showStatusMessage('Error: Invalid request received.', 'rejected');
                 speak('Error: Invalid request received.');
                 return;
             }
 
             const requestDiv = document.createElement('div');
             requestDiv.className = 'request';
+            requestDiv.dataset.requestId = data.requestId;
+            requestDiv.dataset.userId = data.userId;
             requestDiv.innerHTML = `
                 <p><strong>User Name:</strong> ${data.userName}</p>
                 <p><strong>Address:</strong> ${data.userAddress || 'Location shared on map'}</p>
@@ -238,22 +345,7 @@
             `;
 
             if (data.userLocation && data.userLocation.lat && data.userLocation.lng) {
-                if (userMarker) {
-                    userMarker.setMap(null);
-                }
-                userMarker = new google.maps.Marker({
-                    position: data.userLocation,
-                    map: map,
-                    icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-                    title: 'User Location'
-                });
-
-                const bounds = new google.maps.LatLngBounds();
-                bounds.extend(userMarker.getPosition());
-                if (ambulanceMarker) {
-                    bounds.extend(ambulanceMarker.getPosition());
-                }
-                map.fitBounds(bounds);
+                updateUserLocation(data);
             } else {
                 console.warn('[Ambulance Dashboard] No valid userLocation in request:', data.userLocation);
             }
@@ -285,18 +377,7 @@
                 speak(`Request accepted from ${data.userName}.`);
 
                 if (data.userLocation && ambulanceMarker) {
-                    const distance = google.maps.geometry.spherical.computeDistanceBetween(
-                        new google.maps.LatLng(data.userLocation),
-                        ambulanceMarker.getPosition()
-                    );
-                    const distanceKm = (distance / 1000).toFixed(2);
-                    const etaMinutes = Math.round(distance / (50 * 1000 / 60));
-                    requestDiv.insertAdjacentHTML('beforeend', `
-                        <div class="distance-info">
-                            <strong>Distance:</strong> ${distanceKm} km<br>
-                            <strong>ETA:</strong> ~${etaMinutes} minutes
-                        </div>
-                    `);
+                    updateDistanceInfo(requestDiv, data.userLocation);
                 }
             });
 
@@ -328,46 +409,64 @@
                 return;
             }
 
+            const requestDiv = document.querySelector(`.request.accepted[data-user-id="${data.userId}"]`);
+            if (!requestDiv) return;
+
+            updateUserLocation({ userId: data.userId, userLocation: { lat: data.lat, lng: data.lng }, requestId: requestDiv.dataset.requestId });
+        });
+
+        function updateUserLocation(data) {
+            if (!data.userLocation || !data.userLocation.lat || !data.userLocation.lng) return;
+
             if (!userMarker) {
                 userMarker = new google.maps.Marker({
-                    position: { lat: data.lat, lng: data.lng },
+                    position: data.userLocation,
                     map: map,
                     icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
                     title: 'User Location'
                 });
             } else {
-                userMarker.setPosition({ lat: data.lat, lng: data.lng });
+                userMarker.setPosition(data.userLocation);
             }
 
             const bounds = new google.maps.LatLngBounds();
             bounds.extend(userMarker.getPosition());
-            bounds.extend(ambulanceMarker.getPosition());
+            if (ambulanceMarker) {
+                bounds.extend(ambulanceMarker.getPosition());
+            }
             map.fitBounds(bounds);
 
+            const requestDiv = document.querySelector(`.request[data-request-id="${data.requestId}"]`);
+            if (requestDiv && requestDiv.classList.contains('accepted')) {
+                updateDistanceInfo(requestDiv, data.userLocation);
+            }
+        }
+
+        async function updateDistanceInfo(requestDiv, userLocation) {
             try {
-                const response = await fetch(`/ambulance/live-location/${data.userId}`);
+                const userId = requestDiv.dataset.userId;
+                if (!userId) {
+                    console.error('[Ambulance Dashboard] userId not found in requestDiv dataset');
+                    return;
+                }
+                const response = await fetch(`/ambulance/live-location/${userId}`);
                 const data = await response.json();
+                if (!data.distanceTime) {
+                    throw new Error('Invalid distanceTime data');
+                }
                 const distanceKm = (data.distanceTime.distance.value / 1000).toFixed(2);
                 const etaMinutes = Math.round(data.distanceTime.duration.value / 60);
 
-                let distanceInfo = document.getElementById('distance-info');
+                let distanceInfo = requestDiv.querySelector('.distance-info');
                 if (!distanceInfo) {
                     distanceInfo = document.createElement('div');
-                    distanceInfo.id = 'distance-info';
-                    document.querySelector('.container').appendChild(distanceInfo);
+                    distanceInfo.className = 'distance-info';
+                    requestDiv.appendChild(distanceInfo);
                 }
                 distanceInfo.innerHTML = `
-                    <strong>Distance to User:</strong> ${distanceKm} km<br>
+                    <strong>Distance:</strong> ${distanceKm} km<br>
                     <strong>ETA:</strong> ~${etaMinutes} minutes
                 `;
-                
-                const acceptedRequest = document.querySelector('.request.accepted .distance-info');
-                if (acceptedRequest) {
-                    acceptedRequest.innerHTML = `
-                        <strong>Distance:</strong> ${distanceKm} km<br>
-                        <strong>ETA:</strong> ~${etaMinutes} minutes
-                    `;
-                }
             } catch (err) {
                 console.error('[Ambulance Dashboard] Error fetching distance/ETA:', err);
                 const distance = google.maps.geometry.spherical.computeDistanceBetween(
@@ -376,48 +475,36 @@
                 );
                 const distanceKm = (distance / 1000).toFixed(2);
                 const etaMinutes = Math.round(distance / (50 * 1000 / 60));
-                let distanceInfo = document.getElementById('distance-info');
+                let distanceInfo = requestDiv.querySelector('.distance-info');
                 if (!distanceInfo) {
                     distanceInfo = document.createElement('div');
-                    distanceInfo.id = 'distance-info';
-                    document.querySelector('.container').appendChild(distanceInfo);
+                    distanceInfo.className = 'distance-info';
+                    requestDiv.appendChild(distanceInfo);
                 }
                 distanceInfo.innerHTML = `
-                    <strong>Distance to User:</strong> ${distanceKm} km<br>
+                    <strong>Distance:</strong> ${distanceKm} km<br>
                     <strong>ETA:</strong> ~${etaMinutes} minutes
                 `;
-                
-                const acceptedRequest = document.querySelector('.request.accepted .distance-info');
-                if (acceptedRequest) {
-                    acceptedRequest.innerHTML = `
-                        <strong>Distance:</strong> ${distanceKm} km<br>
-                        <strong>ETA:</strong> ~${etaMinutes} minutes
-                    `;
-                }
             }
-        });
+        }
 
         socket.on('ambulanceArrived', ({ userId }) => {
             console.log('[Ambulance Dashboard] Ambulance arrived for user:', userId);
-            const statusMessage = document.getElementById('status-message');
-            statusMessage.textContent = 'You have arrived at the user’s location!';
-            statusMessage.style.display = 'block';
+            showStatusMessage('You have arrived at the user’s location!', 'accepted');
             showNotification('Arrival Confirmation', 'You have arrived at the user’s location.');
             speak('You have arrived at the user’s location.');
         });
 
         socket.on('userDisconnected', ({ userId }) => {
             console.log('[Ambulance Dashboard] User disconnected:', userId);
-            const statusMessage = document.getElementById('status-message');
-            statusMessage.textContent = 'The user has disconnected.';
-            statusMessage.style.display = 'block';
+            showStatusMessage('The user has disconnected.', 'rejected');
             showNotification('User Disconnected', 'The user you were tracking has disconnected.');
             speak('The user has disconnected.');
             if (userMarker) {
                 userMarker.setMap(null);
                 userMarker = null;
             }
-            const acceptedRequest = document.querySelector('.request.accepted');
+            const acceptedRequest = document.querySelector(`.request.accepted[data-user-id="${userId}"]`);
             if (acceptedRequest) {
                 acceptedRequest.remove();
                 if (!document.querySelector('.request')) {
@@ -430,6 +517,54 @@
             console.log('[Ambulance Dashboard] New chat message:', { sender, message });
             showNotification('New Message', `From ${sender}: ${message}`);
             speak(`New message from ${sender}: ${message}`);
+        });
+
+        // Attach event listeners to existing requests
+        document.querySelectorAll('.request').forEach(requestDiv => {
+            const requestId = requestDiv.dataset.requestId;
+            const userId = requestDiv.dataset.userId;
+
+            if (requestDiv.classList.contains('accepted')) {
+                requestDiv.querySelector('.chat').addEventListener('click', () => {
+                    window.location.href = `/ambulance/chat/${userId}`;
+                });
+            } else {
+                requestDiv.querySelector('.accept')?.addEventListener('click', () => {
+                    console.log('[Ambulance Dashboard] Accepting request:', { userId, requestId });
+                    socket.emit('respondToRequest', {
+                        userId,
+                        status: 'accepted',
+                        requestId
+                    });
+                    requestDiv.classList.add('accepted');
+                    requestDiv.querySelector('.btn-container').insertAdjacentHTML('beforebegin', `
+                        <div class="status">Status: Accepted</div>
+                    `);
+                    requestDiv.querySelector('.chat').style.display = 'inline-block';
+                    requestDiv.querySelector('.accept').style.display = 'none';
+                    requestDiv.querySelector('.reject').style.display = 'none';
+                    const otherRequests = document.querySelectorAll('.request:not(.accepted)');
+                    otherRequests.forEach(req => req.remove());
+                    showNotification('Request Accepted', `You have accepted the request.`);
+                    speak(`Request accepted.`);
+                    const requestData = initialRequests.find(r => r._id === requestId);
+                    if (requestData && requestData.userLocation) {
+                        updateDistanceInfo(requestDiv, requestData.userLocation);
+                    }
+                });
+
+                requestDiv.querySelector('.reject')?.addEventListener('click', () => {
+                    console.log('[Ambulance Dashboard] Rejecting request:', { userId, requestId });
+                    socket.emit('respondToRequest', {
+                        userId,
+                        status: 'rejected',
+                        requestId
+                    });
+                    requestDiv.remove();
+                    showNotification('Request Rejected', `You have rejected the request.`);
+                    speak(`Request rejected.`);
+                });
+            }
         });
 
         initMap();

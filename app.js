@@ -8,6 +8,8 @@ const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
 const ambulanceRoutes = require('./routes/ambulanceAuth');
+const Request = require('./model/request');
+const Ambulance = require('./model/ambulance');
 require('dotenv').config();
 
 const app = express();
@@ -151,7 +153,32 @@ io.on('connection', (socket) => {
     console.log(`[Socket ${socket.id}] Location update from ${user.fullName} (${user.role}): lat=${lat}, lng=${lng}`);
   });
 
-  socket.on('requestAmbulance', ({ ambulanceId, userId, userName, userAddress, userLocation }) => {
+  socket.on('updateStatus', async ({ ambulanceId, status }) => {
+    if (!isAuthenticated) {
+      console.error(`[Socket ${socket.id}] Update status failed: Not authenticated`);
+      return;
+    }
+    if (!mongoose.Types.ObjectId.isValid(ambulanceId) || !['ONLINE', 'BUSY', 'OFFLINE'].includes(status)) {
+      console.error(`[Socket ${socket.id}] Update status failed: Invalid ambulanceId or status`, { ambulanceId, status });
+      socket.emit('statusError', { message: 'Invalid ambulanceId or status' });
+      return;
+    }
+    try {
+      const ambulance = await Ambulance.findByIdAndUpdate(
+        ambulanceId,
+        { status },
+        { new: true }
+      );
+      console.log(`[Socket ${socket.id}] Updated ambulance status: ${status} for ${ambulanceId}`);
+      socket.emit('statusUpdated', { status: ambulance.status });
+      socket.broadcast.emit('ambulanceStatusChanged', { ambulanceId, status });
+    } catch (err) {
+      console.error(`[Socket ${socket.id}] Error updating status:`, err.message);
+      socket.emit('statusError', { message: 'Failed to update status' });
+    }
+  });
+
+  socket.on('requestAmbulance', async ({ ambulanceId, userId, userName, userAddress, userLocation }) => {
     if (!isAuthenticated) {
       console.error(`[Socket ${socket.id}] Request ambulance failed: Not authenticated`);
       socket.emit('requestError', { message: 'Request failed: User not authenticated' });
@@ -170,38 +197,54 @@ io.on('connection', (socket) => {
     const effectiveUserName = userName || 'Unknown User';
     console.log(`[Socket ${socket.id}] Ambulance request received from user ${effectiveUserName} (${userId}) for ambulance ${ambulanceId}`);
 
-    let ambulanceFound = false;
-    for (const [socketId, user] of Object.entries(connectedUsers)) {
-      if (user.userId === ambulanceId && user.role === 'ambulance') {
-        io.to(socketId).emit('newAmbulanceRequest', {
-          userId,
-          userName: effectiveUserName,
-          userAddress,
-          userLocation,
-          requestId: new mongoose.Types.ObjectId().toString(),
-        });
-        console.log(`[Server] Notified ambulance owner (${ambulanceId}) on socket ${socketId} about request from ${effectiveUserName} (${userId})`);
-        ambulanceFound = true;
-        break;
-      }
-    }
-    if (!ambulanceFound) {
-      console.error(`[Socket ${socket.id}] Ambulance owner (${ambulanceId}) not found or not connected`);
+    try {
+      // Create a new request in the database
+      const request = await Request.create({
+        userId,
+        userName: effectiveUserName,
+        ambulanceId,
+        userAddress,
+        userLocation,
+        status: 'pending'
+      });
+
+      let ambulanceFound = false;
       for (const [socketId, user] of Object.entries(connectedUsers)) {
-        if (user.userId === userId && user.role === 'user') {
-          io.to(socketId).emit('ambulanceResponse', {
-            status: 'rejected',
-            message: 'Ambulance is not available at the moment.',
-            requestId: new mongoose.Types.ObjectId().toString(),
+        if (user.userId === ambulanceId && user.role === 'ambulance') {
+          io.to(socketId).emit('newAmbulanceRequest', {
+            userId,
+            userName: effectiveUserName,
+            userAddress,
+            userLocation,
+            requestId: request._id.toString(),
           });
-          console.log(`[Server] Notified user (${userId}) on socket ${socketId} that ambulance is unavailable`);
+          console.log(`[Server] Notified ambulance owner (${ambulanceId}) on socket ${socketId} about request from ${effectiveUserName} (${userId})`);
+          ambulanceFound = true;
           break;
         }
       }
+      if (!ambulanceFound) {
+        console.error(`[Socket ${socket.id}] Ambulance owner (${ambulanceId}) not found or not connected`);
+        await Request.findByIdAndUpdate(request._id, { status: 'rejected' });
+        for (const [socketId, user] of Object.entries(connectedUsers)) {
+          if (user.userId === userId && user.role === 'user') {
+            io.to(socketId).emit('ambulanceResponse', {
+              status: 'rejected',
+              message: 'Ambulance is not available at the moment.',
+              requestId: request._id.toString(),
+            });
+            console.log(`[Server] Notified user (${userId}) on socket ${socketId} that ambulance is unavailable`);
+            break;
+          }
+        }
+      }
+    } catch (err) {
+      console.error(`[Socket ${socket.id}] Error saving request:`, err.message);
+      socket.emit('requestError', { message: 'Failed to process request' });
     }
   });
 
-  socket.on('respondToRequest', ({ userId, status, requestId }) => {
+  socket.on('respondToRequest', async ({ userId, status, requestId }) => {
     if (!isAuthenticated) {
       console.error(`[Socket ${socket.id}] Respond to request failed: Not authenticated`);
       return;
@@ -212,21 +255,39 @@ io.on('connection', (socket) => {
     }
     console.log(`[Socket ${socket.id}] Ambulance owner responded with status "${status}" for user ${userId}, requestId: ${requestId}`);
 
-    let userFound = false;
-    for (const [socketId, user] of Object.entries(connectedUsers)) {
-      if (user.userId === userId && user.role === 'user') {
-        io.to(socketId).emit('ambulanceResponse', {
-          status,
-          message: status === 'accepted' ? 'Ambulance is on the way!' : 'Request rejected by ambulance.',
-          requestId,
-        });
-        console.log(`[Server] Notified user (${userId}) on socket ${socketId} about response for requestId: ${requestId}`);
-        userFound = true;
-        break;
+    try {
+      const request = await Request.findByIdAndUpdate(
+        requestId,
+        { status },
+        { new: true }
+      );
+      if (!request) {
+        console.error(`[Socket ${socket.id}] Request not found: ${requestId}`);
+        return;
       }
-    }
-    if (!userFound) {
-      console.error(`[Socket ${socket.id}] User (${userId}) not found or not connected for requestId: ${requestId}`);
+
+      if (status === 'accepted') {
+        await Ambulance.findByIdAndUpdate(request.ambulanceId, { status: 'BUSY' });
+      }
+
+      let userFound = false;
+      for (const [socketId, user] of Object.entries(connectedUsers)) {
+        if (user.userId === userId && user.role === 'user') {
+          io.to(socketId).emit('ambulanceResponse', {
+            status,
+            message: status === 'accepted' ? 'Ambulance is on the way!' : 'Request rejected by ambulance.',
+            requestId,
+          });
+          console.log(`[Server] Notified user (${userId}) on socket ${socketId} about response for requestId: ${requestId}`);
+          userFound = true;
+          break;
+        }
+      }
+      if (!userFound) {
+        console.error(`[Socket ${socket.id}] User (${userId}) not found or not connected for requestId: ${requestId}`);
+      }
+    } catch (err) {
+      console.error(`[Socket ${socket.id}] Error updating request:`, err.message);
     }
   });
 

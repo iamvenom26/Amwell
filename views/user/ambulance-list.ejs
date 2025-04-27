@@ -1,370 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Amwell - Nearby Ambulances</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <title>Nearby Ambulances</title>
   <style>
-    :root {
-      --primary-color: #2c3e50;
-      --secondary-color: #3498db;
-      --accent-color: #e74c3c;
-      --text-color: #333;
-      --light-bg: #f5f6fa;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
     body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
-                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
-      color: white;
-      overflow-x: hidden;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
     }
-
-    /* Header Styles */
-    .header {
-      background-color: rgba(44, 62, 80, 0.9);
-      padding: 1rem 0;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      z-index: 1000;
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 10px 0;
+      padding: 15px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 2rem;
     }
-
-    .site-logo {
+    .btn {
+      padding: 10px 20px;
+      background-color: #007bff;
       color: white;
-      font-size: 1.8rem;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-    }
-
-    .nav-links a {
-      color: white;
-      text-decoration: none;
-      transition: color 0.3s, background-color 0.3s;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-    }
-
-    .nav-links a:hover {
-      color: var(--secondary-color);
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Ambulances Section */
-    .ambulances-section {
-      padding: 5rem 2rem;
-      background: rgba(15, 26, 46, 0.9);
-      flex: 1;
-    }
-
-    .ambulances-container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .section-header h1 {
-      font-size: 2.5rem;
-      color: white;
-      margin-bottom: 1rem;
-    }
-
-    .section-header p {
-      color: rgba(255, 255, 255, 0.7);
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .ambulances-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-    }
-
-    .ambulance-card {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 2rem;
-      border-radius: 10px;
-      text-align: center;
-      transition: all 0.3s;
-      color: white;
-    }
-
-    .ambulance-card:hover {
-      transform: translateY(-5px);
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .ambulance-icon {
-      font-size: 2.5rem;
-      color: var(--secondary-color);
-      margin-bottom: 1rem;
-    }
-
-    .ambulance-card h3 {
-      color: white;
-      margin-bottom: 1rem;
-    }
-
-    .ambulance-card p {
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 0.8rem;
-      font-size: 0.95rem;
-    }
-
-    .connect-button {
-      display: inline-block;
-      padding: 0.8rem 1.5rem;
-      background: var(--secondary-color);
-      color: white;
-      text-decoration: none;
+      border: none;
       border-radius: 5px;
-      transition: all 0.3s;
-    }
-
-    .connect-button:hover {
-      background: #2980b9;
-      transform: translateY(-2px);
-    }
-
-    .no-ambulances {
-      text-align: center;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 1.2rem;
-    }
-
-    /* Footer Styles */
-    .footer {
-      background-color: rgba(44, 62, 80, 0.9);
-      color: white;
-      padding: 3rem 0 1rem 0;
-      margin-top: auto;
-    }
-
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      padding: 0 2rem;
-    }
-
-    .footer-section {
-      margin-bottom: 2rem;
-    }
-
-    .footer-section h3 {
-      color: var(--secondary-color);
-      margin-bottom: 1.5rem;
-      font-size: 1.2rem;
-    }
-
-    .footer-section p {
-      line-height: 1.6;
-      margin-bottom: 1rem;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .footer-section ul {
-      list-style: none;
-    }
-
-    .footer-section ul li {
-      margin-bottom: 0.8rem;
-    }
-
-    .footer-section ul li a {
-      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
       text-decoration: none;
-      transition: color 0.3s;
+      transition: background-color 0.3s ease;
     }
-
-    .footer-section ul li a:hover {
-      color: var(--secondary-color);
+    .btn:hover {
+      background-color: #0056b3;
     }
-
-    .social-links {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
+    .status {
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 4px;
+      display: inline-block;
     }
-
-    .social-links a {
-      color: white;
-      font-size: 1.2rem;
-      transition: color 0.3s;
+    .status-online {
+      background-color: #d4edda;
+      color: #155724;
     }
-
-    .social-links a:hover {
-      color: var(--secondary-color);
+    .status-busy {
+      background-color: #fff3cd;
+      color: #856404;
     }
-
-    .footer-bottom {
-      text-align: center;
-      padding-top: 2rem;
-      margin-top: 2rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .ambulance-card {
-      animation: fadeInUp 0.6s ease;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .section-header h1 {
-        font-size: 2rem;
-      }
-
-      .ambulances-section {
-        padding: 3rem 1rem;
-      }
-
-      .nav-links {
-        gap: 1rem;
-      }
-
-      .nav-links a {
-        padding: 0.5rem;
-        font-size: 0.9rem;
-      }
-
-      .site-logo {
-        font-size: 1.5rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .ambulances-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .ambulances-section {
-        padding: 2rem 1rem;
-      }
+    .status-offline {
+      background-color: #f8d7da;
+      color: #721c24;
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <nav class="nav-container">
-      <a href="/" class="site-logo">Amwell</a>
-      <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/#services">Services</a>
-        <% if (locals.user) { %>
-          <a href="/user/logout">Logout</a>
-        <% } else { %>
-          <a href="/user/signin">Login</a>
-        <% } %>
-      </div>
-    </nav>
-  </header>
+  <div class="container">
+    <h1>Nearby Ambulances</h1>
+    <ul>
+      <% ambulances.forEach(ambulance => { %>
+        <li>
+          <div>
+            <strong>Driver Name:</strong> <%= ambulance.driverName %><br>
+            <strong>Ambulance Name:</strong> <%= ambulance.ambulanceName %><br>
+            <strong>Vehicle Number:</strong> <%= ambulance.vehicleNumber %><br>
+            <strong>Status:</strong> 
+            <span class="status status-<%= ambulance.status ? ambulance.status.toLowerCase() : 'offline' %>">
+              <%= ambulance.status || 'Unknown' %>
+            </span>
+          </div>
+          <a href="/user/ambulance/<%= ambulance._id %>" class="btn">Connect</a>
+        </li>
+      <% }); %>
+    </ul>
+  </div>
 
-  <!-- Ambulances Section -->
-  <section class="ambulances-section">
-    <div class="ambulances-container">
-      <div class="section-header">
-        <h1><i class="fas fa-ambulance"></i> Nearby Ambulances</h1>
-        <p>Connect with available ambulances for emergency assistance.</p>
-      </div>
-      <% if (ambulances.length === 0) { %>
-        <p class="no-ambulances">No ambulances found.</p>
-      <% } else { %>
-        <div class="ambulances-grid">
-          <% ambulances.forEach(ambulance => { %>
-            <div class="ambulance-card">
-              <i class="fas fa-ambulance ambulance-icon"></i>
-              <h3><%= ambulance.ambulanceName %></h3>
-              <p><strong>Driver:</strong> <%= ambulance.driverName %></p>
-              <p><strong>Vehicle Number:</strong> <%= ambulance.vehicleNumber %></p>
-              <p><strong>Location:</strong> Lat: <%= ambulance.location.coordinates[1].toFixed(6) %>, Long: <%= ambulance.location.coordinates[0].toFixed(6) %></p>
-              <a href="/user/ambulance/<%= ambulance._id %>" class="connect-button">Book</a>
-            </div>
-          <% }); %>
-        </div>
-      <% } %>
-    </div>
-  </section>
+  <button onclick="fetchNearestAmbulance()">Find Nearest Ambulance</button>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>About Amwell</h3>
-        <p>Amwell is your go-to platform for seamless healthcare services, offering AI-powered assistance, medical store locators, and emergency support.</p>
-        <div class="social-links">
-          <a href="#"><i class="fab fa-facebook"></i></a>
-          <a href="#"><i class="fab fa-twitter"></i></a>
-          <a href="#"><i class="fab fa-linkedin"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
-        </div>
-      </div>
-      <div class="footer-section">
-        <h3>Contact Us</h3>
-        <p><i class="fas fa-map-marker-alt"></i> 123 Healthcare Avenue, Medical District</p>
-        <p><i class="fas fa-phone"></i> Emergency: +1 (555) 123-4567</p>
-        <p><i class="fas fa-envelope"></i> support@amwell.com</p>
-        <p><i class="fas fa-clock"></i> 24/7 Support</p>
-      </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/#services">Services</a></li>
-          <li><a href="/user/signin">User Login</a></li>
-          <li><a href="/medical/signin">Medical Login</a></li>
-          <li><a href="/ambulance/signin">Ambulance Login</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2025 Amwell. All rights reserved.</p>
-    </div>
-  </footer>
+<script>
+  async function fetchNearestAmbulance() {
+    try {
+      const response = await fetch('/maps/nearest-ambulance');
+      const data = await response.json();
+      if (response.ok) {
+        alert(`Nearest Ambulance Driver: ${data.driverName} (Status: ${data.status || 'Unknown'})`);
+      } else {
+        alert(data.message || 'Failed to fetch nearest ambulance');
+      }
+    } catch (error) {
+      console.error('Error fetching nearest ambulance:', error);
+      alert('Error fetching nearest ambulance. Please try again.');
+    }
+  }
+</script>
 </body>
 </html>

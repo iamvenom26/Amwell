@@ -3,7 +3,7 @@ const { createTokenForUser } = require('../service/authentication');
 const Message = require('../model/message');
 const User = require('../model/user');
 const mapService = require('../service/maps');
-
+const Request = require('../model/request');
 
 exports.renderSignupPage = (req, res) => {
   res.render('ambulance/signup');
@@ -39,19 +39,40 @@ exports.signin = async (req, res) => {
 
 exports.getDashboard = async (req, res) => {
   try {
-    const ambulance = req.user; // Get authenticated ambulance from req.user
-    if (!ambulance || ambulance.role !== 'ambulance') {
-      return res.status(401).render('error', { error: 'Unauthorized access' });
+    // Fetch the authenticated ambulance
+    const ambulance = await Ambulance.findById(req.user._id).lean();
+    if (!ambulance) {
+      console.error('Ambulance not found for ID:', req.user._id);
+      return res.status(404).send('Ambulance not found');
     }
 
-    // Render dashboard with ambulance data
-    res.render('ambulance/dashboard', { 
+    // Fetch active requests for the ambulance
+    const requests = await Request.find({
+      ambulanceId: req.user._id,
+      status: { $in: ['pending', 'accepted'] }
+    })
+      .lean()
+      .select('userId userName userAddress userLocation status _id')
+      .catch(err => {
+        console.error('Error fetching requests:', err);
+        return []; // Return empty array on query failure
+      });
+
+    // Ensure requests is always an array
+    const validRequests = Array.isArray(requests) ? requests.filter(
+      req => req && req.userId && req.userName && req.status
+    ) : [];
+
+    console.log('Fetched requests:', validRequests); // Debug log
+
+    // Render dashboard with ambulance and requests
+    res.render('ambulance/dashboard', {
       ambulance,
-      title: 'Ambulance Dashboard'
+      requests: validRequests
     });
-  } catch (err) {
-    console.error('Dashboard error:', err);
-    res.status(500).render('error', { error: 'Server error' });
+  } catch (error) {
+    console.error('Error in getDashboard:', error);
+    res.status(500).send('Something went wrong.');
   }
 };
 
