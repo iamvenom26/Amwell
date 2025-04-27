@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
       console.error('Invalid userId:', userId);
       return;
     }
-    if (!['user', 'medicalOwner','ambulance'].includes(role)) {
+    if (!['user', 'medicalOwner', 'ambulance'].includes(role)) {
       console.error('Invalid role:', role);
       return;
     }
@@ -133,6 +133,38 @@ io.on('connection', (socket) => {
       lng,
     });
     console.log(`Location update from ${user.fullName} (${user.role}): lat=${lat}, lng=${lng}`);
+  });
+
+  // Ambulance Request: Handle user request for an ambulance
+  socket.on('requestAmbulance', ({ ambulanceId, userId, userName, userAddress }) => {
+    console.log(`Ambulance request received from user ${userName} (${userId}) for ambulance ${ambulanceId}`);
+    
+    // Notify the ambulance owner
+    for (const [socketId, user] of Object.entries(connectedUsers)) {
+      if (user.userId === ambulanceId && user.role === 'ambulance') {
+        io.to(socketId).emit('newAmbulanceRequest', {
+          userId,
+          userName,
+          userAddress,
+        });
+        console.log(`Notified ambulance owner (${ambulanceId}) about the request.`);
+        break;
+      }
+    }
+  });
+
+  // Ambulance Response: Handle ambulance owner's response to the request
+  socket.on('respondToRequest', ({ userId, status }) => {
+    console.log(`Ambulance owner responded with status "${status}" for user ${userId}`);
+    
+    // Notify the user about the response
+    for (const [socketId, user] of Object.entries(connectedUsers)) {
+      if (user.userId === userId && user.role === 'user') {
+        io.to(socketId).emit('ambulanceResponse', { status });
+        console.log(`Notified user (${userId}) about the response.`);
+        break;
+      }
+    }
   });
 
   // Location: Handle disconnection

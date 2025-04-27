@@ -330,3 +330,75 @@ exports.getAllAmbulances = async (req, res) => {
     res.status(500).send('Something went wrong.');
   }
 };
+
+exports.getAmbulanceById = async (req, res) => {
+  const ambulanceId = req.params.id;
+  try {
+      const ambulance = await Ambulance.findById(ambulanceId).lean();
+      if (!ambulance) {
+          return res.status(404).send('Ambulance not found');
+      }
+      
+      // Pass both ambulance and user data to template
+      res.render('user/ambulance', { 
+          ambulance,
+          user: req.user,
+          userId: req.user._id,
+          userName: req.user.fullName
+      });
+  } catch (error) {
+      console.error('Error fetching ambulance:', error);
+      return res.status(500).send('Something went wrong.');
+  }
+};
+const axios = require('axios');
+
+
+exports.getAddressFromCoordinates = async (req, res) => {
+  const { latitude, longitude } = req.query;
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+
+  console.log('Debug Info:');
+  console.log('Latitude:', latitude);
+  console.log('Longitude:', longitude);
+  console.log('Google Maps API Key:', apiKey ? 'Loaded' : 'NOT LOADED');
+
+  if (!latitude || !longitude) {
+    console.error('Latitude and longitude are required.');
+    return res.status(400).send('Latitude and longitude are required.');
+  }
+
+  try {
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+      params: {
+        latlng: `${latitude},${longitude}`,
+        key: apiKey,
+      },
+    });
+
+    if (response.data.status !== 'OK') {
+      console.error('Google API Response:', response.data);
+      throw new Error(response.data.error_message || 'Failed to fetch address.');
+    }
+
+    const address = response.data.results[0]?.formatted_address || 'Address not found';
+    res.json({ address });
+  } catch (error) {
+    console.error('Error fetching address from Google Maps API:', error.response?.data || error.message);
+    res.status(500).send('Failed to fetch address.');
+  }
+};
+
+exports.getRequestHistory = async (req, res) => {
+  try {
+      const userId = req.user._id;
+      const requests = await Request.find({ userId })
+          .populate('ambulanceId', 'driverName vehicleNumber')
+          .sort({ createdAt: -1 })
+          .lean();
+      res.render('user/request-history', { requests });
+  } catch (err) {
+      console.error('Error fetching request history:', err);
+      res.status(500).send('Something went wrong.');
+  }
+};

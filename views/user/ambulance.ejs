@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambulance Request</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-ZzlBxFR_tri1izhOpAyBjWiH9BKS9d0&libraries=geometry"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .ambulance-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        #find-location-btn, #request-ambulance-btn, #chat-btn {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #find-location-btn {
+            background-color: #17a2b8;
+            color: white;
+        }
+        #request-ambulance-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        #chat-btn {
+            background-color: #28a745;
+            color: white;
+            display: none;
+        }
+        #map-container {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        #address-output {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            min-height: 60px;
+        }
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .status-accepted {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        #loading-indicator {
+            display: none;
+            color: #666;
+            text-align: center;
+            margin: 10px 0;
+        }
+        #distance-info, #eta-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .speech-toggle {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ambulance Request</h1>
+        <div class="speech-toggle">
+            <label><input type="checkbox" id="speech-toggle" checked> Enable Voice Announcements</label>
+        </div>
+        
+        <div class="ambulance-info">
+            <h2>Ambulance Details</h2>
+            <p><strong>Driver Name:</strong> <%= ambulance.driverName %></p>
+            <p><strong>Vehicle Number:</strong> <%= ambulance.vehicleNumber %></p>
+            <p><strong>Contact:</strong> <%= ambulance.contactNumber %></p>
+        </div>
+
+        <button id="find-location-btn">Find My Location</button>
+        <button id="request-ambulance-btn" disabled>Request Ambulance</button>
+        <button id="chat-btn">Chat with Driver</button>
+        <p id="loading-indicator">Finding your location...</p>
+
+        <textarea id="address-output" readonly placeholder="Your location details will appear here"></textarea>
+        
+        <div id="status-message" class="status-message"></div>
+        
+        <div id="map-container">
+            <h3>Live Location Tracking</h3>
+            <div id="map"></div>
+            <div id="distance-info"></div>
+            <div id="eta-info"></div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const ambulanceId = '<%= ambulance._id %>';
+        const userId = '<%= user._id %>';
+        const userName = '<%= user.fullName %>';
+        
+        let map;
+        let userMarker;
+        let ambulanceMarker;
+        let userLocation;
+
+        // Request notification permission
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+
+        // Function to show notification
+        function showNotification(title, body) {
+            if (Notification.permission === 'granted') {
+                new Notification(title, { body });
+            }
+        }
+
+        // Text-to-speech function
+        function speak(text) {
+            const speechToggle = document.getElementById('speech-toggle');
+            if (speechToggle.checked) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Initialize socket connection
+        socket.emit('authenticate', {
+            userId,
+            role: 'user',
+            fullName: userName
+        });
+
+        // Find location button handler
+        document.getElementById('find-location-btn').addEventListener('click', async () => {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const addressOutput = document.getElementById('address-output');
+            const requestButton = document.getElementById('request-ambulance-btn');
+            
+            loadingIndicator.style.display = 'block';
+            addressOutput.value = '';
+            requestButton.disabled = true;
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    userLocation = { lat: latitude, lng: longitude };
+                    
+                    // Get formatted address
+                    try {
+                        const response = await fetch(`/maps/address?latitude=${latitude}&longitude=${longitude}`);
+                        const data = await response.json();
+                        addressOutput.value = data.address || `Latitude: ${latitude}\nLongitude: ${longitude}`;
+                        speak('Location found.');
+                    } catch (err) {
+                        console.error('Error fetching address:', err);
+                        addressOutput.value = `Latitude: ${latitude}\nLongitude: ${longitude}`;
+                    }
+
+                    // Initialize map with user location
+                    initMap(latitude, longitude);
+                    
+                    loadingIndicator.style.display = 'none';
+                    requestButton.disabled = false;
+                }, (error) => {
+                    console.error('Error getting location:', error);
+                    loadingIndicator.style.display = 'none';
+                    addressOutput.value = 'Error: Could not find your location';
+                    speak('Error: Could not find your location.');
+                });
+            } else {
+                loadingIndicator.style.display = 'none';
+                addressOutput.value = 'Error: Geolocation is not supported by your browser';
+                speak('Error: Geolocation is not supported.');
+            }
+        });
+
+        // Request ambulance button handler
+        document.getElementById('request-ambulance-btn').addEventListener('click', () => {
+            if (!userLocation) {
+                alert('Please find your location first');
+                speak('Please find your location first.');
+                return;
+            }
+
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = 'Sending request...';
+            statusMessage.className = 'status-message status-pending';
+            speak('Sending ambulance request.');
+
+            socket.emit('requestAmbulance', {
+                ambulanceId,
+                userId,
+                userName,
+                userAddress: document.getElementById('address-output').value,
+                userLocation
+            });
+        });
+
+        // Chat button handler
+        document.getElementById('chat-btn').addEventListener('click', () => {
+            window.location.href = `/ambulance/chat/${userId}`;
+        });
+
+        // Handle ambulance response
+        socket.on('ambulanceResponse', ({ status, message }) => {
+            const statusMessage = document.getElementById('status-message');
+            const mapContainer = document.getElementById('map-container');
+            const chatButton = document.getElementById('chat-btn');
+            
+            if (status === 'accepted') {
+                statusMessage.textContent = 'Ambulance is on the way!';
+                statusMessage.className = 'status-message status-accepted';
+                mapContainer.style.display = 'block';
+                chatButton.style.display = 'inline-block';
+                showNotification('Ambulance Accepted', 'The ambulance is on its way to your location.');
+                speak('Ambulance is on the way!');
+                
+                if (!map) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const { latitude, longitude } = position.coords;
+                        initMap(latitude, longitude);
+                        startLocationUpdates();
+                    });
+                }
+            } else {
+                statusMessage.textContent = message || 'Request rejected by ambulance';
+                statusMessage.className = 'status-message status-rejected';
+                mapContainer.style.display = 'none';
+                chatButton.style.display = 'none';
+                showNotification('Ambulance Request Update', statusMessage.textContent);
+                speak(statusMessage.textContent);
+            }
+        });
+
+        // Handle ambulance arrival
+        socket.on('ambulanceArrived', ({ ambulanceId }) => {
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = 'Ambulance has arrived at your location!';
+            statusMessage.className = 'status-message status-accepted';
+            showNotification('Ambulance Arrived', 'The ambulance has arrived at your location.');
+            speak('Ambulance has arrived at your location!');
+        });
+
+        // Handle ambulance disconnection
+        socket.on('ambulanceDisconnected', ({ ambulanceId }) => {
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = 'Ambulance has disconnected. Please try another ambulance.';
+            statusMessage.className = 'status-message status-rejected';
+            document.getElementById('map-container').style.display = 'none';
+            document.getElementById('chat-btn').style.display = 'none';
+            showNotification('Ambulance Disconnected', 'The ambulance is no longer available.');
+            speak('Ambulance has disconnected.');
+        });
+
+        // Handle new chat message
+        socket.on('newChatMessage', ({ sender, message }) => {
+            showNotification('New Message', `From ${sender}: ${message}`);
+            speak(`New message from ${sender}: ${message}`);
+        });
+
+        // Initialize map
+        function initMap(lat, lng) {
+            const mapContainer = document.getElementById('map-container');
+            mapContainer.style.display = 'block';
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 15,
+                center: { lat, lng }
+            });
+
+            userMarker = new google.maps.Marker({
+                position: { lat, lng },
+                map: map,
+                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                title: 'Your Location'
+            });
+
+            // Listen for ambulance location updates
+            socket.on('userMoved', (data) => {
+                if (data.userId === ambulanceId && data.role === 'ambulance') {
+                    updateAmbulanceLocation(data.lat, data.lng);
+                }
+            });
+        }
+
+        function startLocationUpdates() {
+            setInterval(() => {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    socket.emit('userLocation', {
+                        ambulanceId,
+                        lat: latitude,
+                        lng: longitude
+                    });
+                    userMarker.setPosition({ lat: latitude, lng: longitude });
+                });
+            }, 5000);
+        }
+
+        async function updateAmbulanceLocation(lat, lng) {
+            if (!ambulanceMarker) {
+                ambulanceMarker = new google.maps.Marker({
+                    position: { lat, lng },
+                    map: map,
+                    icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                    title: 'Ambulance Location'
+                });
+            } else {
+                ambulanceMarker.setPosition({ lat, lng });
+            }
+
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend(userMarker.getPosition());
+            bounds.extend(ambulanceMarker.getPosition());
+            map.fitBounds(bounds);
+
+            try {
+                const response = await fetch(`/ambulance/live-location/${userId}`);
+                const data = await response.json();
+                const distanceKm = (data.distanceTime.distance.value / 1000).toFixed(2);
+                const etaMinutes = Math.round(data.distanceTime.duration.value / 60);
+
+                document.getElementById('distance-info').innerHTML = `
+                    <strong>Distance to Ambulance:</strong> ${distanceKm} km<br>
+                    <strong>Status:</strong> Ambulance is on the way
+                `;
+                document.getElementById('eta-info').innerHTML = `
+                    <strong>Estimated Arrival:</strong> ~${etaMinutes} minutes
+                `;
+            } catch (err) {
+                console.error('Error fetching distance/ETA:', err);
+                const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                    userMarker.getPosition(),
+                    ambulanceMarker.getPosition()
+                );
+                const distanceKm = (distance / 1000).toFixed(2);
+                const etaMinutes = Math.round(distance / (50 * 1000 / 60));
+                document.getElementById('distance-info').innerHTML = `
+                    <strong>Distance to Ambulance:</strong> ${distanceKm} km<br>
+                    <strong>Status:</strong> Ambulance is on the way
+                `;
+                document.getElementById('eta-info').innerHTML = `
+                    <strong>Estimated Arrival:</strong> ~${etaMinutes} minutes
+                `;
+            }
+        }
+
+        // Clean up on page close
+        window.addEventListener('beforeunload', () => {
+            socket.emit('stopTracking');
+        });
+    </script>
+</body>
+</html>

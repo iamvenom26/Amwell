@@ -1,28 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/ambulanceController');
+const ambulanceController = require('../controllers/ambulanceController');
 const { checkForAthenticationCookie } = require('../middleware/authetication');
 
 // Public routes
-router.get('/signup', (req, res) => {
-  res.render('ambulance/signup');
-});
-
-router.get('/signin', (req, res) => {
-  res.render('ambulance/signin');
-});
-
-router.post('/signup', controller.signup);
-router.post('/signin', controller.signin);
+router.get('/signup', ambulanceController.renderSignupPage);
+router.post('/signup', ambulanceController.signup);
+router.get('/signin', ambulanceController.renderSigninPage);
+router.post('/signin', ambulanceController.signin);
 
 // Protected routes
-router.get('/dashboard', checkForAthenticationCookie('token', ['ambulance']), controller.getDashboard);
-router.post('/toggle-status', checkForAthenticationCookie('token', ['ambulance']), controller.toggleStatus);
-router.get(
-  '/live-location/:userId',
-  checkForAthenticationCookie('token', ['ambulance']),
-  controller.getLiveLocationData
-);
-router.get('/realtime-chat/:userId',checkForAthenticationCookie('token', ['ambulance']),controller.handleGetRealtimeChat);
+router.get('/dashboard', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.getDashboard);
+router.post('/status', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.toggleStatus);
+router.get('/live-location/:userId', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.getLiveLocationData);
+router.get('/chat/:userId', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.handleGetRealtimeChat);
+router.get('/request-history', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.getRequestHistory);
 
 module.exports = router;

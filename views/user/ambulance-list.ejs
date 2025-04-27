@@ -323,7 +323,7 @@
               <p><strong>Driver:</strong> <%= ambulance.driverName %></p>
               <p><strong>Vehicle Number:</strong> <%= ambulance.vehicleNumber %></p>
               <p><strong>Location:</strong> Lat: <%= ambulance.location.coordinates[1].toFixed(6) %>, Long: <%= ambulance.location.coordinates[0].toFixed(6) %></p>
-              <a href="/user/realtime-chat/<%= ambulance._id %>" class="connect-button">Connect</a>
+              <a href="/user/ambulance/<%= ambulance._id %>" class="connect-button">Book</a>
             </div>
           <% }); %>
         </div>

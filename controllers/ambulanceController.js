@@ -39,28 +39,19 @@ exports.signin = async (req, res) => {
 
 exports.getDashboard = async (req, res) => {
   try {
-    const ambulance = req.user;
+    const ambulance = req.user; // Get authenticated ambulance from req.user
     if (!ambulance || ambulance.role !== 'ambulance') {
-      return res.status(401).send('Unauthorized');
+      return res.status(401).render('error', { error: 'Unauthorized access' });
     }
 
-    // Fetch users who have sent messages to the ambulance
-    const messages = await Message.find({
-      receiver: ambulance._id,
-      receiverModel: 'Ambulance',
-    }).distinct('sender');
-
-    const users = await User.find({
-      _id: { $in: messages },
-    }).lean();
-
-    res.render('ambulance/dashboard', {
+    // Render dashboard with ambulance data
+    res.render('ambulance/dashboard', { 
       ambulance,
-      users: users || [],
+      title: 'Ambulance Dashboard'
     });
   } catch (err) {
     console.error('Dashboard error:', err);
-    res.status(500).send('Server error');
+    res.status(500).render('error', { error: 'Server error' });
   }
 };
 
@@ -190,3 +181,16 @@ exports.signup = async (req, res) => {
   }
 };
 
+exports.getRequestHistory = async (req, res) => {
+  try {
+      const ambulanceId = req.user._id;
+      const requests = await Request.find({ ambulanceId })
+          .populate('userId', 'fullName')
+          .sort({ createdAt: -1 })
+          .lean();
+      res.render('ambulance/request-history', { requests });
+  } catch (err) {
+      console.error('Error fetching request history:', err);
+      res.status(500).send('Something went wrong.');
+  }
+};
