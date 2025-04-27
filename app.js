@@ -37,45 +37,61 @@ app.get('/', (req, res) => {
 
 app.use('/user', userRoutes);
 app.use('/medical', medicalAuthRoutes);
-app.use('/ambulance',ambulanceRoutes );
+app.use('/ambulance', ambulanceRoutes);
 app.use('/maps', require('./routes/maps'));
+
 // Socket.IO Configuration
 const Message = require('./model/message');
-const connectedUsers = {}; // Store connected users for location tracking
+const connectedUsers = {};
+
 io.on('connection', (socket) => {
-  console.log(`🛰️ User connected: ${socket.id}`);
+  console.log(`🛰️ Socket connected: ${socket.id}`);
   let isAuthenticated = false;
 
-  // Handle user authentication on connection
   socket.on('authenticate', ({ userId, role, fullName }) => {
     if (isAuthenticated) {
-      console.log(`Already authenticated for socket ${socket.id}, ignoring`);
+      console.log(`[Socket ${socket.id}] Already authenticated, ignoring repeat attempt`);
       return;
     }
-    if (!userId || !role || !fullName) {
-      console.error('Authentication failed: Missing userId, role, or fullName', { userId, role, fullName });
+    if (!userId || !role) {
+      console.error(`[Socket ${socket.id}] Authentication failed: Missing userId or role`, { userId, role, fullName });
+      socket.emit('authError', { message: 'Authentication failed: Missing required fields' });
       return;
     }
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      console.error('Invalid userId:', userId);
+      console.error(`[Socket ${socket.id}] Authentication failed: Invalid userId`, { userId });
+      socket.emit('authError', { message: 'Authentication failed: Invalid userId' });
       return;
     }
     if (!['user', 'medicalOwner', 'ambulance'].includes(role)) {
-      console.error('Invalid role:', role);
+      console.error(`[Socket ${socket.id}] Authentication failed: Invalid role`, { role });
+      socket.emit('authError', { message: 'Authentication failed: Invalid role' });
       return;
     }
-    connectedUsers[socket.id] = { userId, role, fullName };
+    connectedUsers[socket.id] = { userId, role, fullName: fullName || 'Unknown' };
     isAuthenticated = true;
-    console.log(`Authenticated ${role}: ${fullName} (${userId})`);
+    console.log(`[Socket ${socket.id}] Authenticated ${role}: ${fullName || 'Unknown'} (${userId})`);
+    console.log('[Server] Current connectedUsers:', Object.keys(connectedUsers).map(id => ({
+      socketId: id,
+      ...connectedUsers[id]
+    })));
+    socket.emit('authSuccess', { message: 'Authentication successful' });
   });
 
-  // Chat: Join a specific room
   socket.on('joinRoom', ({ room }) => {
+    if (!isAuthenticated) {
+      console.error(`[Socket ${socket.id}] Join room failed: Not authenticated`);
+      return;
+    }
     socket.join(room);
+    console.log(`[Socket ${socket.id}] Joined room: ${room}`);
   });
 
-  // Chat: Handle chat messages
   socket.on('chatMessage', async ({ room, senderId, senderModel, receiverId, receiverModel, message }) => {
+    if (!isAuthenticated) {
+      console.error(`[Socket ${socket.id}] Chat message failed: Not authenticated`);
+      return;
+    }
     try {
       const newMsg = await Message.create({
         sender: senderId,
@@ -90,38 +106,38 @@ io.on('connection', (socket) => {
         message,
         timestamp: newMsg.timestamp,
       });
+      console.log(`[Socket ${socket.id}] Chat message sent to room ${room}: ${message}`);
     } catch (err) {
-      console.error("Error saving message:", err.message);
+      console.error(`[Socket ${socket.id}] Error saving message:`, err.message);
     }
   });
 
-  // Chat: Handle typing indicator
   socket.on('typing', ({ room, sender }) => {
     if (!isAuthenticated) {
-      console.error('Typing failed: User not authenticated', { socketId: socket.id });
+      console.error(`[Socket ${socket.id}] Typing failed: Not authenticated`);
       return;
     }
     if (!room || !sender) {
-      console.error('Invalid typing data:', { room, sender });
+      console.error(`[Socket ${socket.id}] Invalid typing data:`, { room, sender });
       return;
     }
     socket.to(room).emit('typing', { sender });
+    console.log(`[Socket ${socket.id}] Typing indicator sent to room ${room} by ${sender}`);
   });
 
-  // Location: Handle location updates
   socket.on('locationUpdate', (coords) => {
     if (!isAuthenticated) {
-      console.error('Location update failed: User not authenticated', { socketId: socket.id });
+      console.error(`[Socket ${socket.id}] Location update failed: Not authenticated`);
       return;
     }
     const user = connectedUsers[socket.id];
     if (!user) {
-      console.error('Location update failed: User not found', { socketId: socket.id });
+      console.error(`[Socket ${socket.id}] Location update failed: User not found`);
       return;
     }
     const { lat, lng } = coords;
     if (typeof lat !== 'number' || typeof lng !== 'number') {
-      console.error('Invalid coordinates:', { lat, lng });
+      console.error(`[Socket ${socket.id}] Invalid coordinates:`, { lat, lng });
       return;
     }
     connectedUsers[socket.id] = { ...user, lat, lng };
@@ -132,53 +148,103 @@ io.on('connection', (socket) => {
       lat,
       lng,
     });
-    console.log(`Location update from ${user.fullName} (${user.role}): lat=${lat}, lng=${lng}`);
+    console.log(`[Socket ${socket.id}] Location update from ${user.fullName} (${user.role}): lat=${lat}, lng=${lng}`);
   });
 
-  // Ambulance Request: Handle user request for an ambulance
-  socket.on('requestAmbulance', ({ ambulanceId, userId, userName, userAddress }) => {
-    console.log(`Ambulance request received from user ${userName} (${userId}) for ambulance ${ambulanceId}`);
-    
-    // Notify the ambulance owner
+  socket.on('requestAmbulance', ({ ambulanceId, userId, userName, userAddress, userLocation }) => {
+    if (!isAuthenticated) {
+      console.error(`[Socket ${socket.id}] Request ambulance failed: Not authenticated`);
+      socket.emit('requestError', { message: 'Request failed: User not authenticated' });
+      return;
+    }
+    if (!mongoose.Types.ObjectId.isValid(ambulanceId) || !mongoose.Types.ObjectId.isValid(userId)) {
+      console.error(`[Socket ${socket.id}] Request ambulance failed: Invalid ambulanceId or userId`, { ambulanceId, userId });
+      socket.emit('requestError', { message: 'Request failed: Invalid ambulanceId or userId' });
+      return;
+    }
+    if (!userAddress || !userLocation || !userLocation.lat || !userLocation.lng) {
+      console.error(`[Socket ${socket.id}] Request ambulance failed: Missing required fields`, { userName, userAddress, userLocation });
+      socket.emit('requestError', { message: 'Request failed: Missing required fields' });
+      return;
+    }
+    const effectiveUserName = userName || 'Unknown User';
+    console.log(`[Socket ${socket.id}] Ambulance request received from user ${effectiveUserName} (${userId}) for ambulance ${ambulanceId}`);
+
+    let ambulanceFound = false;
     for (const [socketId, user] of Object.entries(connectedUsers)) {
       if (user.userId === ambulanceId && user.role === 'ambulance') {
         io.to(socketId).emit('newAmbulanceRequest', {
           userId,
-          userName,
+          userName: effectiveUserName,
           userAddress,
+          userLocation,
+          requestId: new mongoose.Types.ObjectId().toString(),
         });
-        console.log(`Notified ambulance owner (${ambulanceId}) about the request.`);
+        console.log(`[Server] Notified ambulance owner (${ambulanceId}) on socket ${socketId} about request from ${effectiveUserName} (${userId})`);
+        ambulanceFound = true;
         break;
+      }
+    }
+    if (!ambulanceFound) {
+      console.error(`[Socket ${socket.id}] Ambulance owner (${ambulanceId}) not found or not connected`);
+      for (const [socketId, user] of Object.entries(connectedUsers)) {
+        if (user.userId === userId && user.role === 'user') {
+          io.to(socketId).emit('ambulanceResponse', {
+            status: 'rejected',
+            message: 'Ambulance is not available at the moment.',
+            requestId: new mongoose.Types.ObjectId().toString(),
+          });
+          console.log(`[Server] Notified user (${userId}) on socket ${socketId} that ambulance is unavailable`);
+          break;
+        }
       }
     }
   });
 
-  // Ambulance Response: Handle ambulance owner's response to the request
-  socket.on('respondToRequest', ({ userId, status }) => {
-    console.log(`Ambulance owner responded with status "${status}" for user ${userId}`);
-    
-    // Notify the user about the response
+  socket.on('respondToRequest', ({ userId, status, requestId }) => {
+    if (!isAuthenticated) {
+      console.error(`[Socket ${socket.id}] Respond to request failed: Not authenticated`);
+      return;
+    }
+    if (!mongoose.Types.ObjectId.isValid(userId) || !['accepted', 'rejected'].includes(status) || !requestId) {
+      console.error(`[Socket ${socket.id}] Respond to request failed: Invalid userId, status, or requestId`, { userId, status, requestId });
+      return;
+    }
+    console.log(`[Socket ${socket.id}] Ambulance owner responded with status "${status}" for user ${userId}, requestId: ${requestId}`);
+
+    let userFound = false;
     for (const [socketId, user] of Object.entries(connectedUsers)) {
       if (user.userId === userId && user.role === 'user') {
-        io.to(socketId).emit('ambulanceResponse', { status });
-        console.log(`Notified user (${userId}) about the response.`);
+        io.to(socketId).emit('ambulanceResponse', {
+          status,
+          message: status === 'accepted' ? 'Ambulance is on the way!' : 'Request rejected by ambulance.',
+          requestId,
+        });
+        console.log(`[Server] Notified user (${userId}) on socket ${socketId} about response for requestId: ${requestId}`);
+        userFound = true;
         break;
       }
     }
+    if (!userFound) {
+      console.error(`[Socket ${socket.id}] User (${userId}) not found or not connected for requestId: ${requestId}`);
+    }
   });
 
-  // Location: Handle disconnection
   socket.on('disconnect', () => {
     const user = connectedUsers[socket.id];
     if (user) {
       io.emit('userDisconnected', { userId: user.userId, role: user.role });
       delete connectedUsers[socket.id];
-      console.log(`User disconnected: ${user.fullName} (${user.userId}, ${user.role})`);
+      console.log(`[Socket ${socket.id}] User disconnected: ${user.fullName} (${user.userId}, ${user.role})`);
+      console.log('[Server] Current connectedUsers:', Object.keys(connectedUsers).map(id => ({
+        socketId: id,
+        ...connectedUsers[id]
+      })));
     }
-    console.log(`🛑 User disconnected: ${socket.id}`);
+    console.log(`🛑 Socket disconnected: ${socket.id}`);
   });
 });
-// Start Server
+
 server.listen(PORT, () => {
   console.log(`🚀 Server running at: http://localhost:${PORT}`);
 });

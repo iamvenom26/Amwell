@@ -75,7 +75,7 @@ exports.signInAndGetConnectedUsers = async (req, res) => {
 
     const isMatch = await owner.comparePassword(password); // Assumes bcrypt
     if (!isMatch) {
-      return res.render('signin', { error: 'Invalid password' });
+      return res.render('medical/signin', { error: 'Invalid password' });
     }
 
     const token = createTokenForUser(owner);
@@ -84,7 +84,7 @@ exports.signInAndGetConnectedUsers = async (req, res) => {
     res.redirect('/medical/dashboard');
   } catch (err) {
     console.error('Sign-in error:', err.message);
-    res.render('signin', { error: 'Something went wrong during login' });
+    res.render('medical/signin', { error: 'Something went wrong during login' });
   }
 };
 ///////////////////////////////////////

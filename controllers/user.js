@@ -339,12 +339,15 @@ exports.getAmbulanceById = async (req, res) => {
           return res.status(404).send('Ambulance not found');
       }
       
+      // Ensure userName has a fallback
+      const userName = req.user.fullName && req.user.fullName.trim() ? req.user.fullName : 'Unknown User';
+      
       // Pass both ambulance and user data to template
       res.render('user/ambulance', { 
           ambulance,
           user: req.user,
           userId: req.user._id,
-          userName: req.user.fullName
+          userName
       });
   } catch (error) {
       console.error('Error fetching ambulance:', error);
