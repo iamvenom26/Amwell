@@ -13,15 +13,6 @@ exports.renderSigninPage = (req, res) => {
   res.render('ambulance/signin');
 };
 
-exports.signup = async (req, res) => {
-  try {
-    const newAmbulance = await Ambulance.create(req.body);
-    res.redirect('/ambulance/signin');
-  } catch (err) {
-    console.error('Signup error:', err);
-    res.status(500).send('Error during signup');
-  }
-};
 
 exports.signin = async (req, res) => {
   try {
@@ -66,7 +57,6 @@ exports.getDashboard = async (req, res) => {
     res.render('ambulance/dashboard', {
       ambulance,
       users: users || [],
-      requests: [], // Add your request logic here
     });
   } catch (err) {
     console.error('Dashboard error:', err);
@@ -91,31 +81,7 @@ exports.toggleStatus = async (req, res) => {
   }
 };
 
-exports.handleGetRealtimeChat = async (req, res) => {
-  try {
-    const currentUser = req.user;
-    const receiverId = req.params.userId;
 
-    const messages = await Message.find({
-      $or: [
-        { sender: currentUser._id, receiver: receiverId },
-        { sender: receiverId, receiver: currentUser._id }
-      ]
-    }).sort('timestamp');
-
-    const room = [currentUser._id, receiverId].sort().join('_');
-
-    res.render('realtime-chat', {
-      messages,
-      currentUser,
-      receiverId,
-      room
-    });
-  } catch (err) {
-    console.error('Chat error:', err);
-    res.status(500).send('Error loading chat');
-  }
-};
 
 exports.getLiveLocationData = async (req, res) => {
   try {
@@ -147,28 +113,80 @@ exports.getLiveLocationData = async (req, res) => {
   }
 };
 
+
 exports.handleGetRealtimeChat = async (req, res) => {
   try {
     const currentUser = req.user;
     const receiverId = req.params.userId;
 
+    if (!currentUser || currentUser.role !== 'ambulance') {
+      return res.status(401).send('Unauthorized');
+    }
+
+    const receiver = await User.findById(receiverId).lean();
+    if (!receiver) {
+      return res.status(404).send('User not found');
+    }
+
+    // Generate a room name based on the ambulance and user IDs
+    const room = [currentUser._id, receiver._id].sort().join('_');
+
+    // Fetch messages between the ambulance and the user
     const messages = await Message.find({
       $or: [
-        { sender: currentUser._id, receiver: receiverId },
-        { sender: receiverId, receiver: currentUser._id }
-      ]
+        { sender: currentUser._id, receiver: receiver._id },
+        { sender: receiver._id, receiver: currentUser._id },
+      ],
     }).sort('timestamp');
 
-    const room = [currentUser._id, receiverId].sort().join('_');
-
     res.render('realtime-chat', {
+      receiver,
+      receiverRole: 'User',
       messages,
       currentUser,
+      currentRole: 'Ambulance',
+      room,
       receiverId,
-      room
     });
   } catch (err) {
     console.error('Chat error:', err);
     res.status(500).send('Error loading chat');
   }
 };
+exports.signup = async (req, res) => {
+  try {
+    const { driverName, ambulanceName, vehicleNumber, email, contactNumber, password, licenseNumber, latitude, longitude } = req.body;
+
+    // Validate required fields
+    if (!driverName || !ambulanceName || !vehicleNumber || !email || !contactNumber || !password || !licenseNumber) {
+      return res.status(400).send('All fields are required');
+    }
+
+    // Validate latitude and longitude
+    if (!latitude || !longitude) {
+      return res.status(400).send('Latitude and longitude are required');
+    }
+
+    // Create a new ambulance document
+    const newAmbulance = new Ambulance({
+      driverName,
+      ambulanceName,
+      vehicleNumber,
+      email,
+      contactNumber,
+      password,
+      licenseNumber,
+      location: {
+        type: 'Point',
+        coordinates: [parseFloat(longitude), parseFloat(latitude)], // [longitude, latitude]
+      },
+    });
+
+    await newAmbulance.save();
+    res.status(201).send('Ambulance registered successfully');
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).send('Failed to register ambulance');
+  }
+};
+

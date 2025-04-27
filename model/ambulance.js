@@ -4,69 +4,69 @@ const bcrypt = require('bcrypt');
 const ambulanceSchema = new mongoose.Schema({
   driverName: {
     type: String,
-    required: true
+    required: true,
   },
   ambulanceName: {
     type: String,
-    required: true
+    required: true,
   },
   vehicleNumber: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   contactNumber: {
     type: String,
-    required: true
+    required: true,
   },
   password: {
     type: String,
-    required: true
+    required: true,
   },
   salt: {
-    type: String
+    type: String,
   },
   location: {
     type: {
       type: String,
       enum: ['Point'],
-      default: 'Point'
+      default: 'Point',
     },
     coordinates: {
       type: [Number], // [longitude, latitude]
-      required: true
-    }
+      required: true,
+    },
   },
   isAvailable: {
     type: Boolean,
-    default: true
+    default: true,
   },
   isVerified: {
     type: Boolean,
-    default: false
+    default: false,
   },
   licenseNumber: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   status: {
     type: String,
     enum: ['ONLINE', 'BUSY', 'OFFLINE'],
-    default: 'OFFLINE'
-  }
+    default: 'OFFLINE',
+  },
 }, { timestamps: true });
 
 // Index for geo queries
 ambulanceSchema.index({ location: '2dsphere' });
 
 // Password hash middleware
-ambulanceSchema.pre('save', async function(next) {
+ambulanceSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
@@ -80,7 +80,7 @@ ambulanceSchema.pre('save', async function(next) {
 });
 
 // Method to compare password
-ambulanceSchema.methods.comparePassword = async function(inputPassword) {
+ambulanceSchema.methods.comparePassword = async function (inputPassword) {
   return await bcrypt.compare(inputPassword, this.password);
 };
 

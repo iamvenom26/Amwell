@@ -65,5 +65,23 @@
       <% }); %>
     </ul>
   </div>
+
+  <button onclick="fetchNearestAmbulance()">Find Nearest Ambulance</button>
+
+<script>
+  async function fetchNearestAmbulance() {
+    try {
+      const response = await fetch('/maps/nearest-ambulance');
+      const data = await response.json();
+      if (response.ok) {
+        alert(`Nearest Ambulance Driver: ${data.driverName}`);
+      } else {
+        alert(data.message || 'Failed to fetch nearest ambulance');
+      }
+    } catch (error) {
+      console.error('Error fetching nearest ambulance:', error);
+    }
+  }
+</script>
 </body>
 </html>

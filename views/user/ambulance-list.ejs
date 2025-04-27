@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ambulance Login - Amwell</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amwell - Nearby Ambulances</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     :root {
@@ -22,17 +22,19 @@
     }
 
     body {
+      margin: 0;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
                   url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
       color: white;
+      overflow-x: hidden;
     }
 
-    /* Header */
+    /* Header Styles */
     .header {
-      background: rgba(44, 62, 80, 0.9);
+      background-color: rgba(44, 62, 80, 0.9);
       padding: 1rem 0;
       position: fixed;
       width: 100%;
@@ -56,122 +58,116 @@
       text-decoration: none;
     }
 
-    /* Form Container */
-    .container {
-      max-width: 450px;
-      margin: 5rem auto 2rem;
-      background: rgba(255, 255, 255, 0.95);
-      padding: 2.5rem;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      animation: fadeInUp 0.6s ease;
-      color: var(--text-color);
+    .nav-links {
+      display: flex;
+      gap: 2rem;
     }
 
-    h2 {
-      color: var(--primary-color);
-      text-align: center;
-      margin-bottom: 2rem;
-      font-size: 1.8rem;
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s, background-color 0.3s;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
     }
 
-    .error {
-      background: rgba(231, 76, 60, 0.1);
-      color: var(--accent-color);
+    .nav-links a:hover {
+      color: var(--secondary-color);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Ambulances Section */
+    .ambulances-section {
+      padding: 5rem 2rem;
+      background: rgba(15, 26, 46, 0.9);
+      flex: 1;
+    }
+
+    .ambulances-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
       text-align: center;
-      padding: 0.8rem;
-      margin-bottom: 1.5rem;
-      border-radius: 6px;
+      margin-bottom: 3rem;
+    }
+
+    .section-header h1 {
+      font-size: 2.5rem;
+      color: white;
+      margin-bottom: 1rem;
+    }
+
+    .section-header p {
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .ambulances-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .ambulance-card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+      transition: all 0.3s;
+      color: white;
+    }
+
+    .ambulance-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .ambulance-icon {
+      font-size: 2.5rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .ambulance-card h3 {
+      color: white;
+      margin-bottom: 1rem;
+    }
+
+    .ambulance-card p {
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 0.8rem;
       font-size: 0.95rem;
     }
 
-    .form-group {
-      position: relative;
-      margin-bottom: 1.5rem;
-    }
-
-    input {
-      width: 100%;
-      padding: 0.8rem 0.8rem 0.8rem 2.5rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 1rem;
-      background: #f9f9f9;
-      transition: all 0.3s;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: var(--secondary-color);
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-      background: white;
-    }
-
-    .form-group i {
-      position: absolute;
-      left: 0.8rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--primary-color);
-      font-size: 1rem;
-    }
-
-    label {
-      position: absolute;
-      top: 0.8rem;
-      left: 2.5rem;
-      color: #777;
-      font-size: 1rem;
-      transition: all 0.3s;
-      pointer-events: none;
-    }
-
-    input:focus + label,
-    input:not(:placeholder-shown) + label {
-      top: -0.5rem;
-      left: 1rem;
-      font-size: 0.8rem;
-      color: var(--secondary-color);
-      background: white;
-      padding: 0 0.2rem;
-    }
-
-    button {
-      width: 100%;
-      padding: 1rem;
+    .connect-button {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
       background: var(--secondary-color);
       color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
+      text-decoration: none;
+      border-radius: 5px;
       transition: all 0.3s;
     }
 
-    button:hover {
+    .connect-button:hover {
       background: #2980b9;
       transform: translateY(-2px);
     }
 
-    .forgot-password {
-      display: block;
+    .no-ambulances {
       text-align: center;
-      margin-top: 1rem;
-      color: var(--secondary-color);
-      text-decoration: none;
-      font-size: 0.95rem;
-      transition: color 0.3s;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.2rem;
     }
 
-    .forgot-password:hover {
-      color: #63a0ff;
-    }
-
-    /* Footer */
+    /* Footer Styles */
     .footer {
-      background: rgba(44, 62, 80, 0.9);
+      background-color: rgba(44, 62, 80, 0.9);
       color: white;
-      padding: 3rem 0 1rem;
+      padding: 3rem 0 1rem 0;
       margin-top: auto;
     }
 
@@ -243,27 +239,36 @@
 
     /* Animations */
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .ambulance-card {
+      animation: fadeInUp 0.6s ease;
     }
 
     /* Responsive Design */
     @media (max-width: 768px) {
-      .container {
-        margin: 4rem 1rem 1rem;
-        padding: 2rem;
-        max-width: 400px;
+      .section-header h1 {
+        font-size: 2rem;
       }
 
-      h2 {
-        font-size: 1.6rem;
+      .ambulances-section {
+        padding: 3rem 1rem;
       }
 
-      input, button {
-        font-size: 0.95rem;
+      .nav-links {
+        gap: 1rem;
       }
 
-      .forgot-password {
+      .nav-links a {
+        padding: 0.5rem;
         font-size: 0.9rem;
       }
 
@@ -273,34 +278,12 @@
     }
 
     @media (max-width: 480px) {
-      .container {
-        margin: 3.5rem 0.5rem 0.5rem;
-        padding: 1.5rem;
-        max-width: 90%;
+      .ambulances-grid {
+        grid-template-columns: 1fr;
       }
 
-      h2 {
-        font-size: 1.4rem;
-      }
-
-      input, button {
-        padding: 0.7rem;
-        font-size: 0.9rem;
-      }
-
-      .form-group i {
-        left: 0.7rem;
-        font-size: 0.9rem;
-      }
-
-      label {
-        left: 2.2rem;
-        font-size: 0.95rem;
-      }
-
-      input:focus + label,
-      input:not(:placeholder-shown) + label {
-        font-size: 0.75rem;
+      .ambulances-section {
+        padding: 2rem 1rem;
       }
     }
   </style>
@@ -309,31 +292,44 @@
   <!-- Header -->
   <header class="header">
     <nav class="nav-container">
-      <a href="medical/home" class="site-logo">Amwell</a>
+      <a href="/" class="site-logo">Amwell</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/#services">Services</a>
+        <% if (locals.user) { %>
+          <a href="/user/logout">Logout</a>
+        <% } else { %>
+          <a href="/user/signin">Login</a>
+        <% } %>
+      </div>
     </nav>
   </header>
 
-  <!-- Form Container -->
-  <div class="container">
-    <h2>Ambulance Login</h2>
-    <% if (locals.error) { %>
-      <div class="error"><%= error %></div>
-    <% } %>
-    <form action="/ambulance/signin" method="POST">
-      <div class="form-group">
-        <input name="email" type="email" id="email" placeholder=" " required />
-        <i class="fas fa-envelope"></i>
-        <label for="email">Email</label>
+  <!-- Ambulances Section -->
+  <section class="ambulances-section">
+    <div class="ambulances-container">
+      <div class="section-header">
+        <h1><i class="fas fa-ambulance"></i> Nearby Ambulances</h1>
+        <p>Connect with available ambulances for emergency assistance.</p>
       </div>
-      <div class="form-group">
-        <input name="password" type="password" id="password" placeholder=" " required />
-        <i class="fas fa-lock"></i>
-        <label for="password">Password</label>
-      </div>
-      <button type="submit">Sign In</button>
-      <a href="/ambulance/signup" class="forgot-password">Don't have an account?</a>
-    </form>
-  </div>
+      <% if (ambulances.length === 0) { %>
+        <p class="no-ambulances">No ambulances found.</p>
+      <% } else { %>
+        <div class="ambulances-grid">
+          <% ambulances.forEach(ambulance => { %>
+            <div class="ambulance-card">
+              <i class="fas fa-ambulance ambulance-icon"></i>
+              <h3><%= ambulance.ambulanceName %></h3>
+              <p><strong>Driver:</strong> <%= ambulance.driverName %></p>
+              <p><strong>Vehicle Number:</strong> <%= ambulance.vehicleNumber %></p>
+              <p><strong>Location:</strong> Lat: <%= ambulance.location.coordinates[1].toFixed(6) %>, Long: <%= ambulance.location.coordinates[0].toFixed(6) %></p>
+              <a href="/user/realtime-chat/<%= ambulance._id %>" class="connect-button">Connect</a>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </section>
 
   <!-- Footer -->
   <footer class="footer">

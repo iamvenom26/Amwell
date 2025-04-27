@@ -5,11 +5,11 @@ const User = require('../model/user');
 const { createTokenForUser } = require('../service/authentication');
 const mongoose = require('mongoose');
 exports.renderSignupPage = (req, res) => {
-  res.render('signup'); // Ensure 'signup.ejs' exists
+  res.render('medical/signup'); // Ensure 'signup.ejs' exists
 };
 
 exports.renderSigninPage = (req, res) => {
-  res.render('signin'); // Ensure 'signin.ejs' exists
+  res.render('medical/signin'); // Ensure 'signin.ejs' exists
 };
 
 exports.signup = async (req, res) => {
@@ -70,7 +70,7 @@ exports.signInAndGetConnectedUsers = async (req, res) => {
 
     const owner = await MedicalOwner.findOne({ email });
     if (!owner) {
-      return res.render('signin', { error: 'No user found' });
+      return res.render('medical/signin', { error: 'No user found' });
     }
 
     const isMatch = await owner.comparePassword(password); // Assumes bcrypt
@@ -104,10 +104,10 @@ exports.getDashboard = async (req, res) => {
     const users = await User.find({
       _id: { $in: messages, $ne: currentUser._id }, // Exclude current MedicalOwner
     }).lean();
-    res.render('home', { users, user: currentUser });
+    res.render('medical/home', { users, user: currentUser });
   } catch (error) {
     console.error('Error fetching dashboard:', error.message, { stack: error.stack });
-    res.render('home', { users: [], user: currentUser });
+    res.render('medical/home', { users: [], user: currentUser });
   }
 };
 /////////////////////////////////////////////
@@ -136,7 +136,7 @@ exports.handleGetRealtimeChat = async (req, res) => {
       ]
     }).sort('timestamp');
 
-    res.render('realtime-chat', {
+    res.render('medical/realtime-chat', {
       receiver,
       receiverRole,
       messages,
@@ -147,5 +147,66 @@ exports.handleGetRealtimeChat = async (req, res) => {
     });
   } catch (err) {
     res.status(500).send("Something went wrong");
+  }
+}; 
+
+exports.renderProfilePage = async (req, res) => {
+  try {
+    const currentUser = req.user;
+    if (!currentUser || currentUser.role !== 'medicalOwner') {
+      return res.status(401).render('error', { error: 'Unauthorized access. Please sign in.' });
+    }
+
+    const medicalOwner = await MedicalOwner.findById(currentUser._id).lean();
+    if (!medicalOwner) {
+      return res.status(404).render('error', { error: 'Medical owner not found.' });
+    }
+
+    // Pass success and error variables to the template
+    res.render('medical/profile', { medicalOwner, success: null, error: null });
+  } catch (err) {
+    console.error('Error rendering profile page:', err.message);
+    res.status(500).render('error', { error: 'Something went wrong.' });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const currentUser = req.user;
+    if (!currentUser || currentUser.role !== 'medicalOwner') {
+      return res.status(401).render('error', { error: 'Unauthorized access. Please sign in.' });
+    }
+
+    const { fullName, storeName, email, contactNumber, address } = req.body;
+
+    const updatedData = {
+      fullName,
+      storeName,
+      email,
+      contactNumber,
+      address,
+    };
+
+    const updatedMedicalOwner = await MedicalOwner.findByIdAndUpdate(
+      currentUser._id,
+      updatedData,
+      { new: true, runValidators: true }
+    );
+
+    // Pass success message to the template
+    res.render('medical/profile', { medicalOwner: updatedMedicalOwner, success: 'Profile updated successfully.', error: null });
+  } catch (err) {
+    console.error('Error updating profile:', err.message);
+    res.status(500).render('medical/profile', { medicalOwner: req.user, success: null, error: 'Something went wrong while updating the profile.' });
+  }
+};
+exports.handleLogout = (req, res) => {
+  try {
+    // Clear the authentication cookie
+    res.clearCookie('token');
+    res.redirect('/medical/signin'); // Redirect to the signin page
+  } catch (err) {
+    console.error('Error during logout:', err.message);
+    res.status(500).send('Something went wrong during logout.');
   }
 };

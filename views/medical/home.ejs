@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medical Owner Dashboard - Amwell</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --text-color: #333;
+      --light-bg: #f5f6fa;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
+                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
+      color: white;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(44, 62, 80, 0.9);
+      padding: 1rem 0;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+    }
+
+    .site-logo {
+      color: white;
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 1rem;
+      transition: color 0.3s, background 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--secondary-color);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Welcome Banner */
+    .welcome-banner {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      margin: 5rem auto 2rem;
+      max-width: 1000px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      animation: fadeInUp 0.6s ease;
+    }
+
+    .welcome-banner h1 {
+      font-size: 2rem;
+      color: var(--secondary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-banner p {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Dashboard Container */
+    .dashboard-container {
+      max-width: 1000px;
+      margin: 0 auto 2rem;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      background: rgba(15, 26, 46, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      animation: fadeInUp 0.6s ease;
+    }
+
+    /* Profile Card */
+    .profile-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-details {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-icon {
+      font-size: 2.5rem;
+      color: var(--secondary-color);
+    }
+
+    .profile-info h2 {
+      font-size: 1.6rem;
+      color: var(--secondary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-info p {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .edit-profile-btn {
+      padding: 0.8rem 1.5rem;
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+
+    .edit-profile-btn:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    /* Customers Section */
+    .customers-section {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .customers-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .customer-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      transition: background 0.3s;
+    }
+
+    .customer-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .customer-item a {
+      color: var(--secondary-color);
+      text-decoration: none;
+      font-size: 1rem;
+      display: block;
+    }
+
+    .customer-item a:hover {
+      color: #63a0ff;
+    }
+
+    .no-customers {
+      color: rgba(255, 255, 255, 0.7);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    /* Footer */
+    .footer {
+      background: rgba(44, 62, 80, 0.9);
+      color: white;
+      padding: 3rem 0 1rem;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      padding: 0 2rem;
+    }
+
+    .footer-section {
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+      color: var(--secondary-color);
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+    }
+
+    .footer-section p {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .footer-section ul {
+      list-style: none;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.8rem;
+    }
+
+    .footer-section ul li a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer-section ul li a:hover {
+      color: var(--secondary-color);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .social-links a {
+      color: white;
+      font-size: 1.2rem;
+      transition: color 0.3s;
+    }
+
+    .social-links a:hover {
+      color: var(--secondary-color);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      margin-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .welcome-banner {
+        margin: 4rem 1rem 1rem;
+        padding: 1.5rem;
+      }
+
+      .welcome-banner h1 {
+        font-size: 1.8rem;
+      }
+
+      .welcome-banner p {
+        font-size: 1rem;
+      }
+
+      .dashboard-container {
+        margin: 0 1rem 1rem;
+        padding: 1.5rem;
+      }
+
+      .profile-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .profile-details {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .profile-icon {
+        font-size: 2rem;
+      }
+
+      .profile-info h2 {
+        font-size: 1.4rem;
+      }
+
+      .profile-info p {
+        font-size: 0.9rem;
+      }
+
+      .edit-profile-btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .customers-list {
+        grid-template-columns: 1fr;
+      }
+
+      .section-title {
+        font-size: 1.3rem;
+      }
+
+      .nav-links {
+        gap: 1rem;
+      }
+
+      .nav-links a {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      .site-logo {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .welcome-banner {
+        margin: 3.5rem 0.5rem 0.5rem;
+        padding: 1rem;
+      }
+
+      .dashboard-container {
+        margin: 0 0.5rem 0.5rem;
+        padding: 1rem;
+      }
+
+      .customer-item a {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav-container">
+      <a href="/" class="site-logo">Amwell</a>
+      <div class="nav-links">
+        <a href="/medical/dashboard">Dashboard</a>
+        <a href="/medical/realtime-chat">Customers</a>
+        <a href="/medical/profile">Profile</a>
+        <a href="/medical/logout">Logout</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Welcome Banner -->
+  <div class="welcome-banner">
+    <h1>Welcome, <%= user.fullName %></h1>
+    <p>Manage your medical store and connect with customers on Amwell</p>
+  </div>
+
+  <!-- Dashboard Container -->
+  <div class="dashboard-container">
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <div class="profile-details">
+        <i class="fas fa-store profile-icon"></i>
+        <div class="profile-info">
+          <h2><%= user.shopName || 'Your Medical Store' %></h2>
+          <p><i class="fas fa-user"></i> Owner: <%= user.fullName %></p>
+          <p><i class="fas fa-map-marker-alt"></i> Address: <%= user.address || 'Not specified' %></p>
+          <p><i class="fas fa-phone"></i> Contact: <%= user.contactNumber || 'Not specified' %></p>
+          <% if (user.email) { %>
+            <p><i class="fas fa-envelope"></i> Email: <%= user.email %></p>
+          <% } %>
+        </div>
+      </div>
+      <a href="/medical/profile" class="edit-profile-btn">Edit Profile</a>
+    </div>
+
+    <!-- Connected Customers -->
+    <div class="customers-section">
+      <h2 class="section-title">Connected Customers</h2>
+      <ul class="customers-list">
+        <% users.forEach(user => { %>
+          <% if (user._id) { %>
+            <li class="customer-item">
+              <a href="/medical/realtime-chat/<%= user._id %>"><%= user.FullName || user.fullName || 'Unknown User' %></a>
+            </li>
+          <% } %>
+        <% }); %>
+        <% if (users.length === 0) { %>
+          <p class="no-customers">No customers connected.</p>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>About Amwell</h3>
+        <p>Amwell is your go-to platform for seamless healthcare services, offering AI-powered assistance, medical store locators, and emergency support.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-linkedin"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h3>Contact Us</h3>
+        <p><i class="fas fa-map-marker-alt"></i> 123 Healthcare Avenue, Medical District</p>
+        <p><i class="fas fa-phone"></i> Emergency: +1 (555) 123-4567</p>
+        <p><i class="fas fa-envelope"></i> support@amwell.com</p>
+        <p><i class="fas fa-clock"></i> 24/7 Support</p>
+      </div>
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/#services">Services</a></li>
+          <li><a href="/user/signin">User Login</a></li>
+          <li><a href="/medical/signin">Medical Login</a></li>
+          <li><a href="/ambulance/signin">Ambulance Login</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Amwell. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const user = {
+      id: '<%= user._id %>',
+      role: '<%= user.role %>',
+      fullName: '<%= user.fullName %>'
+    };
+
+    socket.emit('authenticate', {
+      userId: user.id,
+      role: user.role,
+      fullName: user.fullName
+    });
+  </script>
+</body>
+</html>

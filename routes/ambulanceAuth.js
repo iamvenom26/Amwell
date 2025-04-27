@@ -23,5 +23,6 @@ router.get(
   checkForAthenticationCookie('token', ['ambulance']),
   controller.getLiveLocationData
 );
+router.get('/realtime-chat/:userId',checkForAthenticationCookie('token', ['ambulance']),controller.handleGetRealtimeChat);
 
 module.exports = router;

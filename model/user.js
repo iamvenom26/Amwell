@@ -20,12 +20,18 @@ const UserSchema = new Schema(
       required: true,
       match: [/^\d{10}$/, 'Please enter a valid 10-digit mobile number']
     },
-    liveLocation: {
+    location: {
       type: {
-        latitude: { type: Number },
-        longitude: { type: Number }
+        type: String,
+        enum: ['Point'],
+
+        default: 'Point',
       },
-      required: false
+      coordinates: {
+        type: [Number],
+        default: [0, 0], // [longitude, latitude]
+        required: true,
+      },
     },
     chatSearchHistory: [
       {
@@ -52,16 +58,23 @@ const UserSchema = new Schema(
   },
   { timestamps: true }
 );
+UserSchema.index({ location: '2dsphere' });
 
 // Hash password before saving
 UserSchema.pre('save', function (next) {
   if (!this.isModified('password')) return next();
 
+  // Hash the password
   const salt = randomBytes(16).toString('hex');
   this.salt = salt;
   this.password = createHmac('sha256', salt)
     .update(this.password)
     .digest('hex');
+
+  // Validate location coordinates
+  if (!this.location.coordinates || this.location.coordinates.length !== 2) {
+    this.location.coordinates = [0, 0]; // Default to [longitude, latitude]
+  }
 
   next();
 });

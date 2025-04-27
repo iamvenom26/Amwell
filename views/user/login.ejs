@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amwell - User Login & Signup</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+ 
+ <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --text-color: #333;
+      --light-bg: #f5f6fa;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
+                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    /* Header Styles */
+    .header {
+      background-color: rgba(44, 62, 80, 0.9);
+      padding: 1rem 0;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+    }
+
+    .site-logo {
+      color: white;
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s, background-color 0.3s;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+    }
+
+    .nav-links a:hover {
+      color: var(--secondary-color);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Auth Section */
+    .auth-section {
+      padding: 5rem 2rem;
+      background: rgba(15, 26, 46, 0.9);
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .auth-container {
+      position: relative;
+      width: 800px;
+      max-width: 90%;
+      height: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      display: flex;
+      animation: fadeInUp 0.6s ease;
+    }
+
+    .auth-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(rgba(41, 128, 185, 0.8), rgba(44, 62, 80, 0.8)),
+                  url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;
+      opacity: 0.9;
+      transition: all 0.6s ease-in-out;
+      z-index: 1;
+      background-size: 120% auto;
+      animation: slideBackground 15s ease-in-out infinite;
+    }
+
+    .auth-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(rgba(44, 62, 80, 0.8), rgba(41, 128, 185, 0.8)),
+                  url('https://images.unsplash.com/photo-1585435557343-3b092031a831?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;
+      opacity: 0.9;
+      transition: all 0.6s ease-in-out;
+      z-index: 1;
+      background-size: 120% auto;
+      animation: slideBackground 15s ease-in-out infinite reverse;
+    }
+
+    .auth-container.signing-up::before {
+      transform: translateX(-100%);
+    }
+
+    .auth-container.signing-up::after {
+      transform: translateX(100%);
+    }
+
+    .form-container {
+      position: relative;
+      width: 50%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      box-sizing: border-box;
+      transition: all 0.6s ease-in-out;
+      z-index: 2;
+    }
+
+    .login-container {
+      left: 0;
+      background: rgba(22, 44, 86, 0.95);
+    }
+
+    .signup-container {
+      right: 0;
+      background: rgba(26, 31, 64, 0.95);
+      opacity: 0;
+      transform: translateX(100%);
+    }
+
+    .auth-container.signing-up .login-container {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    .auth-container.signing-up .signup-container {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .form-title {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: white;
+      text-align: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-group input {
+      padding: 0.8rem;
+      border: none;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 0 2px var(--secondary-color);
+    }
+
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 1rem;
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .submit-button:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    .switch-text {
+      font-size: 0.95rem;
+      margin-top: 1.5rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .switch-btn {
+      color: var(--secondary-color);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .switch-btn:hover {
+      color: #63a0ff;
+      text-decoration: underline;
+    }
+
+    /* Footer Styles */
+    .footer {
+      background-color: rgba(44, 62, 80, 0.9);
+      color: white;
+      padding: 3rem 0 1rem 0;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      padding: 0 2rem;
+    }
+
+    .footer-section {
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+      color: var(--secondary-color);
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+    }
+
+    .footer-section p {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .footer-section ul {
+      list-style: none;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.8rem;
+    }
+
+    .footer-section ul li a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer-section ul li a:hover {
+      color: var(--secondary-color);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .social-links a {
+      color: white;
+      font-size: 1.2rem;
+      transition: color 0.3s;
+    }
+
+    .social-links a:hover {
+      color: var(--secondary-color);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      margin-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Animations */
+    @keyframes slideBackground {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .auth-section {
+        padding: 3rem 1rem;
+      }
+
+      .auth-container {
+        width: 90%;
+        height: auto;
+        min-height: 500px;
+        flex-direction: column;
+      }
+
+      .form-container {
+        width: 100%;
+        padding: 1.5rem;
+      }
+
+      .login-container, .signup-container {
+        transform: none;
+        opacity: 1;
+        position: static;
+      }
+
+      .auth-container.signing-up .login-container {
+        display: none;
+      }
+
+      .auth-container.signing-up .signup-container {
+        display: flex;
+      }
+
+      .auth-container::before, .auth-container::after {
+        display: none;
+      }
+
+      .form-title {
+        font-size: 1.5rem;
+      }
+
+      .nav-links {
+        gap: 1rem;
+      }
+
+      .nav-links a {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      .site-logo {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .auth-section {
+        padding: 2rem 1rem;
+      }
+
+      .auth-container {
+        max-width: 100%;
+      }
+
+      .form-group input {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+      }
+
+      .submit-button {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav-container">
+      <a href="/" class="site-logo">Amwell</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/#services">Services</a>
+        <% if (locals.user) { %>
+          <a href="/user/logout">Logout</a>
+        <% } else { %>
+          <a href="/user/signin">Login</a>
+        <% } %>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Auth Section -->
+  <section class="auth-section">
+    <div class="auth-container">
+      <!-- Login Form -->
+      <div class="form-container login-container">
+        <form action="/user/signin" method="POST" class="auth-form">
+          <h2 class="form-title"><i class="fas fa-sign-in-alt"></i> Login</h2>
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" name="email" placeholder="Enter email" required />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" name="password" placeholder="Enter password" required />
+          </div>
+          <button type="submit" class="submit-button">Login</button>
+          <p class="switch-text">Don't have an account? <span class="switch-btn" data-switch="signup">Sign Up</span></p>
+        </form>
+      </div>
+
+      <!-- Signup Form -->
+      <div class="form-container signup-container">
+        <form action="/user/signup" method="POST" class="auth-form">
+          <h2 class="form-title"><i class="fas fa-user-plus"></i> Sign Up</h2>
+          <div class="form-group">
+            <label for="signup-fullname">Full Name</label>
+            <input type="text" id="signup-fullname" name="FullName" placeholder="Enter full name" required />
+          </div>
+          <div class="form-group">
+            <label for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" name="email" placeholder="Enter email" required />
+          </div>
+          <div class="form-group">
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" name="password" placeholder="Enter password" required />
+          </div>
+          <div class="form-group">
+            <label for="signup-mobile">Mobile Number</label>
+            <input type="text" id="signup-mobile" name="mobileNumber" placeholder="Enter mobile number" required />
+          </div>
+          <button type="submit" class="submit-button">Sign Up</button>
+          <p class="switch-text">Already have an account? <span class="switch-btn" data-switch="login">Login</span></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>About Amwell</h3>
+        <p>Amwell is your go-to platform for seamless healthcare services, offering AI-powered assistance, medical store locators, and emergency support.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-linkedin"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h3>Contact Us</h3>
+        <p><i class="fas fa-map-marker-alt"></i> 123 Healthcare Avenue, Medical District</p>
+        <p><i class="fas fa-phone"></i> Emergency: +1 (555) 123-4567</p>
+        <p><i class="fas fa-envelope"></i> support@amwell.com</p>
+        <p><i class="fas fa-clock"></i> 24/7 Support</p>
+      </div>
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/#services">Services</a></li>
+          <li><a href="/user/signin">User Login</a></li>
+          <li><a href="/medical/signin">Medical Login</a></li>
+          <li><a href="/ambulance/signin">Ambulance Login</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Amwell. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Toggle Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.querySelector(".auth-container");
+      const switchBtns = document.querySelectorAll(".switch-btn");
+
+      switchBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const switchTo = btn.dataset.switch;
+          if (switchTo === "signup") {
+            container.classList.add("signing-up");
+          } else {
+            container.classList.remove("signing-up");
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

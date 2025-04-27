@@ -1,10 +1,11 @@
 const User = require('../model/user');
 const MedicalOwner = require('../model/medical');
 const Message = require('../model/message');
+const Ambulance = require('../model/ambulance');
 const mongoose = require('mongoose');
 // Render Login Page
 exports.renderSignInPage = (req, res) => {
-  res.render('login', { error: null });
+  res.render('user/login', { error: null });
 };
 
 // Handle Login
@@ -15,7 +16,7 @@ exports.handleSignIn = async (req, res) => {
     res.cookie('token', token).redirect('/');
   } catch (error) {
     console.error('Login error:', error);
-    res.render('login', { error: 'Incorrect Email or Password' });
+    res.render('user/login', { error: 'Incorrect Email or Password' });
   }
 };
 
@@ -29,7 +30,7 @@ exports.handleSignUp = async (req, res) => {
     res.redirect('/user/signin');
   } catch (error) {
     console.error('Signup error:', error);
-    res.render('login', { error: 'User registration failed. Try again!' });
+    res.render('user/login', { error: 'User registration failed. Try again!' });
   }
 };
 
@@ -38,48 +39,8 @@ exports.handleLogout = (req, res) => {
   res.clearCookie('token').redirect('/');
 };
 
-// Upload Profile Photo
-exports.handleProfilePhotoUpload = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
 
-    const profileImagePath = `/uploads/profiles/${req.file.filename}`;
 
-    await User.findByIdAndUpdate(req.user._id, {
-      profileImage: profileImagePath,
-    });
-
-    res.json({
-      success: true,
-      message: 'Profile photo updated successfully',
-      imageUrl: profileImagePath,
-    });
-  } catch (error) {
-    console.error('Profile photo upload error:', error);
-    res.status(500).json({ error: 'Failed to update profile photo' });
-  }
-};
-
-/////////////////////////
-// Function to save the message between user and medical owner
-exports.saveMessage = async (sender, receiver, messageContent, senderModel, receiverModel) => {
-  try {
-    const message = new Message({
-      sender: sender._id,
-      senderModel: senderModel, 
-      receiver: receiver._id,
-      receiverModel: receiverModel, 
-      message: messageContent,
-    });
-
-    await message.save();
-    console.log('Message saved successfully');
-  } catch (err) {
-    console.error('Error saving message:', err);
-  }
-};
 
 // Route for handling chat and saving messages
 exports.handleGetRealtimeChat = async (req, res) => {
@@ -98,7 +59,12 @@ exports.handleGetRealtimeChat = async (req, res) => {
     }
 
     // Determine sender model
-    const currentRole = currentUser.role?.toLowerCase() === 'user' ? 'User' : 'MedicalOwner';
+    const currentRole =
+      currentUser.role?.toLowerCase() === 'user'
+        ? 'User'
+        : currentUser.role?.toLowerCase() === 'ambulance'
+        ? 'Ambulance'
+        : 'MedicalOwner';
 
     // Find receiver
     let receiver = await User.findById(receiverId).lean();
@@ -107,6 +73,11 @@ exports.handleGetRealtimeChat = async (req, res) => {
     if (!receiver) {
       receiver = await MedicalOwner.findById(receiverId).lean();
       if (receiver) receiverRole = 'MedicalOwner';
+    }
+
+    if (!receiver) {
+      receiver = await Ambulance.findById(receiverId).lean();
+      if (receiver) receiverRole = 'Ambulance';
     }
 
     if (!receiver) {
@@ -138,7 +109,7 @@ exports.handleGetRealtimeChat = async (req, res) => {
       );
     }
 
-    res.render('realtime-chat', {
+    res.render('user/realtime-chat', {
       receiver,
       receiverRole,
       messages,
@@ -168,7 +139,7 @@ exports.getAllUsersExceptCurrent = async (req, res) => {
 };
 
 exports.renderChatPage = (req, res) => {
-  res.render('chat', { userMessage: null, botResponse: null });
+  res.render('user/chat', { userMessage: null, botResponse: null });
 };
 
 // Handle Chatbot Interaction with Gemini API
@@ -244,7 +215,7 @@ exports.handleGeminiChat = async (req, res) => {
       ],
     }).sort('timestamp');
 
-    res.render('chat', {
+    res.render('user/chat', {
       userMessage,
       botResponse,
       messages,
@@ -254,7 +225,7 @@ exports.handleGeminiChat = async (req, res) => {
 
   } catch (error) {
     console.error('⚠️ Error in handleGeminiChat:', error.message);
-    res.render('chat', {
+    res.render('user/chat', {
       userMessage,
       botResponse: '<p>⚠️ Something went wrong.</p>',
       messages: [],
@@ -279,7 +250,7 @@ exports.renderChatPage = async (req, res) => {
       ],
     }).sort('timestamp');
 
-    res.render('chat', {
+    res.render('user/chat', {
       userMessage: null,
       botResponse: null,
       messages,
@@ -288,7 +259,7 @@ exports.renderChatPage = async (req, res) => {
     });
   } catch (error) {
     console.error('⚠️ Error rendering chat page:', error.message);
-    res.render('chat', {
+    res.render('user/chat', {
       userMessage: null,
       botResponse: null,
       messages: [],
@@ -298,14 +269,7 @@ exports.renderChatPage = async (req, res) => {
   }
 };
 
-// In user.js
-exports.getLiveMap = (req, res) => {
-  const currentUser = req.user;
-  if (!currentUser) {
-    return res.status(401).send('Unauthorized');
-  }
-  res.render('map', { user: currentUser });
-};
+
 
 
 exports.getNearMedical = async (req, res) => {
@@ -324,7 +288,7 @@ exports.getNearMedical = async (req, res) => {
       }
     });
 
-    res.render('medical-list', { stores });
+    res.render('user/medical-list', { stores });
   } catch (err) {
     console.error('GeoQuery error:', err);
     res.status(500).send('Something went wrong.');
@@ -353,54 +317,16 @@ exports.clearChatbot = async (req, res) => {
   }
 };
 
-const Ambulance = require('../model/ambulance');
 
-exports.connectAmbulance = async (req, res) => {
+exports.getAllAmbulances = async (req, res) => {
   try {
-    const user = req.user;
-    const ambulanceId = req.params.ambulanceId;
+    // Fetch all ambulances
+    const ambulances = await Ambulance.find({}).lean();
 
-    // Find the ambulance
-    const ambulance = await Ambulance.findById(ambulanceId);
-    if (!ambulance) {
-      return res.status(404).send('Ambulance not found');
-    }
-
-    // Create a connection message or initialize a chat room
-    const message = await Message.create({
-      sender: user._id,
-      receiver: ambulance._id,
-      receiverModel: 'Ambulance',
-      content: 'User has connected to the ambulance.',
-    });
-
-    // Redirect to the chat page
-    res.redirect(`/user/chat-ambulance/${ambulanceId}`);
+    // Pass the ambulances variable to the view
+    res.render('user/ambulance-list', { ambulances });
   } catch (err) {
-    console.error('Error connecting to ambulance:', err);
-    res.status(500).send('Server error');
-  }
-};
-exports.chatWithAmbulance = async (req, res) => {
-  try {
-    const user = req.user;
-    const ambulanceId = req.params.ambulanceId;
-
-    // Fetch messages between the user and the ambulance
-    const messages = await Message.find({
-      $or: [
-        { sender: user._id, receiver: ambulanceId },
-        { sender: ambulanceId, receiver: user._id },
-      ],
-    }).sort('createdAt');
-
-    res.render('chat/ambulanceChat', {
-      user,
-      ambulanceId,
-      messages,
-    });
-  } catch (err) {
-    console.error('Error loading chat:', err);
-    res.status(500).send('Server error');
+    console.error('Error fetching ambulances:', err);
+    res.status(500).send('Something went wrong.');
   }
 };

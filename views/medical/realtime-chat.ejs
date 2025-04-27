@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Realtime Chat</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --light-bg: #ecf0f1;
+      --dark-bg: #1e272e;
+      --sent-color: #3498db;
+      --received-color: #ffffff;
+      --text-color: #2c3e50;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #2c3e50, #3498db);
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .back-home {
+      background: var(--secondary-color);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .back-home:hover {
+      background: #2980b9;
+    }
+
+    #chat-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      padding: 1rem 2rem;
+    }
+
+    #chat-container {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .chat-message {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 1em;
+      max-width: 60%;
+      word-wrap: break-word;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .chat-message.you {
+      background-color: var(--sent-color);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-message.other {
+      background-color: var(--received-color);
+      color: var(--text-color);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .meta {
+      font-size: 0.85em;
+      color: #7f8c8d;
+      margin-bottom: 4px;
+    }
+
+    .timestamp {
+      font-size: 0.75em;
+      color: #bdc3c7;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    #input-area {
+      display: flex;
+      gap: 12px;
+      margin-top: 1rem;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 12px;
+      background-color: #f0f3f5;
+      font-size: 1em;
+      outline: none;
+    }
+
+    #send-button {
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0 22px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    #send-button:hover {
+      background: #2980b9;
+    }
+
+    #typing-indicator {
+      font-size: 0.9em;
+      color: #dfe6e9;
+      min-height: 24px;
+      margin-top: 6px;
+      padding-left: 6px;
+    }
+
+    @media (max-width: 768px) {
+      #chat-wrapper {
+        padding: 1rem;
+      }
+      .chat-message {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Chat with <%= receiver.FullName || receiver.fullName %></h1>
+    <a class="back-home" href="/medical/dashboard">Back to Home</a>
+  </header>
+
+  <div id="chat-wrapper">
+    <div id="chat-container">
+      <% messages.forEach(msg => { %>
+        <div class="chat-message <%= msg.sender.toString() === currentUser._id.toString() ? 'you' : 'other' %>">
+          <div class="meta"><%= msg.senderModel %> (<%= msg.sender.toString() === currentUser._id.toString() ? 'You' : 'Other' %>)</div>
+          <div class="text"><%= msg.message %></div>
+          <div class="timestamp"><%= msg.timestamp.toLocaleString() %></div>
+        </div>
+      <% }); %>
+    </div>
+
+    <div id="input-area">
+      <input type="text" id="message-input" placeholder="Type a message..." />
+      <button id="send-button">Send</button>
+    </div>
+
+    <div id="typing-indicator"></div>
+  </div>
+
+  <script>
+    const socket = io();
+    const currentUser = {
+      id: '<%= currentUser._id %>',
+      role: '<%= currentRole.toLowerCase() %>',
+      fullName: '<%= currentUser.fullName || currentUser.FullName %>'
+    };
+    const room = '<%= room %>';
+    const receiverId = '<%= receiverId %>';
+    const senderModel = '<%= currentRole %>';
+    const receiverModel = '<%= receiverRole %>';
+
+    socket.emit('authenticate', {
+      userId: currentUser.id,
+      role: currentUser.role,
+      fullName: currentUser.fullName
+    });
+
+    socket.emit('joinRoom', { room });
+
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    sendButton.addEventListener('click', () => {
+      const message = messageInput.value.trim();
+      if (message) {
+        socket.emit('chatMessage', {
+          room,
+          senderId: currentUser.id,
+          senderModel,
+          receiverId,
+          receiverModel,
+          message
+        });
+        messageInput.value = '';
+      }
+    });
+
+    messageInput.addEventListener('input', () => {
+      socket.emit('typing', { room, sender: currentUser.fullName });
+    });
+
+    socket.on('chatMessage', ({ senderId, senderModel, message, timestamp }) => {
+      const messageElement = document.createElement('div');
+      const isCurrentUser = senderId === currentUser.id;
+      messageElement.className = `chat-message ${isCurrentUser ? 'you' : 'other'}`;
+      messageElement.innerHTML = `
+        <div class="meta">${senderModel} (${isCurrentUser ? 'You' : 'Other'})</div>
+        <div class="text">${message}</div>
+        <div class="timestamp">${new Date(timestamp).toLocaleString()}</div>
+      `;
+      chatContainer.appendChild(messageElement);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+
+    socket.on('typing', ({ sender }) => {
+      typingIndicator.textContent = `${sender} is typing...`;
+      setTimeout(() => { typingIndicator.textContent = ''; }, 2000);
+    });
+  </script>
+</body>
+</html>

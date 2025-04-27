@@ -4,93 +4,49 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ambulance Dashboard</title>
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
-  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #2d3e50;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    a {
+      text-decoration: none;
+      color: #007bff;
+      font-weight: bold;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <h1>Ambulance Dashboard</h1>
-  <p>Status: <strong><%= ambulance.status %></strong></p>
-
-  <h2>User Requests</h2>
+  <h1>Welcome, <%= ambulance.driverName %></h1>
+  <h2>Users Who Contacted You</h2>
   <ul>
     <% users.forEach(user => { %>
       <li>
-        <strong><%= user.fullName %></strong>
-        <button onclick="openChat('<%= user._id %>')">Chat</button>
+        <a href="/ambulance/realtime-chat/<%= user._id %>"><%= user.fullName %></a>
       </li>
-    <% }) %>
+    <% }); %>
+    <% if (users.length === 0) { %>
+      <p>No users have contacted you yet.</p>
+    <% } %>
   </ul>
-
-  <div id="chat-section" style="display: none;">
-    <h2>Chat with User</h2>
-    <div id="chat-box"></div>
-    <input type="text" id="chat-input" placeholder="Type a message">
-    <button onclick="sendMessage()">Send</button>
-
-    <h3>Live Location</h3>
-    <div id="map" style="width: 100%; height: 400px;"></div>
-    <p>Time to destination: <span id="time-to-destination"></span></p>
-  </div>
-
-  <script>
-    let map, userMarker, ambulanceMarker;
-
-    function openChat(userId) {
-      document.getElementById('chat-section').style.display = 'block';
-
-      // Fetch live location data
-      fetch(`/ambulance/live-location/${userId}`)
-        .then(response => response.json())
-        .then(data => {
-          const { ambulanceLocation, userLocation, distanceTime } = data;
-
-          // Initialize map
-          map = new google.maps.Map(document.getElementById('map'), {
-            center: { lat: ambulanceLocation.coordinates[1], lng: ambulanceLocation.coordinates[0] },
-            zoom: 14,
-          });
-
-          // Add markers
-          ambulanceMarker = new google.maps.Marker({
-            position: { lat: ambulanceLocation.coordinates[1], lng: ambulanceLocation.coordinates[0] },
-            map,
-            title: 'Ambulance',
-          });
-
-          userMarker = new google.maps.Marker({
-            position: { lat: userLocation.coordinates[1], lng: userLocation.coordinates[0] },
-            map,
-            title: 'User',
-          });
-
-          // Update time to destination
-          document.getElementById('time-to-destination').innerText = distanceTime.duration.text;
-
-          // Simulate live location updates
-          setInterval(() => {
-            fetch(`/ambulance/live-location/${userId}`)
-              .then(response => response.json())
-              .then(update => {
-                ambulanceMarker.setPosition({
-                  lat: update.ambulanceLocation.coordinates[1],
-                  lng: update.ambulanceLocation.coordinates[0],
-                });
-
-                userMarker.setPosition({
-                  lat: update.userLocation.coordinates[1],
-                  lng: update.userLocation.coordinates[0],
-                });
-
-                document.getElementById('time-to-destination').innerText = update.distanceTime.duration.text;
-              });
-          }, 5000);
-        });
-    }
-
-    function sendMessage() {
-      const message = document.getElementById('chat-input').value;
-      // Implement chat functionality here
-    }
-  </script>
 </body>
 </html>

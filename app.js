@@ -32,13 +32,13 @@ app.set('views', path.resolve('./views'));
 
 // Routes
 app.get('/', (req, res) => {
-  res.render('main', { user: req.user });
+  res.render('user/main', { user: req.user });
 });
 
 app.use('/user', userRoutes);
 app.use('/medical', medicalAuthRoutes);
 app.use('/ambulance',ambulanceRoutes );
-
+app.use('/maps', require('./routes/maps'));
 // Socket.IO Configuration
 const Message = require('./model/message');
 const connectedUsers = {}; // Store connected users for location tracking
@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
       console.error('Invalid userId:', userId);
       return;
     }
-    if (!['user', 'medicalOwner'].includes(role)) {
+    if (!['user', 'medicalOwner','ambulance'].includes(role)) {
       console.error('Invalid role:', role);
       return;
     }
