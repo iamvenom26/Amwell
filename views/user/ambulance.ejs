@@ -106,6 +106,15 @@
             text-align: center;
             margin: 10px 0;
         }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+            color: #666;
+        }
+        .loading-spinner.active {
+            display: block;
+        }
         #distance-info, #eta-info, #accepted-distance-info, #accepted-eta-info {
             margin-top: 10px;
             padding: 10px;
@@ -147,6 +156,7 @@
         <button id="request-ambulance-btn" disabled>Request Ambulance</button>
         <button id="chat-btn">Chat with Driver</button>
         <p id="loading-indicator">Finding your location...</p>
+        <div id="request-loading" class="loading-spinner">Processing request...</div>
 
         <textarea id="address-output" readonly placeholder="Your location details will appear here"></textarea>
         
@@ -161,10 +171,11 @@
     </div>
 
     <script>
-        const socket = io('http://localhost:128', {
+        const socket = io('<%= process.env.SOCKET_IO_URL || "http://localhost:128" %>', {
             reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000
         });
         const ambulanceId = '<%= ambulance._id %>';
         const userId = '<%= userId %>';
@@ -184,7 +195,16 @@
             socket.emit('authenticate', {
                 userId,
                 role: 'user',
-                fullName: userName
+                fullName: userName || 'Unknown User'
+            });
+        });
+
+        socket.on('reconnect', () => {
+            console.log('[Ambulance Request] Socket reconnected:', socket.id);
+            socket.emit('authenticate', {
+                userId,
+                role: 'user',
+                fullName: userName || 'Unknown User'
             });
         });
 
@@ -195,6 +215,9 @@
         socket.on('authError', ({ message }) => {
             console.error('[Ambulance Request] Authentication failed:', message);
             alert('Authentication failed: ' + message);
+            document.getElementById('status-message').textContent = 'Error: Unable to authenticate. Please refresh the page.';
+            document.getElementById('status-message').className = 'status-message status-rejected';
+            speak('Authentication failed: ' + message);
         });
 
         socket.on('requestError', ({ message }) => {
@@ -202,12 +225,27 @@
             const statusMessage = document.getElementById('status-message');
             statusMessage.textContent = message;
             statusMessage.className = 'status-message status-rejected';
+            document.getElementById('request-loading').className = 'loading-spinner';
+            clearTimeout(requestTimeout);
+            showNotification('Request Failed', message);
             speak(message);
         });
 
         socket.on('connect_error', (err) => {
             console.error('[Ambulance Request] Socket connection error:', err.message);
+            document.getElementById('status-message').textContent = 'Error: Cannot connect to server. Please check your connection.';
+            document.getElementById('status-message').className = 'status-message status-rejected';
+            document.getElementById('request-loading').className = 'loading-spinner';
+            speak('Cannot connect to server.');
         });
+
+        socket.on('pong', () => {
+            console.log('[Ambulance Request] Server is alive');
+        });
+
+        setInterval(() => {
+            socket.emit('ping');
+        }, 30000);
 
         if (Notification.permission !== 'granted') {
             Notification.requestPermission();
@@ -243,15 +281,17 @@
                     console.log('[Ambulance Request] User location:', userLocation);
                     
                     try {
-                        const response = await fetch(`/maps/address?latitude=${latitude}&longitude=${longitude}`);
+                        const response = await fetch(`/maps/get-coordinates?latitude=${latitude}&longitude=${longitude}`);
                         const data = await response.json();
-                        addressOutput.value = data.address || `Latitude: ${latitude}\nLongitude: ${longitude}`;
-                        document.getElementById('accepted-address').textContent = addressOutput.value;
+                        if (!data.address) throw new Error('No address returned');
+                        addressOutput.value = data.address;
+                        document.getElementById('accepted-address').textContent = data.address;
                         speak('Location found.');
                     } catch (err) {
                         console.error('[Ambulance Request] Error fetching address:', err);
-                        addressOutput.value = `Latitude: ${latitude}\nLongitude: ${longitude}`;
+                        addressOutput.value = `Coordinates: ${latitude}, ${longitude}`;
                         document.getElementById('accepted-address').textContent = addressOutput.value;
+                        speak('Location found, but address could not be retrieved.');
                     }
 
                     initMap(latitude, longitude);
@@ -262,32 +302,51 @@
                     console.error('[Ambulance Request] Error getting location:', error);
                     loadingIndicator.style.display = 'none';
                     addressOutput.value = 'Error: Could not find your location';
+                    document.getElementById('status-message').textContent = 'Error: Could not find your location';
+                    document.getElementById('status-message').className = 'status-message status-rejected';
                     speak('Error: Could not find your location.');
                 });
             } else {
                 loadingIndicator.style.display = 'none';
                 addressOutput.value = 'Error: Geolocation is not supported by your browser';
+                document.getElementById('status-message').textContent = 'Error: Geolocation is not supported';
+                document.getElementById('status-message').className = 'status-message status-rejected';
                 speak('Error: Geolocation is not supported.');
             }
         });
 
         document.getElementById('request-ambulance-btn').addEventListener('click', () => {
-            if (!userLocation) {
+            if (!userLocation || !userLocation.lat || !userLocation.lng) {
                 alert('Please find your location first');
                 speak('Please find your location first.');
+                return;
+            }
+
+            const userAddress = document.getElementById('address-output').value;
+            if (!userAddress) {
+                alert('Address is required. Please find your location again.');
+                speak('Address is required.');
+                return;
+            }
+
+            if (!ambulanceId || !userId || !userName) {
+                console.error('[Ambulance Request] Missing required template variables:', { ambulanceId, userId, userName });
+                alert('Error: Invalid user or ambulance data. Please refresh the page.');
+                speak('Invalid user or ambulance data.');
                 return;
             }
 
             const statusMessage = document.getElementById('status-message');
             statusMessage.textContent = 'Sending request...';
             statusMessage.className = 'status-message status-pending';
+            document.getElementById('request-loading').className = 'loading-spinner active';
             speak('Sending ambulance request.');
 
             const requestPayload = {
                 ambulanceId,
                 userId,
                 userName,
-                userAddress: document.getElementById('address-output').value,
+                userAddress,
                 userLocation
             };
             console.log('[Ambulance Request] Sending requestAmbulance:', requestPayload);
@@ -297,6 +356,7 @@
             requestTimeout = setTimeout(() => {
                 statusMessage.textContent = 'No response from ambulance. Please try again.';
                 statusMessage.className = 'status-message status-rejected';
+                document.getElementById('request-loading').className = 'loading-spinner';
                 showNotification('Request Timeout', 'No response from ambulance.');
                 speak('No response from ambulance. Please try again.');
             }, 30000);
@@ -309,6 +369,7 @@
         socket.on('ambulanceResponse', ({ status, message, requestId }) => {
             console.log('[Ambulance Request] Received ambulanceResponse:', { status, message, requestId });
             clearTimeout(requestTimeout);
+            document.getElementById('request-loading').className = 'loading-spinner';
             const statusMessage = document.getElementById('status-message');
             const mapContainer = document.getElementById('map-container');
             const chatButton = document.getElementById('chat-btn');
@@ -347,6 +408,7 @@
 
         socket.on('ambulanceArrived', ({ ambulanceId }) => {
             console.log('[Ambulance Request] Received ambulanceArrived:', { ambulanceId });
+            document.getElementById('request-loading').className = 'loading-spinner';
             const statusMessage = document.getElementById('status-message');
             statusMessage.textContent = 'Ambulance has arrived at your location!';
             statusMessage.className = 'status-message status-accepted';
@@ -357,6 +419,7 @@
 
         socket.on('ambulanceDisconnected', ({ ambulanceId }) => {
             console.log('[Ambulance Request] Received ambulanceDisconnected:', { ambulanceId });
+            document.getElementById('request-loading').className = 'loading-spinner';
             const statusMessage = document.getElementById('status-message');
             statusMessage.textContent = 'Ambulance has disconnected. Please try another ambulance.';
             statusMessage.className = 'status-message status-rejected';

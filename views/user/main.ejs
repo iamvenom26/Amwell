@@ -470,7 +470,7 @@
           <h3>Chat with Assistant</h3>
           <p>Connect with our AI-powered assistant for instant medical advice and support.</p>
           <% if (locals.user) { %>
-            <a href="/user/get-chat" class="service-button">Start Chat</a>
+            <a href="/user/chat" class="service-button">Start Chat</a>
           <% } else { %>
             <a href="/user/signin" class="service-button">Login to Chat</a>
           <% } %>
@@ -480,7 +480,7 @@
           <h3>Nearby Medical Stores</h3>
           <p>Locate trusted medical stores near you for quick access to medications.</p>
           <% if (locals.user) { %>
-            <a href="/user//medical" class="service-button">Find Stores</a>
+            <a href="/user/medical" class="service-button">Find Stores</a>
           <% } else { %>
             <a href="/user/signin" class="service-button">Login to Find</a>
           <% } %>
@@ -490,7 +490,7 @@
           <h3>Get Nearby Ambulance</h3>
           <p>Access emergency ambulance services in your area with a single click.</p>
           <% if (locals.user) { %>
-            <a href="/user//ambulances" class="service-button">Get Ambulance</a>
+            <a href="/user/ambulances" class="service-button">Get Ambulance</a>
           <% } else { %>
             <a href="/user/signin" class="service-button">Login to Access</a>
           <% } %>

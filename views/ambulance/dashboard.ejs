@@ -165,10 +165,11 @@
     </div>
 
     <script>
-        const socket = io('http://localhost:128', {
+        const socket = io('<%= process.env.SOCKET_IO_URL || "http://localhost:128" %>', {
             reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000
         });
         const ambulanceId = '<%= ambulance._id %>';
         const driverName = '<%= ambulance.driverName %>';
@@ -186,7 +187,7 @@
                     userAddress: req.userAddress,
                     userLocation: req.userLocation,
                     status: req.status
-                }))) %>
+                }))) %>'
             );
         } catch (err) {
             console.error('[Ambulance Dashboard] Failed to parse initialRequests:', err);
@@ -200,12 +201,25 @@
             socket.emit('authenticate', {
                 userId: ambulanceId,
                 role: 'ambulance',
-                fullName: driverName
+                fullName: driverName || 'Unknown Driver'
+            });
+        });
+
+        socket.on('reconnect', () => {
+            console.log('[Ambulance Dashboard] Socket reconnected:', socket.id);
+            socket.emit('authenticate', {
+                userId: ambulanceId,
+                role: 'ambulance',
+                fullName: driverName || 'Unknown Driver'
             });
         });
 
         socket.on('authSuccess', ({ message }) => {
             console.log('[Ambulance Dashboard] Authentication successful:', message);
+            socket.emit('updateStatus', {
+                ambulanceId,
+                status: 'ONLINE'
+            });
             if (Array.isArray(initialRequests)) {
                 initialRequests.forEach(request => {
                     if (request.userLocation && request.userLocation.lat && request.userLocation.lng) {
@@ -217,13 +231,14 @@
 
         socket.on('authError', ({ message }) => {
             console.error('[Ambulance Dashboard] Authentication failed:', message);
-            alert('Authentication failed: ' + message);
             showStatusMessage('Error: Authentication failed. Please refresh the page.', 'rejected');
+            speak('Authentication failed: ' + message);
         });
 
         socket.on('connect_error', (err) => {
             console.error('[Ambulance Dashboard] Socket connection error:', err.message);
             showStatusMessage('Error: Cannot connect to server. Please check your connection.', 'rejected');
+            speak('Cannot connect to server.');
         });
 
         socket.on('statusUpdated', ({ status }) => {
@@ -238,6 +253,14 @@
             showStatusMessage(message, 'rejected');
             speak(message);
         });
+
+        socket.on('pong', () => {
+            console.log('[Ambulance Dashboard] Server is alive');
+        });
+
+        setInterval(() => {
+            socket.emit('ping');
+        }, 30000);
 
         if (Notification.permission !== 'granted') {
             Notification.requestPermission();
@@ -519,7 +542,6 @@
             speak(`New message from ${sender}: ${message}`);
         });
 
-        // Attach event listeners to existing requests
         document.querySelectorAll('.request').forEach(requestDiv => {
             const requestId = requestDiv.dataset.requestId;
             const userId = requestDiv.dataset.userId;

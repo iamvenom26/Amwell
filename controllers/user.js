@@ -286,9 +286,21 @@ exports.getNearMedical = async (req, res) => {
          // $maxDistance: 50000 // within 50 km
         }
       }
+    }).lean(); // Use lean() for better performance
+
+    // Get the authenticated user from req.user
+    const user = req.user;
+
+    // Pass both stores and user to the template
+    res.render('user/medical-list', { 
+      stores,
+      user,
+      userLocation: {
+        lat: parseFloat(lat),
+        lng: parseFloat(lng)
+      }
     });
 
-    res.render('user/medical-list', { stores });
   } catch (err) {
     console.error('GeoQuery error:', err);
     res.status(500).send('Something went wrong.');
@@ -334,24 +346,29 @@ exports.getAllAmbulances = async (req, res) => {
 exports.getAmbulanceById = async (req, res) => {
   const ambulanceId = req.params.id;
   try {
-      const ambulance = await Ambulance.findById(ambulanceId).lean();
-      if (!ambulance) {
-          return res.status(404).send('Ambulance not found');
-      }
-      
-      // Ensure userName has a fallback
-      const userName = req.user.fullName && req.user.fullName.trim() ? req.user.fullName : 'Unknown User';
-      
-      // Pass both ambulance and user data to template
-      res.render('user/ambulance', { 
-          ambulance,
-          user: req.user,
-          userId: req.user._id,
-          userName
-      });
+    if (!req.user) {
+      console.log(`[getAmbulanceById] No user authenticated, redirecting to signin`);
+      return res.redirect('/user/signin');
+    }
+
+    const ambulance = await Ambulance.findById(ambulanceId).lean();
+    if (!ambulance) {
+      console.log(`[getAmbulanceById] Ambulance not found: ${ambulanceId}`);
+      return res.status(404).send('Ambulance not found');
+    }
+
+    const userName = req.user.fullName && req.user.fullName.trim() ? req.user.fullName : 'Unknown User';
+
+    console.log(`[getAmbulanceById] Rendering ambulance page for user: ${req.user._id}, ambulance: ${ambulanceId}`);
+    res.render('user/ambulance', {
+      ambulance,
+      user: req.user,
+      userId: req.user._id.toString(),
+      userName,
+    });
   } catch (error) {
-      console.error('Error fetching ambulance:', error);
-      return res.status(500).send('Something went wrong.');
+    console.error(`[getAmbulanceById] Error fetching ambulance: ${ambulanceId}`, error);
+    res.status(500).send('Something went wrong.');
   }
 };
 const axios = require('axios');

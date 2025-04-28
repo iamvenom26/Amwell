@@ -1,4 +1,3 @@
-// models/Request.js
 const mongoose = require('mongoose');
 
 const requestSchema = new mongoose.Schema({
@@ -17,5 +16,10 @@ const requestSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
 });
+
+// Add indexes for faster queries
+requestSchema.index({ userId: 1 });
+requestSchema.index({ ambulanceId: 1 });
+requestSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Request', requestSchema);
