@@ -2,12 +2,21 @@ const express = require('express');
 const router = express.Router();
 const ambulanceController = require('../controllers/ambulanceController');
 const { checkForAthenticationCookie } = require('../middleware/authetication');
+const upload = require('../middleware/ambulanceUpload');
 
 // Public routes
 router.get('/signup', ambulanceController.renderSignupPage);
-router.post('/signup', ambulanceController.signup);
+router.post('/signup', 
+    upload.fields([
+      { name: 'profileImage', maxCount: 1 },
+      { name: 'AmbulanceImage', maxCount: 1 }
+    ]),
+    ambulanceController.signup
+  );
+  
 router.get('/signin', ambulanceController.renderSigninPage);
 router.post('/signin', ambulanceController.signin);
+router.get('/logout', ambulanceController.logout);
 
 // Protected routes
 router.get('/dashboard', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.getDashboard);

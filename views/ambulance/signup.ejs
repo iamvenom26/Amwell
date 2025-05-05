@@ -47,13 +47,81 @@
     button:hover {
       background: #45a049;
     }
+    .image-upload {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 2px dashed #ddd;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .image-preview {
+      max-width: 200px;
+      margin: 10px auto;
+      display: none;
+    }
+    .image-preview img {
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+    .loading {
+      display: none;
+      color: #666;
+      text-align: center;
+      margin: 10px 0;
+    }
+    .error {
+      color: #dc3545;
+      font-size: 14px;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      display: none;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Register Your Ambulance</h2>
 
-    <form id="signupForm" action="/ambulance/signup" method="POST">
+    <form id="signupForm" action="/ambulance/signup" method="POST" enctype="multipart/form-data">
+      <!-- Profile Image Upload -->
+      <div class="image-upload">
+        <label for="profileImage">Driver Profile Photo</label>
+        <input 
+          type="file" 
+          id="profileImage" 
+          name="profileImage" 
+          accept="image/*"
+          onchange="previewImage(this, 'profilePreview')"
+        />
+        <div id="profilePreview" class="image-preview">
+          <img src="#" alt="Profile Preview" />
+        </div>
+      </div>
+
+      <!-- Ambulance Image Upload -->
+      <div class="image-upload">
+        <label for="AmbulanceImage">Ambulance Photo</label>
+        <input 
+          type="file" 
+          id="AmbulanceImage" 
+          name="AmbulanceImage" 
+          accept="image/*"
+          onchange="previewImage(this, 'ambulancePreview')"
+        />
+        <div id="ambulancePreview" class="image-preview">
+          <img src="#" alt="Ambulance Preview" />
+        </div>
+      </div>
+
       <input name="driverName" placeholder="Driver Name" required />
       <input name="ambulanceName" placeholder="Ambulance Name/Number" required />
       <input name="vehicleNumber" placeholder="Vehicle Number" required />
@@ -66,25 +134,86 @@
       <input type="hidden" name="latitude" id="latitude" />
       <input type="hidden" name="longitude" id="longitude" />
 
-      <button type="submit">Register</button>
+      <div id="locationStatus" class="loading">Getting your location...</div>
+      <div id="error" class="error"></div>
+      <div id="success" class="success"></div>
+      
+      <button type="submit" id="submitBtn">Register</button>
     </form>
   </div>
 
   <script>
+    function previewImage(input, previewId) {
+      const preview = document.getElementById(previewId);
+      const file = input.files[0];
+      
+      if (file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          preview.style.display = 'block';
+          preview.querySelector('img').src = e.target.result;
+        }
+        
+        reader.readAsDataURL(file);
+      }
+    }
+
     window.onload = () => {
+      const form = document.getElementById('signupForm');
+      const locationStatus = document.getElementById('locationStatus');
+      const errorDiv = document.getElementById('error');
+      const successDiv = document.getElementById('success');
+      const submitBtn = document.getElementById('submitBtn');
+
+      // Get location
       if (navigator.geolocation) {
+        locationStatus.style.display = 'block';
         navigator.geolocation.getCurrentPosition(
           (position) => {
             document.getElementById('latitude').value = position.coords.latitude;
             document.getElementById('longitude').value = position.coords.longitude;
+            locationStatus.style.display = 'none';
           },
           (err) => {
-            alert("Failed to get your location. Please allow location access.");
+            locationStatus.style.display = 'none';
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = "Failed to get your location. Please allow location access.";
           }
         );
-      } else {
-        alert("Geolocation is not supported by your browser.");
       }
+
+      // Handle form submission
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        errorDiv.style.display = 'none';
+
+        try {
+          const formData = new FormData(form);
+          const response = await fetch('/ambulance/signup', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Registration failed');
+          }
+
+          successDiv.style.display = 'block';
+          successDiv.textContent = 'Registration successful! Redirecting...';
+          setTimeout(() => {
+            window.location.href = '/ambulance/login';
+          }, 2000);
+
+        } catch (error) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = error.message;
+          submitBtn.disabled = false;
+        }
+      };
     };
   </script>
 </body>

@@ -328,39 +328,66 @@
         <h1><i class="fas fa-clinic-medical"></i> Register Your Medical Store</h1>
         <p>Join Amwell to connect with customers and provide essential healthcare services.</p>
       </div>
-      <form id="signupForm" action="/medical/signup" method="POST" class="signup-form">
-        <div class="form-group">
-          <label for="fullName">Full Name</label>
-          <input name="fullName" id="fullName" placeholder="Enter full name" required />
-        </div>
-        <div class="form-group">
-          <label for="storeName">Store Name</label>
-          <input name="storeName" id="storeName" placeholder="Enter store name" required />
-        </div>
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input name="email" id="email" type="email" placeholder="Enter email" required />
-        </div>
-        <div class="form-group">
-          <label for="contactNumber">Contact Number</label>
-          <input name="contactNumber" id="contactNumber" placeholder="Enter contact number" required />
-        </div>
-        <div class="form-group">
-          <label for="address">Store Address</label>
-          <input name="address" id="address" placeholder="Enter store address" required />
-        </div>
-        <div class="form-group">
-          <label for="startedOn">Started On</label>
-          <input name="startedOn" id="startedOn" type="date" required />
-        </div>
-        <input type="hidden" name="latitude" id="latitude" />
-        <input type="hidden" name="longitude" id="longitude" />
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input name="password" id="password" type="password" placeholder="Enter password" required />
-        </div>
-        <button type="submit" class="submit-button">Sign Up</button>
-      </form>
+      <form id="signupForm" 
+      action="/medical/signup" 
+      method="POST" 
+      enctype="multipart/form-data" 
+      class="signup-form">
+
+  <div class="form-group">
+    <label for="fullName">Full Name</label>
+    <input name="fullName" id="fullName" placeholder="Enter full name" required />
+  </div>
+
+  <div class="form-group">
+    <label for="storeName">Store Name</label>
+    <input name="storeName" id="storeName" placeholder="Enter store name" required />
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input name="email" id="email" type="email" placeholder="Enter email" required />
+  </div>
+
+  <div class="form-group">
+    <label for="contactNumber">Contact Number</label>
+    <input name="contactNumber" id="contactNumber" placeholder="Enter contact number" required />
+  </div>
+
+  <div class="form-group">
+    <label for="address">Store Address</label>
+    <input name="address" id="address" placeholder="Enter store address" required />
+  </div>
+
+  <div class="form-group">
+    <label for="startedOn">Started On</label>
+    <input name="startedOn" id="startedOn" type="date" required />
+  </div>
+
+  <!-- Hidden geolocation fields -->
+  <input type="hidden" name="latitude" id="latitude" />
+  <input type="hidden" name="longitude" id="longitude" />
+
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input name="password" id="password" type="password" placeholder="Enter password" required />
+  </div>
+
+  <!-- Profile Image Upload -->
+  <div class="form-group">
+    <label for="profileImage">Owner Profile Image</label>
+    <input name="profileImage" id="profileImage" type="file" accept="image/*" />
+  </div>
+
+  <!-- Shop Image Upload -->
+  <div class="form-group">
+    <label for="AmbulanceImage">Shop Image</label>
+    <input name="AmbulanceImage" id="AmbulanceImage" type="file" accept="image/*" />
+  </div>
+
+  <button type="submit" class="submit-button">Sign Up</button>
+</form>
+
     </div>
   </section>
 

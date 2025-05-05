@@ -1,547 +1,898 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ambulance Request</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-ZzlBxFR_tri1izhOpAyBjWiH9BKS9d0&libraries=geometry"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .ambulance-info, .accepted-request-container {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-        .accepted-request-container {
-            display: none;
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-        }
-        .accepted-request-container h3 {
-            color: #155724;
-            margin-top: 0;
-        }
-        #find-location-btn, #request-ambulance-btn, #chat-btn {
-            padding: 10px 20px;
-            margin-right: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        #find-location-btn {
-            background-color: #17a2b8;
-            color: white;
-        }
-        #request-ambulance-btn {
-            background-color: #dc3545;
-            color: white;
-        }
-        #chat-btn {
-            background-color: #28a745;
-            color: white;
-            display: none;
-        }
-        #map-container {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-        }
-        #map {
-            width: 100%;
-            height: 400px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-        #address-output {
-            width: 100%;
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            min-height: 60px;
-        }
-        .status-message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .status-pending {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-        .status-accepted {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .status-rejected {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        #loading-indicator {
-            display: none;
-            color: #666;
-            text-align: center;
-            margin: 10px 0;
-        }
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            margin: 10px 0;
-            color: #666;
-        }
-        .loading-spinner.active {
-            display: block;
-        }
-        #distance-info, #eta-info, #accepted-distance-info, #accepted-eta-info {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            font-weight: bold;
-            text-align: center;
-        }
-        .speech-toggle {
-            margin-bottom: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amwell - Ambulance Request</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Socket.IO -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY %>&libraries=geometry"></script>
+  <!-- Toastify -->
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Manrope', sans-serif;
+      background-color: #f5f7fa;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Background Pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        45deg,
+        rgba(124, 58, 237, 0.05) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(124, 58, 237, 0.05) 50%,
+        rgba(124, 58, 237, 0.05) 75%,
+        transparent 75%
+      );
+      background-size: 40px 40px;
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    .navbar {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 1rem 0;
+      position: fixed;
+      width: 100%;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      transform: translateY(-10px);
+    }
+
+    .navbar-brand {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: transform 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+      transform: scale(1.05);
+    }
+
+    .user-profile-img {
+      width: 2.5rem;
+      height: 2.5rem;
+      object-fit: cover;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .user-profile-img:hover {
+      transform: rotate(360deg);
+    }
+
+    .nav-link {
+      color: #1f2937;
+      font-weight: 600;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-link:hover {
+      color: #7c3aed;
+      transform: translateY(-2px);
+    }
+
+    .emergency-btn {
+      background-color: #dc2626;
+      color: #ffffff;
+      padding: 0.75rem 2rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    }
+
+    .emergency-btn:hover {
+      background-color: #b91c1c;
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+    }
+
+    #main-container {
+      margin-top: 80px;
+      padding: 2rem 1rem;
+      flex: 1;
+      animation: fadeIn 1s ease-in;
+    }
+
+    #ambulance-container {
+      background: #ffffff;
+      border-radius: 1rem;
+      border: 1px solid #e5e7eb;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    #map {
+      width: 100%;
+      height: 400px;
+      border-radius: 1rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .animate-pulse {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .section-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+      animation: slideUp 0.3s ease-in;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #1f2937;
+      margin-right: 0.5rem;
+    }
+
+    .detail-value {
+      color: #6b7280;
+    }
+
+    .image-circle {
+      width: 5rem;
+      height: 5rem;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .checkbox-label {
+      color: #1f2937;
+      font-weight: 500;
+    }
+
+    #address-output {
+      background: #f9fafb;
+      border-radius: 1rem;
+      border: 1px solid #d1d5db;
+      padding: 1rem;
+      font-size: 1rem;
+      color: #1f2937;
+      transition: border 0.3s ease;
+    }
+
+    #address-output:focus {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      color: #ffffff;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .find-location-btn {
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+    }
+
+    .find-location-btn:hover:not(:disabled) {
+      background: linear-gradient(45deg, #6d28d9, #9333ea);
+      transform: scale(1.05);
+    }
+
+    .request-ambulance-btn {
+      background-color: #dc2626;
+    }
+
+    .request-ambulance-btn:hover:not(:disabled) {
+      background-color: #b91c1c;
+      transform: scale(1.05);
+    }
+
+    .cancel-request-btn {
+      background-color: #6b7280;
+    }
+
+    .cancel-request-btn:hover:not(:disabled) {
+      background-color: #4b5563;
+      transform: scale(1.05);
+    }
+
+    .chat-btn {
+      background-color: #16a34a;
+    }
+
+    .chat-btn:hover:not(:disabled) {
+      background-color: #15803d;
+      transform: scale(1.05);
+    }
+
+    footer {
+      background: linear-gradient(180deg, #581c87, #7c3aed);
+      color: #ffffff;
+      padding: 6rem 0 3rem;
+      margin-top: auto;
+    }
+
+    footer a {
+      color: #d1d5db;
+      text-decoration: none;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    footer a:hover {
+      color: #ffffff;
+      transform: translateX(5px);
+    }
+
+    .social-icons a {
+      font-size: 1.5rem;
+      margin: 0 0.75rem;
+      transition: transform 0.3s ease;
+    }
+
+    .social-icons a:hover {
+      transform: scale(1.2);
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      color: #fff;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .back-to-top:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      #main-container {
+        padding: 1rem;
+        margin-top: 60px;
+      }
+
+      #ambulance-container {
+        padding: 1rem;
+      }
+
+      .section-card {
+        padding: 1rem;
+      }
+
+      .action-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .back-to-top {
+        width: 2.5rem;
+        height: 2.5rem;
+        bottom: 1.5rem;
+        right: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-        <h1>Ambulance Request</h1>
-        <div class="speech-toggle">
-            <label><input type="checkbox" id="speech-toggle" checked> Enable Voice Announcements</label>
-        </div>
-        
-        <div class="ambulance-info">
-            <h2>Ambulance Details</h2>
-            <p><strong>Driver Name:</strong> <%= ambulance.driverName %></p>
-            <p><strong>Vehicle Number:</strong> <%= ambulance.vehicleNumber %></p>
-            <p><strong>Contact:</strong> <%= ambulance.contactNumber %></p>
-        </div>
-
-        <div id="accepted-request-container" class="accepted-request-container">
-            <h3>Request Accepted</h3>
-            <p><strong>Driver Name:</strong> <%= ambulance.driverName %></p>
-            <p><strong>Vehicle Number:</strong> <%= ambulance.vehicleNumber %></p>
-            <p><strong>Contact:</strong> <%= ambulance.contactNumber %></p>
-            <p><strong>Your Location:</strong> <span id="accepted-address"></span></p>
-            <div id="accepted-distance-info"></div>
-            <div id="accepted-eta-info"></div>
-        </div>
-
-        <button id="find-location-btn">Find My Location</button>
-        <button id="request-ambulance-btn" disabled>Request Ambulance</button>
-        <button id="chat-btn">Chat with Driver</button>
-        <p id="loading-indicator">Finding your location...</p>
-        <div id="request-loading" class="loading-spinner">Processing request...</div>
-
-        <textarea id="address-output" readonly placeholder="Your location details will appear here"></textarea>
-        
-        <div id="status-message" class="status-message"></div>
-        
-        <div id="map-container">
-            <h3>Live Location Tracking</h3>
-            <div id="map"></div>
-            <div id="distance-info"></div>
-            <div id="eta-info"></div>
-        </div>
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-heartbeat text-red-500 mr-2"></i>Amwell
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item">
+            <a class="nav-link" href="/user/medical">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/#services">Services</a>
+          </li>
+          <% if (locals.user) { %>
+            <li class="nav-item">
+              <a href="/user/ambulances" class="nav-link emergency-btn">
+                <i class="fas fa-ambulance mr-2"></i>Emergency
+              </a>
+            </li>
+            <li class="nav-item dropdown ms-3">
+              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                <img src="<%= user.ProfileImage || 'https://via.placeholder.com/40' %>" alt="User Profile" class="user-profile-img rounded-full mr-2">
+                <span class="font-medium"><%= userName || 'User' %></span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/user/profile">Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/user/logout">Logout</a></li>
+              </ul>
+            </li>
+          <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link bg-gradient-to-r from-purple-600 to-pink-500 text-white px-5 py-2 rounded-full font-semibold hover:from-purple-700 hover:to-pink-600 transition" href="/user/signin">Login</a>
+            </li>
+          <% } %>
+        </ul>
+      </div>
     </div>
+  </nav>
 
-    <script>
-        const socket = io('<%= process.env.SOCKET_IO_URL || "http://localhost:128" %>', {
-            reconnection: true,
-            reconnectionAttempts: 10,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000
-        });
-        const ambulanceId = '<%= ambulance._id %>';
-        const userId = '<%= userId %>';
-        const userName = '<%= userName %>';
-        
-        let map;
-        let userMarker;
-        let ambulanceMarker;
-        let userLocation;
-        let requestTimeout;
-        let isRequestAccepted = false;
+  <!-- Main Content -->
+  <div id="main-container" class="container">
+    <div id="ambulance-container">
+      <h1 class="text-3xl font-bold section-title mb-6">Ambulance Request</h1>
 
-        console.log('[Ambulance Request] Template variables:', { ambulanceId, userId, userName });
+      <div class="mb-6">
+        <label class="flex items-center">
+          <input type="checkbox" id="speech-toggle" checked class="mr-2 h-5 w-5 accent-purple-600">
+          <span class="checkbox-label">Enable Voice Announcements</span>
+        </label>
+      </div>
 
-        socket.on('connect', () => {
-            console.log('[Ambulance Request] Socket connected:', socket.id);
-            socket.emit('authenticate', {
-                userId,
-                role: 'user',
-                fullName: userName || 'Unknown User'
-            });
-        });
+      <div class="section-card">
+        <h2 class="section-title text-xl">Ambulance Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="flex flex-col items-center">
+            <img src="<%= ambulance.vehicleImage || 'https://via.placeholder.com/80' %>" alt="Ambulance Vehicle" class="image-circle mb-2">
+            <p class="text-center text-sm text-gray-600">Ambulance Vehicle</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <img src="<%= ambulance.ownerProfileImage || 'https://via.placeholder.com/80' %>" alt="Owner Profile" class="image-circle mb-2">
+            <p class="text-center text-sm text-gray-600">Owner</p>
+          </div>
+          <div class="space-y-2">
+            <p><span class="detail-label">Driver Name:</span> <span class="detail-value"><%= ambulance.driverName %></span></p>
+            <p><span class="detail-label">Vehicle Number:</span> <span class="detail-value"><%= ambulance.vehicleNumber %></span></p>
+            <p><span class="detail-label">Contact:</span> <span class="detail-value"><%= ambulance.contactNumber %></span></p>
+            <p><span class="detail-label">Owner Name:</span> <span class="detail-value"><%= ambulance.ownerName || 'Unknown' %></span></p>
+          </div>
+        </div>
+      </div>
 
-        socket.on('reconnect', () => {
-            console.log('[Ambulance Request] Socket reconnected:', socket.id);
-            socket.emit('authenticate', {
-                userId,
-                role: 'user',
-                fullName: userName || 'Unknown User'
-            });
-        });
+      <div id="accepted-request-container" class="hidden section-card">
+        <h3 class="section-title text-lg">Request Accepted</h3>
+        <p><span class="detail-label">Driver Name:</span> <span class="detail-value"><%= ambulance.driverName %></span></p>
+        <p><span class="detail-label">Vehicle Number:</span> <span class="detail-value"><%= ambulance.vehicleNumber %></span></p>
+        <p><span class="detail-label">Contact:</span> <span class="detail-value"><%= ambulance.contactNumber %></span></p>
+        <p><span class="detail-label">Your Location:</span> <span id="accepted-address" class="detail-value"></span></p>
+        <div id="accepted-distance-info" class="mt-2 detail-value"></div>
+        <div id="accepted-eta-info" class="mt-2 detail-value"></div>
+      </div>
 
-        socket.on('authSuccess', ({ message }) => {
-            console.log('[Ambulance Request] Authentication successful:', message);
-        });
+      <div class="flex flex-wrap gap-4 mb-6">
+        <button id="find-location-btn" class="action-btn find-location-btn">Find My Location</button>
+        <button id="request-ambulance-btn" disabled class="action-btn request-ambulance-btn">Request Ambulance</button>
+        <button id="cancel-request-btn" class="hidden action-btn cancel-request-btn">Cancel Request</button>
+        <button id="chat-btn" class="hidden action-btn chat-btn">Chat with Driver</button>
+      </div>
 
-        socket.on('authError', ({ message }) => {
-            console.error('[Ambulance Request] Authentication failed:', message);
-            alert('Authentication failed: ' + message);
-            document.getElementById('status-message').textContent = 'Error: Unable to authenticate. Please refresh the page.';
-            document.getElementById('status-message').className = 'status-message status-rejected';
-            speak('Authentication failed: ' + message);
-        });
+      <p id="loading-indicator" class="hidden text-center text-gray-600 font-semibold">Finding your location...</p>
+      <div id="request-loading" class="hidden text-center text-gray-600 font-semibold">Processing request...</div>
 
-        socket.on('requestError', ({ message }) => {
-            console.error('[Ambulance Request] Request failed:', message);
-            const statusMessage = document.getElementById('status-message');
-            statusMessage.textContent = message;
-            statusMessage.className = 'status-message status-rejected';
-            document.getElementById('request-loading').className = 'loading-spinner';
-            clearTimeout(requestTimeout);
-            showNotification('Request Failed', message);
-            speak(message);
-        });
+      <textarea id="address-output" readonly placeholder="Your location details will appear here" class="w-full h-24 mt-4 resize-none"></textarea>
 
-        socket.on('connect_error', (err) => {
-            console.error('[Ambulance Request] Socket connection error:', err.message);
-            document.getElementById('status-message').textContent = 'Error: Cannot connect to server. Please check your connection.';
-            document.getElementById('status-message').className = 'status-message status-rejected';
-            document.getElementById('request-loading').className = 'loading-spinner';
-            speak('Cannot connect to server.');
-        });
+      <div id="status-message" class="hidden mt-4 p-4 text-center rounded-xl"></div>
 
-        socket.on('pong', () => {
-            console.log('[Ambulance Request] Server is alive');
-        });
+      <div id="map-container" class="hidden section-card">
+        <h3 class="section-title text-lg">Live Location Tracking</h3>
+        <div id="map" class="animate-pulse"></div>
+        <div id="distance-info" class="mt-4 text-center text-gray-600 font-semibold"></div>
+        <div id="eta-info" class="mt-2 text-center text-gray-600 font-semibold"></div>
+      </div>
+    </div>
+  </div>
 
-        setInterval(() => {
-            socket.emit('ping');
-        }, 30000);
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <h5 class="text-lg font-extrabold mb-4">About Amwell</h5>
+          <p class="text-purple-100 leading-relaxed">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-lg font-extrabold mb-4">Quick Links</h5>
+          <ul class="list-unstyled">
+            <li class="mb-3"><a href="/about" class="text-purple-100 hover:text-white transition font-medium">About Us</a></li>
+            <li class="mb-3"><a href="/services" class="text-purple-100 hover:text-white transition font-medium">Services</a></li>
+            <li class="mb-3"><a href="/contact" class="text-purple-100 hover:text-white transition font-medium">Contact</a></li>
+            <li class="mb-3"><a href="/user/signin" class="text-purple-100 hover:text-white transition font-medium">User Login</a></li>
+            <li class="mb-3"><a href="/medical/signin" class="text-purple-100 hover:text-white transition font-medium">Medical Login</a></li>
+            <li class="mb-3"><a href="/ambulance/signin" class="text-purple-100 hover:text-white transition font-medium">Ambulance Login</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-lg font-extrabold mb-4">Contact Info</h5>
+          <ul class="list-unstyled text-purple-100">
+            <li class="mb-3"><i class="fas fa-phone mr-2"></i>Emergency: +1 (555) 123-4567</li>
+            <li class="mb-3"><i class="fas fa-envelope mr-2"></i>support@amwell.com</li>
+            <li class="mt-4">
+              <div class="social-icons">
+                <a href="#" class="text-purple-100"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-purple-100"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-purple-100"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-purple-100"><i class="fab fa-linkedin"></i></a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <hr class="my-8 border-purple-200">
+      <div class="text-center text-purple-100">
+        <small>© 2025 Amwell. All rights reserved.</small>
+      </div>
+    </div>
+  </footer>
 
-        if (Notification.permission !== 'granted') {
-            Notification.requestPermission();
+  <!-- Back to Top Button -->
+  <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Ambulance Request JavaScript -->
+  <script>
+    const socket = io('<%= process.env.SOCKET_IO_URL || "http://localhost:128" %>', {
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000
+    });
+    const ambulanceId = '<%= ambulance._id %>';
+    const userId = '<%= userId %>';
+    const userName = '<%= userName %>'.replace(/</g, '<').replace(/>/g, '>');
+
+    let map, userMarker, ambulanceMarker, userLocation, requestTimeout, isRequestAccepted = false, routePolyline;
+
+    console.log('[Ambulance Request] Template variables:', { ambulanceId, userId, userName });
+
+    function showToast(message, type = 'info') {
+      Toastify({
+        text: message,
+        duration: 3000,
+        gravity: 'top',
+        position: 'right',
+        backgroundColor: type === 'error' ? '#dc2626' : type === 'success' ? '#16a34a' : '#7c3aed',
+        className: 'rounded-lg shadow-lg',
+      }).showToast();
+    }
+
+    function speak(text) {
+      if (document.getElementById('speech-toggle').checked) {
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+      }
+    }
+
+    socket.on('connect', () => {
+      console.log('[Ambulance Request] Socket connected:', socket.id);
+      socket.emit('authenticate', { userId, role: 'user', fullName: userName || 'Unknown User' });
+    });
+
+    socket.on('authSuccess', ({ message }) => {
+      console.log('[Ambulance Request] Authentication successful:', message);
+      showToast('Connected to server', 'success');
+      speak('Connected to server');
+    });
+
+    socket.on('authError', ({ message }) => {
+      console.error('[Ambulance Request] Authentication failed:', message);
+      showStatusMessage(`Error: ${message}`, 'rejected');
+      showToast(message, 'error');
+      speak(`Authentication failed: ${message}`);
+    });
+
+    socket.on('requestError', ({ message }) => {
+      console.error('[Ambulance Request] Request failed:', message);
+      showStatusMessage(message, 'rejected');
+      document.getElementById('request-loading').classList.add('hidden');
+      clearTimeout(requestTimeout);
+      showToast(message, 'error');
+      speak(message);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('[Ambulance Request] Socket connection error:', err.message);
+      showStatusMessage('Error: Cannot connect to server.', 'rejected');
+      showToast('Connection error', 'error');
+      speak('Cannot connect to server.');
+    });
+
+    function showStatusMessage(message, type) {
+      const statusMessage = document.getElementById('status-message');
+      statusMessage.textContent = message;
+      statusMessage.className = `mt-4 p-4 text-center rounded-xl ${
+        type === 'accepted' ? 'bg-green-50 text-green-800 border border-green-200' :
+        type === 'pending' ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
+        'bg-red-50 text-red-800 border border-red-200'
+      }`;
+      statusMessage.classList.remove('hidden');
+    }
+
+    document.getElementById('find-location-btn').addEventListener('click', async () => {
+      const loadingIndicator = document.getElementById('loading-indicator');
+      const addressOutput = document.getElementById('address-output');
+      const requestButton = document.getElementById('request-ambulance-btn');
+      loadingIndicator.classList.remove('hidden');
+      addressOutput.value = '';
+      requestButton.disabled = true;
+
+      if (!navigator.geolocation) {
+        showStatusMessage('Error: Geolocation not supported.', 'rejected');
+        showToast('Geolocation not supported', 'error');
+        speak('Geolocation not supported.');
+        loadingIndicator.classList.add('hidden');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        userLocation = { lat: latitude, lng: longitude };
+        console.log('[Ambulance Request] User location:', userLocation);
+
+        try {
+          const response = await fetch(`/maps/get-coordinates?latitude=${latitude}&longitude=${longitude}`);
+          const data = await response.json();
+          if (!data.address) throw new Error('No address returned');
+          addressOutput.value = data.address;
+          document.getElementById('accepted-address').textContent = data.address;
+          showToast('Location found', 'success');
+          speak('Location found.');
+        } catch (err) {
+          console.error('[Ambulance Request] Error fetching address:', err);
+          addressOutput.value = `Coordinates: ${latitude}, ${longitude}`;
+          document.getElementById('accepted-address').textContent = addressOutput.value;
+          showToast('Address retrieval failed', 'error');
+          speak('Location found, but address could not be retrieved.');
         }
 
-        function showNotification(title, body) {
-            if (Notification.permission === 'granted') {
-                new Notification(title, { body });
-            }
+        initMap(latitude, longitude);
+        loadingIndicator.classList.add('hidden');
+        requestButton.disabled = false;
+      }, (error) => {
+        console.error('[Ambulance Request] Error getting location:', error);
+        showStatusMessage('Error: Could not find your location.', 'rejected');
+        showToast('Could not find location', 'error');
+        speak('Could not find your location.');
+        loadingIndicator.classList.add('hidden');
+      });
+    });
+
+    document.getElementById('request-ambulance-btn').addEventListener('click', () => {
+      if (!userLocation || !userLocation.lat || !userLocation.lng) {
+        showToast('Please find your location first', 'error');
+        speak('Please find your location first.');
+        return;
+      }
+
+      const userAddress = document.getElementById('address-output').value;
+      if (!userAddress) {
+        showToast('Address is required', 'error');
+        speak('Address is required.');
+        return;
+      }
+
+      if (!ambulanceId || !userId || !userName) {
+        console.error('[Ambulance Request] Missing required template variables:', { ambulanceId, userId, userName });
+        showToast('Invalid user or ambulance data', 'error');
+        speak('Invalid user or ambulance data.');
+        return;
+      }
+
+      showStatusMessage('Sending request...', 'pending');
+      document.getElementById('request-loading').classList.remove('hidden');
+      document.getElementById('request-ambulance-btn').disabled = true;
+      document.getElementById('cancel-request-btn').classList.remove('hidden');
+      speak('Sending ambulance request.');
+
+      const requestPayload = { ambulanceId, userId, userName, userAddress, userLocation };
+      console.log('[Ambulance Request] Sending requestAmbulance:', requestPayload);
+      socket.emit('requestAmbulance', requestPayload);
+
+      clearTimeout(requestTimeout);
+      requestTimeout = setTimeout(() => {
+        showStatusMessage('No response from ambulance. Please try again.', 'rejected');
+        document.getElementById('request-loading').classList.add('hidden');
+        showToast('Request timeout', 'error');
+        speak('No response from ambulance. Please try again.');
+        resetRequestState();
+      }, 30000);
+    });
+
+    document.getElementById('cancel-request-btn').addEventListener('click', () => {
+      socket.emit('cancelRequest', { ambulanceId, userId });
+      resetRequestState();
+      showStatusMessage('Request cancelled', 'rejected');
+      showToast('Request cancelled', 'success');
+      speak('Request cancelled.');
+    });
+
+    document.getElementById('chat-btn').addEventListener('click', () => {
+      window.location.href = `/user/chat/${ambulanceId}`;
+    });
+
+    socket.on('ambulanceResponse', ({ status, message, requestId }) => {
+      console.log('[Ambulance Request] Received ambulanceResponse:', { status, message, requestId });
+      clearTimeout(requestTimeout);
+      document.getElementById('request-loading').classList.add('hidden');
+      const mapContainer = document.getElementById('map-container');
+      const chatButton = document.getElementById('chat-btn');
+      const acceptedRequestContainer = document.getElementById('accepted-request-container');
+
+      if (status === 'accepted') {
+        isRequestAccepted = true;
+        showStatusMessage('Request Accepted: Ambulance is on the way!', 'accepted');
+        mapContainer.classList.remove('hidden');
+        chatButton.classList.remove('hidden');
+        acceptedRequestContainer.classList.remove('hidden');
+        document.getElementById('cancel-request-btn').classList.add('hidden');
+        showToast('Request accepted', 'success');
+        speak('Request accepted. Ambulance is on the way!');
+
+        if (!map) {
+          navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => {
+            initMap(latitude, longitude);
+            startLocationUpdates();
+          });
+        } else {
+          startLocationUpdates();
         }
+      } else {
+        resetRequestState();
+        showStatusMessage(message || 'Request rejected by ambulance', 'rejected');
+        showToast(message || 'Request rejected', 'error');
+        speak(message || 'Request rejected by ambulance');
+      }
+    });
 
-        function speak(text) {
-            const speechToggle = document.getElementById('speech-toggle');
-            if (speechToggle.checked) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                window.speechSynthesis.speak(utterance);
-            }
+    socket.on('requestCancelled', () => {
+      resetRequestState();
+      showStatusMessage('Request cancelled by ambulance', 'rejected');
+      showToast('Request cancelled by ambulance', 'error');
+      speak('Request cancelled by ambulance.');
+    });
+
+    socket.on('ambulanceArrived', ({ ambulanceId }) => {
+      showStatusMessage('Ambulance has arrived at your location!', 'accepted');
+      document.getElementById('accepted-request-container').classList.remove('hidden');
+      showToast('Ambulance arrived', 'success');
+      speak('Ambulance has arrived at your location!');
+    });
+
+    socket.on('ambulanceDisconnected', ({ ambulanceId }) => {
+      resetRequestState();
+      showStatusMessage('Ambulance has disconnected. Please try another ambulance.', 'rejected');
+      showToast('Ambulance disconnected', 'error');
+      speak('Ambulance has disconnected.');
+    });
+
+    socket.on('newChatMessage', ({ sender, message }) => {
+      showToast(`New Message from ${sender}: ${message}`, 'info');
+      speak(`New message from ${sender}: ${message}`);
+    });
+
+    function resetRequestState() {
+      isRequestAccepted = false;
+      document.getElementById('request-ambulance-btn').disabled = false;
+      document.getElementById('cancel-request-btn').classList.add('hidden');
+      document.getElementById('map-container').classList.add('hidden');
+      document.getElementById('chat-btn').classList.add('hidden');
+      document.getElementById('accepted-request-container').classList.add('hidden');
+      if (routePolyline) routePolyline.setMap(null);
+    }
+
+    function initMap(lat, lng) {
+      const mapContainer = document.getElementById('map-container');
+      mapContainer.classList.toggle('hidden', !isRequestAccepted);
+
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 15,
+        center: { lat, lng },
+      });
+
+      userMarker = new google.maps.Marker({
+        position: { lat, lng },
+        map,
+        icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+        title: 'Your Location',
+      });
+
+      socket.on('userMoved', (data) => {
+        if (data.userId === ambulanceId && data.role === 'ambulance') {
+          updateAmbulanceLocation(data.lat, data.lng);
         }
+      });
+    }
 
-        document.getElementById('find-location-btn').addEventListener('click', async () => {
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const addressOutput = document.getElementById('address-output');
-            const requestButton = document.getElementById('request-ambulance-btn');
-            
-            loadingIndicator.style.display = 'block';
-            addressOutput.value = '';
-            requestButton.disabled = true;
-
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    userLocation = { lat: latitude, lng: longitude };
-                    console.log('[Ambulance Request] User location:', userLocation);
-                    
-                    try {
-                        const response = await fetch(`/maps/get-coordinates?latitude=${latitude}&longitude=${longitude}`);
-                        const data = await response.json();
-                        if (!data.address) throw new Error('No address returned');
-                        addressOutput.value = data.address;
-                        document.getElementById('accepted-address').textContent = data.address;
-                        speak('Location found.');
-                    } catch (err) {
-                        console.error('[Ambulance Request] Error fetching address:', err);
-                        addressOutput.value = `Coordinates: ${latitude}, ${longitude}`;
-                        document.getElementById('accepted-address').textContent = addressOutput.value;
-                        speak('Location found, but address could not be retrieved.');
-                    }
-
-                    initMap(latitude, longitude);
-                    
-                    loadingIndicator.style.display = 'none';
-                    requestButton.disabled = false;
-                }, (error) => {
-                    console.error('[Ambulance Request] Error getting location:', error);
-                    loadingIndicator.style.display = 'none';
-                    addressOutput.value = 'Error: Could not find your location';
-                    document.getElementById('status-message').textContent = 'Error: Could not find your location';
-                    document.getElementById('status-message').className = 'status-message status-rejected';
-                    speak('Error: Could not find your location.');
-                });
-            } else {
-                loadingIndicator.style.display = 'none';
-                addressOutput.value = 'Error: Geolocation is not supported by your browser';
-                document.getElementById('status-message').textContent = 'Error: Geolocation is not supported';
-                document.getElementById('status-message').className = 'status-message status-rejected';
-                speak('Error: Geolocation is not supported.');
-            }
+    function startLocationUpdates() {
+      setInterval(() => {
+        navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => {
+          socket.emit('userLocation', { ambulanceId, lat: latitude, lng: longitude });
+          userMarker.setPosition({ lat: latitude, lng: longitude });
         });
+      }, 10000);
+    }
 
-        document.getElementById('request-ambulance-btn').addEventListener('click', () => {
-            if (!userLocation || !userLocation.lat || !userLocation.lng) {
-                alert('Please find your location first');
-                speak('Please find your location first.');
-                return;
-            }
+    async function updateAmbulanceLocation(lat, lng) {
+      if (!isRequestAccepted) return;
 
-            const userAddress = document.getElementById('address-output').value;
-            if (!userAddress) {
-                alert('Address is required. Please find your location again.');
-                speak('Address is required.');
-                return;
-            }
-
-            if (!ambulanceId || !userId || !userName) {
-                console.error('[Ambulance Request] Missing required template variables:', { ambulanceId, userId, userName });
-                alert('Error: Invalid user or ambulance data. Please refresh the page.');
-                speak('Invalid user or ambulance data.');
-                return;
-            }
-
-            const statusMessage = document.getElementById('status-message');
-            statusMessage.textContent = 'Sending request...';
-            statusMessage.className = 'status-message status-pending';
-            document.getElementById('request-loading').className = 'loading-spinner active';
-            speak('Sending ambulance request.');
-
-            const requestPayload = {
-                ambulanceId,
-                userId,
-                userName,
-                userAddress,
-                userLocation
-            };
-            console.log('[Ambulance Request] Sending requestAmbulance:', requestPayload);
-            socket.emit('requestAmbulance', requestPayload);
-
-            clearTimeout(requestTimeout);
-            requestTimeout = setTimeout(() => {
-                statusMessage.textContent = 'No response from ambulance. Please try again.';
-                statusMessage.className = 'status-message status-rejected';
-                document.getElementById('request-loading').className = 'loading-spinner';
-                showNotification('Request Timeout', 'No response from ambulance.');
-                speak('No response from ambulance. Please try again.');
-            }, 30000);
+      if (!ambulanceMarker) {
+        ambulanceMarker = new google.maps.Marker({
+          position: { lat, lng },
+          map,
+          icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+          title: 'Ambulance Location',
         });
+      } else {
+        ambulanceMarker.setPosition({ lat, lng });
+      }
 
-        document.getElementById('chat-btn').addEventListener('click', () => {
-            window.location.href = `/ambulance/chat/${userId}`;
-        });
+      const bounds = new google.maps.LatLngBounds();
+      bounds.extend(userMarker.getPosition());
+      bounds.extend(ambulanceMarker.getPosition());
+      map.fitBounds(bounds);
 
-        socket.on('ambulanceResponse', ({ status, message, requestId }) => {
-            console.log('[Ambulance Request] Received ambulanceResponse:', { status, message, requestId });
-            clearTimeout(requestTimeout);
-            document.getElementById('request-loading').className = 'loading-spinner';
-            const statusMessage = document.getElementById('status-message');
-            const mapContainer = document.getElementById('map-container');
-            const chatButton = document.getElementById('chat-btn');
-            const acceptedRequestContainer = document.getElementById('accepted-request-container');
-            
-            if (status === 'accepted') {
-                isRequestAccepted = true;
-                statusMessage.textContent = 'Request Accepted: Ambulance is on the way!';
-                statusMessage.className = 'status-message status-accepted';
-                mapContainer.style.display = 'block';
-                chatButton.style.display = 'inline-block';
-                acceptedRequestContainer.style.display = 'block';
-                showNotification('Request Accepted', 'The ambulance is on its way to your location.');
-                speak('Request accepted. Ambulance is on the way!');
-                
-                if (!map) {
-                    navigator.geolocation.getCurrentPosition((position) => {
-                        const { latitude, longitude } = position.coords;
-                        initMap(latitude, longitude);
-                        startLocationUpdates();
-                    });
-                } else {
-                    startLocationUpdates();
-                }
-            } else {
-                isRequestAccepted = false;
-                statusMessage.textContent = message || 'Request rejected by ambulance';
-                statusMessage.className = 'status-message status-rejected';
-                mapContainer.style.display = 'none';
-                chatButton.style.display = 'none';
-                acceptedRequestContainer.style.display = 'none';
-                showNotification('Ambulance Request Update', statusMessage.textContent);
-                speak(statusMessage.textContent);
-            }
-        });
-
-        socket.on('ambulanceArrived', ({ ambulanceId }) => {
-            console.log('[Ambulance Request] Received ambulanceArrived:', { ambulanceId });
-            document.getElementById('request-loading').className = 'loading-spinner';
-            const statusMessage = document.getElementById('status-message');
-            statusMessage.textContent = 'Ambulance has arrived at your location!';
-            statusMessage.className = 'status-message status-accepted';
-            document.getElementById('accepted-request-container').style.display = 'block';
-            showNotification('Ambulance Arrived', 'The ambulance has arrived at your location.');
-            speak('Ambulance has arrived at your location!');
-        });
-
-        socket.on('ambulanceDisconnected', ({ ambulanceId }) => {
-            console.log('[Ambulance Request] Received ambulanceDisconnected:', { ambulanceId });
-            document.getElementById('request-loading').className = 'loading-spinner';
-            const statusMessage = document.getElementById('status-message');
-            statusMessage.textContent = 'Ambulance has disconnected. Please try another ambulance.';
-            statusMessage.className = 'status-message status-rejected';
-            document.getElementById('map-container').style.display = 'none';
-            document.getElementById('chat-btn').style.display = 'none';
-            document.getElementById('accepted-request-container').style.display = 'none';
-            showNotification('Ambulance Disconnected', 'The ambulance is no longer available.');
-            speak('Ambulance has disconnected.');
-            isRequestAccepted = false;
-        });
-
-        socket.on('newChatMessage', ({ sender, message }) => {
-            console.log('[Ambulance Request] Received newChatMessage:', { sender, message });
-            showNotification('New Message', `From ${sender}: ${message}`);
-            speak(`New message from ${sender}: ${message}`);
-        });
-
-        function initMap(lat, lng) {
-            const mapContainer = document.getElementById('map-container');
-            mapContainer.style.display = isRequestAccepted ? 'block' : 'none';
-
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 15,
-                center: { lat, lng }
-            });
-
-            userMarker = new google.maps.Marker({
-                position: { lat, lng },
-                map: map,
-                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-                title: 'Your Location'
-            });
-
-            socket.on('userMoved', (data) => {
-                console.log('[Ambulance Request] Received userMoved:', data);
-                if (data.userId === ambulanceId && data.role === 'ambulance') {
-                    updateAmbulanceLocation(data.lat, data.lng);
-                }
-            });
+      // Draw route polyline
+      const directionsService = new google.maps.DirectionsService();
+      const directionsRequest = {
+        origin: userMarker.getPosition(),
+        destination: ambulanceMarker.getPosition(),
+        travelMode: google.maps.TravelMode.DRIVING,
+      };
+      directionsService.route(directionsRequest, (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          if (routePolyline) routePolyline.setMap(null);
+          routePolyline = new google.maps.Polyline({
+            path: result.routes[0].overview_path,
+            strokeColor: '#7c3aed',
+            strokeOpacity: 0.7,
+            strokeWeight: 5,
+            map,
+          });
         }
+      });
 
-        function startLocationUpdates() {
-            setInterval(() => {
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    socket.emit('userLocation', {
-                        ambulanceId,
-                        lat: latitude,
-                        lng: longitude
-                    });
-                    userMarker.setPosition({ lat: latitude, lng: longitude });
-                });
-            }, 5000);
-        }
+      try {
+        const response = await fetch(`/ambulance/live-location/${userId}`);
+        const data = await response.json();
+        const distanceKm = (data.distanceTime.distance.value / 1000).toFixed(2);
+        const etaMinutes = Math.round(data.distanceTime.duration.value / 60);
 
-        async function updateAmbulanceLocation(lat, lng) {
-            if (!isRequestAccepted) {
-                console.log('[Ambulance Request] Ignoring ambulance location update: Request not accepted');
-                return;
-            }
+        document.getElementById('distance-info').innerHTML = `<span class="detail-label">Distance to Ambulance:</span> <span class="detail-value">${distanceKm} km</span>`;
+        document.getElementById('eta-info').innerHTML = `<span class="detail-label">Estimated Arrival:</span> <span class="detail-value">~${etaMinutes} minutes</span>`;
+        document.getElementById('accepted-distance-info').innerHTML = `<span class="detail-label">Distance to Ambulance:</span> <span class="detail-value">${distanceKm} km</span>`;
+        document.getElementById('accepted-eta-info').innerHTML = `<span class="detail-label">Estimated Arrival:</span> <span class="detail-value">~${etaMinutes} minutes</span>`;
+      } catch (err) {
+        console.error('[Ambulance Request] Error fetching distance/ETA:', err);
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(userMarker.getPosition(), ambulanceMarker.getPosition());
+        const distanceKm = (distance / 1000).toFixed(2);
+        const etaMinutes = Math.round(distance / (50 * 1000 / 60));
+        document.getElementById('distance-info').innerHTML = `<span class="detail-label">Distance to Ambulance:</span> <span class="detail-value">${distanceKm} km</span>`;
+        document.getElementById('eta-info').innerHTML = `<span class="detail-label">Estimated Arrival:</span> <span class="detail-value">~${etaMinutes} minutes</span>`;
+        document.getElementById('accepted-distance-info').innerHTML = `<span class="detail-label">Distance to Ambulance:</span> <span class="detail-value">${distanceKm} km</span>`;
+        document.getElementById('accepted-eta-info').innerHTML = `<span class="detail-label">Estimated Arrival:</span> <span class="detail-value">~${etaMinutes} minutes</span>`;
+      }
+    }
 
-            if (!ambulanceMarker) {
-                ambulanceMarker = new google.maps.Marker({
-                    position: { lat, lng },
-                    map: map,
-                    icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                    title: 'Ambulance Location'
-                });
-            } else {
-                ambulanceMarker.setPosition({ lat, lng });
-            }
+    window.addEventListener('beforeunload', () => {
+      socket.emit('stopTracking');
+      socket.disconnect();
+    });
 
-            const bounds = new google.maps.LatLngBounds();
-            bounds.extend(userMarker.getPosition());
-            bounds.extend(ambulanceMarker.getPosition());
-            map.fitBounds(bounds);
+    // Navbar Scroll Effect
+    window.addEventListener('scroll', () => {
+      const navbar = document.querySelector('.navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
 
-            try {
-                const response = await fetch(`/ambulance/live-location/${userId}`);
-                const data = await response.json();
-                const distanceKm = (data.distanceTime.distance.value / 1000).toFixed(2);
-                const etaMinutes = Math.round(data.distanceTime.duration.value / 60);
+    // Back to Top Button
+    const backToTop = document.querySelector('.back-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        backToTop.classList.add('show');
+      } else {
+        backToTop.classList.remove('show');
+      }
+    });
 
-                document.getElementById('distance-info').innerHTML = `
-                    <strong>Distance to Ambulance:</strong> ${distanceKm} km
-                `;
-                document.getElementById('eta-info').innerHTML = `
-                    <strong>Estimated Arrival:</strong> ~${etaMinutes} minutes
-                `;
-                document.getElementById('accepted-distance-info').innerHTML = `
-                    <strong>Distance to Ambulance:</strong> ${distanceKm} km
-                `;
-                document.getElementById('accepted-eta-info').innerHTML = `
-                    <strong>Estimated Arrival:</strong> ~${etaMinutes} minutes
-                `;
-            } catch (err) {
-                console.error('[Ambulance Request] Error fetching distance/ETA:', err);
-                const distance = google.maps.geometry.spherical.computeDistanceBetween(
-                    userMarker.getPosition(),
-                    ambulanceMarker.getPosition()
-                );
-                const distanceKm = (distance / 1000).toFixed(2);
-                const etaMinutes = Math.round(distance / (50 * 1000 / 60));
-                document.getElementById('distance-info').innerHTML = `
-                    <strong>Distance to Ambulance:</strong> ${distanceKm} km
-                `;
-                document.getElementById('eta-info').innerHTML = `
-                    <strong>Estimated Arrival:</strong> ~${etaMinutes} minutes
-                `;
-                document.getElementById('accepted-distance-info').innerHTML = `
-                    <strong>Distance to Ambulance:</strong> ${distanceKm} km
-                `;
-                document.getElementById('accepted-eta-info').innerHTML = `
-                    <strong>Estimated Arrival:</strong> ~${etaMinutes} minutes
-                `;
-            }
-        }
-
-        window.addEventListener('beforeunload', () => {
-            socket.emit('stopTracking');
-            socket.disconnect();
+    // Smooth Scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
         });
-    </script>
+      });
+    });
+  </script>
 </body>
 </html>

@@ -23,9 +23,22 @@ exports.handleSignIn = async (req, res) => {
 // Handle Sign Up
 exports.handleSignUp = async (req, res) => {
   const { FullName, email, password, mobileNumber, liveLocation } = req.body;
+  
+  const profileImagePath = req.file
+  ? '/uploads/profiles/' + req.file.filename
+  : '/uploads/profiles/default.png'; // or req.file.path if saving full path
   console.log('Received signup data:', req.body);
+  console.log('Uploaded file:', req.file);
+
   try {
-    const user = await User.create({ FullName, email, password, mobileNumber, liveLocation });
+    const user = await User.create({ 
+      FullName, 
+      email, 
+      password, 
+      mobileNumber, 
+      liveLocation,
+      profileImage:profileImagePath,
+    });
     console.log('User created:', user);
     res.redirect('/user/signin');
   } catch (error) {
@@ -66,18 +79,25 @@ exports.handleGetRealtimeChat = async (req, res) => {
         ? 'Ambulance'
         : 'MedicalOwner';
 
-    // Find receiver
+    // Find receiver and extract profileImage
     let receiver = await User.findById(receiverId).lean();
     let receiverRole = 'User';
+    let receiverProfileImage = receiver?.profileImage || null; // Extract profileImage
 
     if (!receiver) {
       receiver = await MedicalOwner.findById(receiverId).lean();
-      if (receiver) receiverRole = 'MedicalOwner';
+      if (receiver) {
+        receiverRole = 'MedicalOwner';
+        receiverProfileImage = receiver?.profileImage || null; // Extract profileImage
+      }
     }
 
     if (!receiver) {
       receiver = await Ambulance.findById(receiverId).lean();
-      if (receiver) receiverRole = 'Ambulance';
+      if (receiver) {
+        receiverRole = 'Ambulance';
+        receiverProfileImage = receiver?.profileImage || null; // Extract profileImage
+      }
     }
 
     if (!receiver) {
@@ -109,6 +129,7 @@ exports.handleGetRealtimeChat = async (req, res) => {
       );
     }
 
+    // Pass receiverProfileImage to the template
     res.render('user/realtime-chat', {
       receiver,
       receiverRole,
@@ -117,13 +138,13 @@ exports.handleGetRealtimeChat = async (req, res) => {
       currentRole,
       room,
       receiverId,
+      receiverProfileImage, // Added
     });
   } catch (err) {
     console.error('❌ Error in handleGetRealtimeChat:', err.message);
     res.status(500).send('Something went wrong');
   }
 };
-
 
 exports.getAllUsersExceptCurrent = async (req, res) => {
   try {

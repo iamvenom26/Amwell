@@ -5,10 +5,17 @@ const controller = require('../controllers/medicalOwnerController');
 const { checkForAthenticationCookie } = require('../middleware/authetication');
 
 // Existing routes
+const medicalUpload = require('../middleware/medicalUpload');
 router.get('/signup', controller.renderSignupPage);
+// In routes file
+router.post('/signup', medicalUpload.fields([
+  { name: 'profileImage', maxCount: 1 },
+  { name: 'AmbulanceImage', maxCount: 1 }
+]), controller.signup);
+
 router.get('/signin', controller.renderSigninPage);
 router.get('/logout', controller.handleLogout);
-router.post('/signup', controller.signup);
+
 router.post('/signin', controller.signInAndGetConnectedUsers);
 router.get('/dashboard', controller.getDashboard);
 router.get('/realtime-chat/:userId', controller.handleGetRealtimeChat);

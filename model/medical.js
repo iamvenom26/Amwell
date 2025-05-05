@@ -21,7 +21,9 @@ const medicalOwnerSchema = new mongoose.Schema({
   },
   profileImage: {
     type: String,
-    default: '/default.png'
+  },
+ AmbulanceImage: {
+    type: String,
   },
   address: {
     type: String,

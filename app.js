@@ -10,6 +10,7 @@ const { Server } = require('socket.io');
 const ambulanceRoutes = require('./routes/ambulanceAuth');
 const Request = require('./model/request');
 const Ambulance = require('./model/ambulance');
+const mapController= require('./routes/maps')
 require('dotenv').config();
 
 const app = express();
@@ -40,7 +41,7 @@ app.get('/', (req, res) => {
 app.use('/user', userRoutes);
 app.use('/medical', medicalAuthRoutes);
 app.use('/ambulance', ambulanceRoutes);
-app.use('/maps', require('./routes/maps'));
+app.use('/maps', mapController);
 
 // Socket.IO Configuration
 const Message = require('./model/message');

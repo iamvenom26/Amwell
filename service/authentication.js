@@ -9,7 +9,7 @@ function createTokenForUser(user) {
     _id: user._id, // Use _id
     email: user.email,
     fullName: user.fullName || user.FullName || user.driverName, // Handle Ambulance
-    profileImage: user.profileImage || '/default.png',
+    profileImage: user.profileImage,
     role: user instanceof User
       ? 'user'
       : user instanceof MedicalOwner

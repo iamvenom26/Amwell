@@ -4,387 +4,495 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Amwell - Nearby Medical Stores</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
-    :root {
-      --primary-color: #2c3e50;
-      --secondary-color: #3498db;
-      --accent-color: #e74c3c;
-      --text-color: #333;
-      --light-bg: #f5f6fa;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
     body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
-                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
-      color: white;
+      font-family: 'Manrope', sans-serif;
+      background-color: #f5f7fa;
       overflow-x: hidden;
     }
 
-    /* Header Styles */
-    .header {
-      background-color: rgba(44, 62, 80, 0.9);
+    .navbar {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       padding: 1rem 0;
       position: fixed;
       width: 100%;
-      top: 0;
       z-index: 1000;
+      transition: transform 0.3s ease;
     }
 
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 2rem;
+    .navbar.scrolled {
+      transform: translateY(-10px);
     }
 
-    .site-logo {
-      color: white;
-      font-size: 1.8rem;
-      font-weight: bold;
-      text-decoration: none;
+    .navbar-brand {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: transform 0.3s ease;
     }
 
-    .nav-links {
-      display: flex;
-      gap: 2rem;
+    .navbar-brand:hover {
+      transform: scale(1.05);
     }
 
-    .nav-links a {
-      color: white;
-      text-decoration: none;
-      transition: color 0.3s, background-color 0.3s;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
+    .user-profile-img {
+      width: 2.5rem;
+      height: 2.5rem;
+      object-fit: cover;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
     }
 
-    .nav-links a:hover {
-      color: var(--secondary-color);
-      background-color: rgba(255, 255, 255, 0.1);
+    .user-profile-img:hover {
+      transform: rotate(360deg);
     }
 
-    /* Stores Section */
-    .stores-section {
-      padding: 5rem 2rem;
-      background: rgba(15, 26, 46, 0.9);
-      flex: 1;
+    .nav-link {
+      color: #1f2937;
+      font-weight: 600;
+      transition: color 0.3s ease, transform 0.3s ease;
     }
 
-    .stores-container {
-      max-width: 1200px;
-      margin: 0 auto;
+    .nav-link:hover {
+      color: #7c3aed;
+      transform: translateY(-2px);
     }
 
-    .section-header {
+    .emergency-btn {
+      background-color: #dc2626;
+      color: #ffffff;
+      padding: 0.75rem 2rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    }
+
+    .emergency-btn:hover {
+      background-color: #b91c1c;
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+    }
+
+    .header-section {
+      margin-top: 100px;
+      padding: 3rem 0;
       text-align: center;
+      background: linear-gradient(45deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1));
+      border-radius: 2rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
       margin-bottom: 3rem;
+      animation: fadeIn 1s ease-in;
     }
 
-    .section-header h1 {
-      font-size: 2.5rem;
-      color: white;
+    .header-section h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #1f2937;
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin-bottom: 1rem;
     }
 
-    .section-header p {
-      color: rgba(255, 255, 255, 0.7);
+    .header-section p {
+      font-size: 1.25rem;
+      color: #4b5563;
       max-width: 600px;
       margin: 0 auto;
     }
 
-    .stores-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
+    .stores-section {
+      padding: 3rem 0;
     }
 
     .store-card {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 2rem;
-      border-radius: 10px;
-      text-align: center;
-      transition: all 0.3s;
-      color: white;
-      text-decoration: none;
+      border: none;
+      border-radius: 2rem;
+      transition: all 0.4s ease;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.75rem;
+      animation: slideUp 0.5s ease-in;
     }
 
     .store-card:hover {
-      transform: translateY(-5px);
-      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-10px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
     }
 
     .store-icon {
-      font-size: 2.5rem;
-      color: var(--secondary-color);
-      margin-bottom: 1rem;
+      font-size: 3rem;
+      color: #7c3aed;
+      margin-bottom: 1.25rem;
+      transition: transform 0.3s ease;
     }
 
-    .store-card h3 {
-      color: white;
+    .store-card:hover .store-icon {
+      transform: scale(1.1);
+    }
+
+    .store-details {
+      color: #1f2937;
+      font-size: 1rem;
+      text-align: left;
+      width: 100%;
+    }
+
+    .store-details div {
       margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .store-details i {
+      color: #7c3aed;
+      margin-right: 0.5rem;
+    }
+
+    .store-details strong {
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .store-details h3 {
       font-size: 1.8rem;
-    }
-
-    .store-card p {
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 0.8rem;
-      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 1rem;
+      text-align: center;
     }
 
     .connect-button {
-      display: inline-block;
-      padding: 0.8rem 1.5rem;
-      background: var(--secondary-color);
-      color: white;
+      padding: 0.75rem 2rem;
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      color: #fff;
+      border: none;
+      border-radius: 9999px;
+      font-size: 1.1rem;
+      font-weight: 600;
       text-decoration: none;
-      border-radius: 5px;
-      transition: all 0.3s;
-      margin-top: 1rem;
+      transition: all 0.3s ease;
+      display: inline-block;
+      margin: 0.75rem 0 1rem;
+      align-self: center;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
     }
 
     .connect-button:hover {
-      background: #2980b9;
-      transform: translateY(-2px);
+      background: linear-gradient(45deg, #6d28d9, #9333ea);
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6);
     }
 
     .no-stores {
       text-align: center;
       padding: 3rem;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 1.2rem;
+      border-radius: 2rem;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      color: #4b5563;
+      animation: fadeIn 1s ease-in;
     }
 
     .no-stores i {
-      font-size: 3rem;
-      color: var(--secondary-color);
-      margin-bottom: 1rem;
+      font-size: 3.5rem;
+      color: #7c3aed;
+      margin-bottom: 1.25rem;
     }
 
-    /* Footer Styles */
-    .footer {
-      background-color: rgba(44, 62, 80, 0.9);
-      color: white;
-      padding: 3rem 0 1rem 0;
-      margin-top: auto;
+    .no-stores h3 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.75rem;
     }
 
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      padding: 0 2rem;
+    footer {
+      background: linear-gradient(180deg, #581c87, #7c3aed);
+      color: #ffffff;
+      padding: 6rem 0 3rem;
+      position: relative;
     }
 
-    .footer-section {
-      margin-bottom: 2rem;
-    }
-
-    .footer-section h3 {
-      color: var(--secondary-color);
-      margin-bottom: 1.5rem;
-      font-size: 1.2rem;
-    }
-
-    .footer-section p {
-      line-height: 1.6;
-      margin-bottom: 1rem;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .footer-section ul {
-      list-style: none;
-    }
-
-    .footer-section ul li {
-      margin-bottom: 0.8rem;
-    }
-
-    .footer-section ul li a {
-      color: rgba(255, 255, 255, 0.7);
+    footer a {
+      color: #d1d5db;
       text-decoration: none;
-      transition: color 0.3s;
+      transition: color 0.3s ease, transform 0.3s ease;
     }
 
-    .footer-section ul li a:hover {
-      color: var(--secondary-color);
+    footer a:hover {
+      color: #ffffff;
+      transform: translateX(5px);
     }
 
-    .social-links {
+    .social-icons a {
+      font-size: 1.5rem;
+      margin: 0 0.75rem;
+      transition: transform 0.3s ease;
+    }
+
+    .social-icons a:hover {
+      transform: scale(1.2);
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      color: #fff;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
       display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
     }
 
-    .social-links a {
-      color: white;
-      font-size: 1.2rem;
-      transition: color 0.3s;
+    .back-to-top.show {
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    .social-links a:hover {
-      color: var(--secondary-color);
+    .back-to-top:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
 
-    .footer-bottom {
-      text-align: center;
-      padding-top: 2rem;
-      margin-top: 2rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 20px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
     }
 
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .store-card {
-      animation: fadeInUp 0.6s ease;
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Responsive Design */
     @media (max-width: 768px) {
-      .section-header h1 {
-        font-size: 2rem;
+      .header-section {
+        padding: 2rem 0;
+        margin-top: 80px;
       }
 
-      .stores-section {
-        padding: 3rem 1rem;
+      .header-section h1 {
+        font-size: 2.25rem;
       }
 
-      .stores-grid {
-        grid-template-columns: 1fr;
+      .header-section p {
+        font-size: 1rem;
       }
 
-      .nav-links {
-        gap: 1rem;
+      .store-details {
+        font-size: 0.95rem;
+        padding: 1.25rem;
       }
 
-      .nav-links a {
-        padding: 0.5rem;
-        font-size: 0.9rem;
+      .connect-button {
+        padding: 0.6rem 1.5rem;
+        font-size: 1rem;
       }
 
-      .site-logo {
-        font-size: 1.5rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .stores-section {
-        padding: 2rem 1rem;
-      }
-
-      .store-card {
-        padding: 1.5rem;
+      .back-to-top {
+        width: 2.5rem;
+        height: 2.5rem;
+        bottom: 1.5rem;
+        right: 1.5rem;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <nav class="nav-container">
-      <a href="/" class="site-logo">Amwell</a>
-      <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/#services">Services</a>
-        <% if (locals.user) { %>
-          <a href="/user/logout">Logout</a>
-        <% } else { %>
-          <a href="/user/signin">Login</a>
-        <% } %>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-heartbeat text-red-500 mr-2"></i>Amwell
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/#services">Services</a>
+          </li>
+          <% if (locals.user) { %>
+            <li class="nav-item">
+              <a href="/user/ambulances" class="nav-link emergency-btn">
+                <i class="fas fa-ambulance mr-2"></i>Emergency
+              </a>
+            </li>
+            <li class="nav-item dropdown ms-3">
+              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                <img src="<%= user.profileImage || 'https://via.placeholder.com/40' %>" alt="User Profile" class="user-profile-img rounded-full mr-2">
+                <span class="font-medium"><%= user.fullName %></span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/user/profile">Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/user/logout">Logout</a></li>
+              </ul>
+            </li>
+          <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link bg-gradient-to-r from-purple-600 to-pink-500 text-white px-5 py-2 rounded-full font-semibold hover:from-purple-700 hover:to-pink-600 transition" href="/user/signin">Login</a>
+            </li>
+          <% } %>
+        </ul>
       </div>
-    </nav>
-  </header>
+    </div>
+  </nav>
+
+  <!-- Header Section -->
+  <section class="header-section">
+    <div class="container">
+      <h1><i class="fas fa-clinic-medical"></i> Nearby Medical Stores</h1>
+      <p>Discover trusted medical stores near you, ready to provide essential supplies and support whenever you need them.</p>
+    </div>
+  </section>
 
   <!-- Stores Section -->
   <section class="stores-section">
-    <div class="stores-container">
-      <div class="section-header">
-        <h1><i class="fas fa-clinic-medical"></i> Nearby Medical Stores</h1>
-        <p>Find and connect with trusted medical stores in your area.</p>
-      </div>
-      <% if (stores.length === 0) { %>
-        <div class="no-stores">
-          <i class="fas fa-store-slash"></i>
-          <h3>No Stores Found</h3>
-          <p>We couldn't find any medical stores in your area.</p>
-        </div>
-      <% } else { %>
-        <div class="stores-grid">
+    <div class="container">
+      <div class="row g-4">
+        <% if (stores.length === 0) { %>
+          <div class="no-stores">
+            <i class="fas fa-store-slash"></i>
+            <h3>No Stores Found</h3>
+            <p>We couldn't find any medical stores in your area at the moment. Please try again later.</p>
+          </div>
+        <% } else { %>
           <% stores.forEach(store => { %>
-            <div class="store-card">
-              <i class="fas fa-store-alt store-icon"></i>
-              <h3><%= store.storeName %></h3>
-              <p><strong>Owner:</strong> <%= store.fullName %></p>
-              <p><strong>Contact:</strong> <%= store.contactNumber %></p>
-              <p><strong>Address:</strong> <%= store.address %></p>
-              <a href="/user/chat/<%= store._id %>" class="connect-button">Connect</a>
+            <div class="col-md-4">
+              <div class="store-card">
+                <i class="fas fa-store-alt store-icon"></i>
+                <div class="store-details">
+                  <h3><%= store.storeName %></h3>
+                  <div><i class="fas fa-user"></i><strong>Owner:</strong> <%= store.fullName %></div>
+                  <div><i class="fas fa-phone"></i><strong>Contact:</strong> <%= store.contactNumber %></div>
+                  <div><i class="fas fa-map-marker-alt"></i><strong>Address:</strong> <%= store.address %></div>
+                </div>
+                <a href="/user/chat/<%= store._id %>" class="connect-button">Connect</a>
+              </div>
             </div>
           <% }); %>
-        </div>
-      <% } %>
+        <% } %>
+      </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>About Amwell</h3>
-        <p>Amwell is your go-to platform for seamless healthcare services, offering AI-powered assistance, medical store locators, and emergency support.</p>
-        <div class="social-links">
-          <a href="#"><i class="fab fa-facebook"></i></a>
-          <a href="#"><i class="fab fa-twitter"></i></a>
-          <a href="#"><i class="fab fa-linkedin"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
+  <footer>
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <h5 class="text-lg font-extrabold mb-4">About Amwell</h5>
+          <p class="text-purple-100 leading-relaxed">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-lg font-extrabold mb-4">Quick Links</h5>
+          <ul class="list-unstyled">
+            <li class="mb-3"><a href="/about" class="text-purple-100 hover:text-white transition font-medium">About Us</a></li>
+            <li class="mb-3"><a href="/services" class="text-purple-100 hover:text-white transition font-medium">Services</a></li>
+            <li class="mb-3"><a href="/contact" class="text-purple-100 hover:text-white transition font-medium">Contact</a></li>
+            <li class="mb-3"><a href="/user/signin" class="text-purple-100 hover:text-white transition font-medium">User Login</a></li>
+            <li class="mb-3"><a href="/medical/signin" class="text-purple-100 hover:text-white transition font-medium">Medical Login</a></li>
+            <li class="mb-3"><a href="/ambulance/signin" class="text-purple-100 hover:text-white transition font-medium">Ambulance Login</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-lg font-extrabold mb-4">Contact Info</h5>
+          <ul class="list-unstyled text-purple-100">
+            <li class="mb-3"><i class="fas fa-phone mr-2"></i>Emergency: +1 (555) 123-4567</li>
+            <li class="mb-3"><i class="fas fa-envelope mr-2"></i>support@amwell.com</li>
+            <li class="mt-4">
+              <div class="social-icons">
+                <a href="#" class="text-purple-100"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-purple-100"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-purple-100"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-purple-100"><i class="fab fa-linkedin"></i></a>
+              </div>
+            </li>
+          </ul>
         </div>
       </div>
-      <div class="footer-section">
-        <h3>Contact Us</h3>
-        <p><i class="fas fa-map-marker-alt"></i> 123 Healthcare Avenue, Medical District</p>
-        <p><i class="fas fa-phone"></i> Emergency: +1 (555) 123-4567</p>
-        <p><i class="fas fa-envelope"></i> support@amwell.com</p>
-        <p><i class="fas fa-clock"></i> 24/7 Support</p>
+      <hr class="my-8 border-purple-200">
+      <div class="text-center text-purple-100">
+        <small>© 2025 Amwell. All rights reserved.</small>
       </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/#services">Services</a></li>
-          <li><a href="/user/signin">User Login</a></li>
-          <li><a href="/medical/signin">Medical Login</a></li>
-          <li><a href="/ambulance/signin">Ambulance Login</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2025 Amwell. All rights reserved.</p>
     </div>
   </footer>
+
+  <!-- Back to Top Button -->
+  <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JavaScript for Interactivity -->
+  <script>
+    // Smooth Scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    // Navbar Scroll Effect
+    window.addEventListener('scroll', () => {
+      const navbar = document.querySelector('.navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    // Back to Top Button
+    const backToTop = document.querySelector('.back-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        backToTop.classList.add('show');
+      } else {
+        backToTop.classList.remove('show');
+      }
+    });
+  </script>
 </body>
 </html>

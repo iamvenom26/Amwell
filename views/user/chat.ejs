@@ -4,61 +4,82 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Amwell Chatbot</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
-    :root {
-      --primary-color: #2c3e50;
-      --secondary-color: #3498db;
-      --accent-color: #e74c3c;
-      --text-color: #333;
-      --light-bg: #f5f6fa;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
     body {
-      margin: 0;
+      font-family: 'Manrope', sans-serif;
+      background: #f5f7fa;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
-                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
-      color: white;
-      overflow-x: hidden;
+      margin: 0;
     }
 
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 30px;
-      background: rgba(15, 26, 46, 0.9);
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 50, 0.1);
-      position: relative;
-    }
+    
+    .navbar {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #7c3aed, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(219, 39, 119, 0.95)),
+                        url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&q=80') center/cover;
+            padding: 10rem 0;
+            color: #ffffff;
+            margin-top: 80px;
+        }
+
+        .emergency-btn {
+            background-color: #dc2626;
+            color: #ffffff;
+            padding: 0.75rem 1.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .emergency-btn:hover {
+            background-color: #b91c1c;
+            transform: scale(1.05);
+        }
+   
 
     h2 {
-      color: white;
-      font-size: 2rem;
-      font-weight: 600;
+      color: #1f2937;
+      font-size: 2.25rem;
+      font-weight: 700;
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 2rem;
     }
 
     .chat-box {
-      background: rgba(36, 58, 94, 0.9);
-      padding: 20px;
+      background: #f8fafc;
+      padding: 25px;
       border-radius: 15px;
-      max-height: 600px;
+      max-height: 500px;
       overflow-y: auto;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      margin-bottom: 20px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     .chat-box::-webkit-scrollbar {
@@ -66,39 +87,38 @@
     }
 
     .chat-box::-webkit-scrollbar-thumb {
-      background: #a3bffa;
+      background: #a855f7;
       border-radius: 4px;
     }
 
     .chat-box::-webkit-scrollbar-track {
-      background: rgba(36, 58, 94, 0.9);
+      background: #f8fafc;
     }
 
     .message {
       display: flex;
       flex-direction: column;
-      max-width: 75%;
-      margin: 10px 15px;
+      max-width: 80%;
+      margin: 12px 15px;
       padding: 15px 20px;
       border-radius: 15px;
       animation: fadeIn 0.3s ease-in;
-      position: relative;
     }
 
     .message.sent {
-      background: rgba(52, 152, 219, 0.9);
-      color: white;
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      color: #ffffff;
       align-self: flex-end;
       border-bottom-right-radius: 5px;
-      box-shadow: 0 4px 12px rgba(76, 120, 255, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .message.received {
-      background: white;
-      color: var(--text-color);
+      background: #ffffff;
+      color: #1f2937;
       align-self: flex-start;
       border-bottom-left-radius: 5px;
-      box-shadow: 0 4px 12px rgba(0, 0, 50, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     .message p, .message ul, .message ol, .message blockquote {
@@ -108,7 +128,7 @@
     }
 
     .message h1, .message h2, .message h3 {
-      color: var(--text-color);
+      color: #1f2937;
       margin: 10px 0 8px;
       font-size: 1.3rem;
       font-weight: 600;
@@ -124,18 +144,18 @@
       border-radius: 5px;
       font-family: 'Courier New', monospace;
       font-size: 0.9rem;
-      color: #1a3c6d;
+      color: #1e40af;
     }
 
     .message pre {
-      background: #1a3c6d;
+      background: #1e40af;
       color: #fff;
       padding: 15px;
       border-radius: 10px;
       overflow-x: auto;
       font-family: 'Courier New', monospace;
       font-size: 0.9rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 50, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .message small {
@@ -147,12 +167,12 @@
 
     .input-group {
       display: flex;
-      gap: 15px;
-      background: rgba(22, 44, 86, 0.95);
+      gap: 10px;
+      background: #f8fafc;
       padding: 15px;
       border-radius: 15px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 12px rgba(0, 0, 50, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     .message-input {
@@ -160,16 +180,16 @@
       padding: 15px;
       border: none;
       border-radius: 10px;
-      background: rgba(36, 58, 94, 0.9);
+      background: #ffffff;
       font-size: 1rem;
-      color: white;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 50, 0.05);
+      color: #1f2937;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
       transition: box-shadow 0.3s ease;
     }
 
     .message-input:focus {
       outline: none;
-      box-shadow: 0 0 0 3px #a3bffa;
+      box-shadow: 0 0 0 3px #a855f7;
     }
 
     .message-input::placeholder {
@@ -178,48 +198,46 @@
 
     .send-btn {
       padding: 15px 30px;
-      background: #4c78ff;
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
       color: #fff;
       border: none;
       border-radius: 10px;
       font-size: 1rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
+      transition: all 0.3s ease;
     }
 
     .send-btn:hover {
-      background: #3b65e6;
+      background: linear-gradient(45deg, #6d28d9, #9333ea);
       transform: translateY(-2px);
     }
 
     .send-btn:active {
-      background: #2a52cc;
       transform: translateY(0);
     }
 
     .clear-btn {
-      display: block;
-      margin: 10px auto;
-      padding: 10px 20px;
-      background: #ff4d4f;
+      padding: 15px 20px;
+      background: #dc2626;
       color: #fff;
       border: none;
       border-radius: 10px;
-      font-size: 0.9rem;
+      font-size: 1rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .clear-btn:hover {
-      background: #e6393b;
+      background: #b91c1c;
+      transform: translateY(-2px);
     }
 
     .loading {
       display: none;
       font-size: 0.9rem;
-      color: #4c78ff;
+      color: #7c3aed;
       text-align: center;
       margin: 10px 0;
       animation: pulse 1.5s infinite;
@@ -227,6 +245,79 @@
 
     .loading.show {
       display: block;
+    }
+
+    /* Modal Background */
+    .modal {
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      color: #1f2937;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+      text-align: left;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+      color: #7c3aed;
+      font-size: 1.6rem;
+    }
+
+    .modal-content .highlight {
+      color: #db2777;
+      font-weight: bold;
+    }
+
+    .modal-content code {
+      background: #f8fafc;
+      padding: 8px 12px;
+      display: block;
+      margin: 10px 0;
+      border-radius: 6px;
+      font-family: Consolas, monospace;
+      color: #1e40af;
+    }
+
+    .modal-content .warning {
+      background: #fef2f2;
+      padding: 10px;
+      border-left: 4px solid #dc2626;
+      margin-top: 15px;
+      border-radius: 4px;
+      color: #dc2626;
+    }
+
+    .modal-content button {
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      color: #ffffff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-top: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .modal-content button:hover {
+      background: linear-gradient(45deg, #6d28d9, #9333ea);
+      transform: translateY(-2px);
     }
 
     @keyframes fadeIn {
@@ -241,7 +332,7 @@
 
     @media (max-width: 600px) {
       .container {
-        margin: 20px;
+        margin: 80px 15px 30px;
         padding: 20px;
       }
 
@@ -260,7 +351,7 @@
         gap: 10px;
       }
 
-      .message-input, .send-btn {
+      .message-input, .send-btn, .clear-btn {
         width: 100%;
         font-size: 0.9rem;
       }
@@ -271,16 +362,68 @@
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <nav class="navbar">
-      <div class="logo">Amwell Chatbot</div>
-      <ul class="nav-links">
-        <li><a href="/">Home</a></li>
-        <li><a href="/user/logout">Logout</a></li>
-      </ul>
-    </nav>
-  </header>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-heartbeat text-red-500 mr-2"></i>Amwell
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <% if (locals.user) { %>
+                    <li class="nav-item">
+                        <a href="/user/ambulances" class="nav-link emergency-btn">
+                            <i class="fas fa-ambulance mr-2"></i>Emergency
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown ms-3">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            <img src="<%= user.profileImage || 'https://via.placeholder.com/40' %>" alt="User Profile" class="user-profile-img rounded-full mr-2">
+                            <span class="font-medium"><%= user.FullName %></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/user/profile">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/user/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                <% } else { %>
+                    <li class="nav-item">
+                        <a class="nav-link bg-gradient-to-r from-purple-600 to-pink-500 text-white px-5 py-2 rounded-full font-semibold hover:from-purple-700 hover:to-pink-600 transition" href="/user/signin">Login</a>
+                    </li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+</nav>
+  <!-- Disclaimer Modal -->
+  <div id="disclaimerModal" class="modal">
+    <div class="modal-content">
+      <h2>⚠️ Important Medical Disclaimer</h2>
+      <p>
+        <strong>Please read before continuing:</strong><br><br>
+        Our assistant generates responses based on the prompt you provide. To ensure safe and accurate guidance, you must
+        <span class="highlight">clearly mention any health conditions</span> such as diabetes, pregnancy, hypertension, allergies, etc.
+      </p>
+      <p>
+        <strong>Example:</strong><br>
+        <code>"I am a diabetes (sugar) patient. Can I take paracetamol for a headache?"</code>
+      </p>
+      <p>
+        Omitting this may result in <strong>inaccurate or unsafe suggestions</strong>.
+      </p>
+      <p class="warning">
+        ⚠️ This tool is not a replacement for professional medical advice. Please consult a licensed doctor when in doubt.
+      </p>
+      <button onclick="closeModal()">OK, I Understand</button>
+    </div>
+  </div>
+
   <div class="container">
     <h2>Chat with <%= bot ? bot.fullName : 'Amwell Bot' %></h2>
     <div class="chat-box" id="chat-box">
@@ -300,7 +443,6 @@
       <% }) %>
       <div class="loading" id="loading">Amwell Bot is typing...</div>
     </div>
-    <button class="clear-btn" onclick="clearChat()">Clear Chat</button>
     <form id="chat-form" action="/user/chat" method="POST">
       <div class="input-group">
         <input
@@ -311,9 +453,13 @@
           required
         />
         <button type="submit" class="send-btn">Send</button>
+        <button type="button" class="clear-btn" onclick="clearChat()">Clear Chat</button>
       </div>
     </form>
   </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // Auto-scroll to latest message
     const chatBox = document.getElementById('chat-box');
@@ -344,6 +490,28 @@
           });
       }
     }
+
+    // Modal handling
+    document.addEventListener("DOMContentLoaded", function () {
+      const modal = document.querySelector(".modal");
+      const closeBtn = document.querySelector(".modal-content button");
+
+      // Check if disclaimer has been acknowledged this session
+      const modalSeen = sessionStorage.getItem("amwell_modal_shown");
+
+      if (!modalSeen) {
+        modal.style.display = "flex";
+      } else {
+        modal.style.display = "none";
+      }
+
+      function closeModal() {
+        modal.style.display = "none";
+        sessionStorage.setItem("amwell_modal_shown", "true");
+      }
+
+      closeBtn.addEventListener("click", closeModal);
+    });
   </script>
 </body>
 </html>

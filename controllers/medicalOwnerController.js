@@ -4,6 +4,8 @@ const Message = require('../model/message');
 const User = require('../model/user');
 const { createTokenForUser } = require('../service/authentication');
 const mongoose = require('mongoose');
+const path = require('path');
+
 exports.renderSignupPage = (req, res) => {
   res.render('medical/signup'); // Ensure 'signup.ejs' exists
 };
@@ -44,6 +46,11 @@ exports.signup = async (req, res) => {
       type: 'Point',
       coordinates: [Number(longitude), Number(latitude)],
     };
+    const profileImage = req.files['profileImage'] ? 
+      '/uploads/profiles/' + path.basename(req.files['profileImage'][0].path) : '';
+    
+    const shopImage = req.files['AmbulanceImage'] ? 
+      '/uploads/shops/' + path.basename(req.files['AmbulanceImage'][0].path) : '';
 
     const newOwner = new MedicalOwner({
       fullName,
@@ -54,6 +61,8 @@ exports.signup = async (req, res) => {
       startedOn,
       password,
       location,
+      profileImage,
+      AmbulanceImage: shopImage
     });
 
     await newOwner.save();

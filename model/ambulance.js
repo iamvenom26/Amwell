@@ -55,6 +55,12 @@ const ambulanceSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+   profileImage: {
+    type: String,
+  },
+ AmbulanceImage: {
+    type: String,
+  },
   status: {
     type: String,
     enum: ['ONLINE', 'BUSY', 'OFFLINE'],

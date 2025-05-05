@@ -48,7 +48,6 @@ const UserSchema = new Schema(
     },
     profileImage: {
       type: String,
-      default: '/uploads/profiles/default.png'
     },
     role: {
       type: String,

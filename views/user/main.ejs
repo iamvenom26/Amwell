@@ -1,617 +1,334 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Amwell - Healthcare Assistant</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <style>
-    :root {
-      --primary-color: #2c3e50;
-      --secondary-color: #3498db;
-      --accent-color: #e74c3c;
-      --text-color: #333;
-      --light-bg: #f5f6fa;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amwell - Emergency Medical Services</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #f5f7fa;
+        }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+        .navbar {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+        }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
-                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
-      color: white;
-      overflow-x: hidden;
-    }
+        .navbar-brand {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #7c3aed, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    /* Header Styles */
-    .header {
-      background-color: rgba(44, 62, 80, 0.9);
-      padding: 1rem 0;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      z-index: 1000;
-    }
+        .hero-section {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(219, 39, 119, 0.95)),
+                        url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&q=80') center/cover;
+            padding: 10rem 0;
+            color: #ffffff;
+            margin-top: 80px;
+        }
 
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 2rem;
-    }
+        .emergency-btn {
+            background-color: #dc2626;
+            color: #ffffff;
+            padding: 0.75rem 1.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
 
-    .site-logo {
-      color: white;
-      font-size: 1.8rem;
-      font-weight: bold;
-      text-decoration: none;
-    }
+        .emergency-btn:hover {
+            background-color: #b91c1c;
+            transform: scale(1.05);
+        }
 
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-    }
+        .service-card {
+            border: none;
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+            background: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
 
-    .nav-links a {
-      color: white;
-      text-decoration: none;
-      transition: color 0.3s, background-color 0.3s;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-    }
+        .service-card:hover {
+            transform: translateY(-0.75rem);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
 
-    .nav-links a:hover {
-      color: var(--secondary-color);
-      background-color: rgba(255, 255, 255, 0.1);
-    }
+        .service-card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            padding: 2rem;
+        }
 
-    /* Hero Section */
-    .hero {
-      background: linear-gradient(rgba(44, 62, 80, 0.9), rgba(44, 62, 80, 0.9)),
-                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-      background-size: cover;
-      background-position: center;
-      height: 80vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      color: white;
-      padding: 0 2rem;
-    }
+        .service-icon {
+            width: 5.5rem;
+            height: 5.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, #7c3aed, #db2777);
+            color: #ffffff;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
 
-    .hero-content {
-      max-width: 800px;
-    }
+        .statistic-item {
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
 
-    .hero h1 {
-      font-size: 3.5rem;
-      margin-bottom: 1.5rem;
-      animation: fadeInUp 1s ease;
-    }
+        .statistic-item:hover {
+            transform: translateY(-0.5rem);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
 
-    .hero p {
-      font-size: 1.2rem;
-      margin-bottom: 2rem;
-      animation: fadeInUp 1s ease 0.3s;
-      opacity: 0;
-      animation-fill-mode: forwards;
-    }
+        .counter {
+            color: #7c3aed;
+            font-size: 3rem;
+            font-weight: 800;
+        }
 
-    .cta-button {
-      display: inline-block;
-      padding: 1rem 2rem;
-      background: var(--secondary-color);
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: all 0.3s;
-      animation: fadeInUp 1s ease 0.6s;
-      opacity: 0;
-      animation-fill-mode: forwards;
-    }
+        footer {
+            background: linear-gradient(180deg, #581c87, #7c3aed);
+            color: #ffffff;
+            padding: 5rem 0 2rem;
+        }
 
-    .cta-button:hover {
-      background: #2980b9;
-      transform: translateY(-2px);
-    }
+        .user-profile-img {
+            width: 2.5rem;
+            height: 2.5rem;
+            object-fit: cover;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
 
-    /* Services Section */
-    .services {
-      padding: 5rem 2rem;
-      background: rgba(15, 26, 46, 0.9);
-    }
+        .hero-user-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
 
-    .services-container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+        .nav-link {
+            color: #1f2937;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
 
-    .section-header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
+        .nav-link:hover {
+            color: #7c3aed;
+        }
 
-    .section-header h2 {
-      font-size: 2.5rem;
-      color: white;
-      margin-bottom: 1rem;
-    }
-
-    .section-header p {
-      color: rgba(255, 255, 255, 0.7);
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-    }
-
-    .service-card {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 2rem;
-      border-radius: 10px;
-      text-align: center;
-      transition: all 0.3s;
-      color: white;
-    }
-
-    .service-card:hover {
-      transform: translateY(-5px);
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .service-icon {
-      font-size: 2.5rem;
-      color: var(--secondary-color);
-      margin-bottom: 1rem;
-    }
-
-    .service-card h3 {
-      color: white;
-      margin-bottom: 1rem;
-    }
-
-    .service-card p {
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 1.5rem;
-    }
-
-    .service-button {
-      display: inline-block;
-      padding: 0.8rem 1.5rem;
-      background: var(--secondary-color);
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: all 0.3s;
-    }
-
-    .service-button:hover {
-      background: #2980b9;
-      transform: translateY(-2px);
-    }
-
-    /* Location Section */
-    .location-section {
-      padding: 3rem 2rem;
-      background: rgba(44, 62, 80, 0.9);
-      text-align: center;
-    }
-
-    .location-section h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: white;
-    }
-
-    .location-button {
-      padding: 1rem 2rem;
-      background: var(--secondary-color);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-size: 1rem;
-    }
-
-    .location-button:hover {
-      background: #2980b9;
-      transform: translateY(-2px);
-    }
-
-    .location-output {
-      margin-top: 1rem;
-      font-size: 1rem;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    /* Footer Styles */
-    .footer {
-      background-color: rgba(44, 62, 80, 0.9);
-      color: white;
-      padding: 3rem 0 1rem 0;
-      margin-top: auto;
-    }
-
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      padding: 0 2rem;
-    }
-
-    .footer-section {
-      margin-bottom: 2rem;
-    }
-
-    .footer-section h3 {
-      color: var(--secondary-color);
-      margin-bottom: 1.5rem;
-      font-size: 1.2rem;
-    }
-
-    .footer-section p {
-      line-height: 1.6;
-      margin-bottom: 1rem;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .footer-section ul {
-      list-style: none;
-    }
-
-    .footer-section ul li {
-      margin-bottom: 0.8rem;
-    }
-
-    .footer-section ul li a {
-      color: rgba(255, 255, 255, 0.7);
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-
-    .footer-section ul li a:hover {
-      color: var(--secondary-color);
-    }
-
-    .social-links {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-
-    .social-links a {
-      color: white;
-      font-size: 1.2rem;
-      transition: color 0.3s;
-    }
-
-    .social-links a:hover {
-      color: var(--secondary-color);
-    }
-
-    .footer-bottom {
-      text-align: center;
-      padding-top: 2rem;
-      margin-top: 2rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .hero h1 {
-        font-size: 2.5rem;
-      }
-
-      .hero p {
-        font-size: 1rem;
-      }
-
-      .services {
-        padding: 3rem 1rem;
-      }
-
-      .section-header h2 {
-        font-size: 2rem;
-      }
-
-      .nav-links {
-        gap: 1rem;
-      }
-
-      .nav-links a {
-        padding: 0.5rem;
-        font-size: 0.9rem;
-      }
-
-      .site-logo {
-        font-size: 1.5rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .hero {
-        height: 60vh;
-      }
-
-      .hero h1 {
-        font-size: 2rem;
-      }
-
-      .services-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .location-section {
-        padding: 2rem 1rem;
-      }
-    }
-     /* Dropdown Styles */
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-
-  .dropbtn {
-    background-color: transparent;
-    color: white;
-    font-size: 1rem;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    transition: background-color 0.3s;
-  }
-
-  .dropbtn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: rgba(44, 62, 80, 0.9);
-    min-width: 160px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    border-radius: 8px;
-  }
-
-  .dropdown-content a {
-    color: white;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    transition: background-color 0.3s;
-  }
-
-  .dropdown-content a:hover {
-    background-color: rgba(52, 152, 219, 0.9);
-  }
-
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
-  </style>
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+            70% { box-shadow: 0 0 0 18px rgba(220, 38, 38, 0); }
+            100% { button-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+    </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <nav class="nav-container">
-      <a href="/" class="site-logo">Amwell</a>
-      <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="#services">Services</a>
-        <% if (locals.user) { %>
-          <a href="/user/logout">Logout</a>
-        <% } else { %>
-          <div class="dropdown">
-            <button class="dropbtn">Login</button>
-            <div class="dropdown-content">
-              <a href="/user/signin">User Login</a>
-              <a href="/medical/signin">Medical Login</a>
-              <a href="/ambulance/signin">Ambulance Login</a>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-heartbeat text-red-500 mr-2"></i>Amwell
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <% if (locals.user) { %>
+                        <li class="nav-item">
+                            <a href="/user/ambulances" class="nav-link emergency-btn">
+                                <i class="fas fa-ambulance mr-2"></i>Emergency
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown ms-3">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <img src="<%= user.profileImage || 'https://via.placeholder.com/40' %>" alt="User Profile" class="user-profile-img rounded-full mr-2">
+                                <span class="font-medium"><%= user.FullName %></span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/user/profile">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/user/logout">Logout</a></li>
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link bg-gradient-to-r from-purple-600 to-pink-500 text-white px-5 py-2 rounded-full font-semibold hover:from-purple-700 hover:to-pink-600 transition" href="/user/signin">Login</a>
+                        </li>
+                    <% } %>
+                </ul>
             </div>
-          </div>
-        <% } %>
-      </div>
+        </div>
     </nav>
-  </header>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Welcome to Amwell Assistant</h1>
-      <p>Your trusted healthcare companion for instant medical assistance, nearby medical stores, and emergency ambulance services.</p>
-      <a href="#services" class="cta-button">Explore Our Services</a>
-    </div>
-  </section>
-
-  <!-- Services Section -->
-  <section class="services" id="services">
-    <div class="services-container">
-      <div class="section-header">
-        <h2>Our Services</h2>
-        <p>Access our comprehensive healthcare services tailored to your needs.</p>
-      </div>
-      <div class="services-grid">
-        <div class="service-card">
-          <i class="fas fa-comments service-icon"></i>
-          <h3>Chat with Assistant</h3>
-          <p>Connect with our AI-powered assistant for instant medical advice and support.</p>
-          <% if (locals.user) { %>
-            <a href="/user/chat" class="service-button">Start Chat</a>
-          <% } else { %>
-            <a href="/user/signin" class="service-button">Login to Chat</a>
-          <% } %>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="text-4xl md:text-5xl font-extrabold mb-5 tracking-tight leading-tight">Your Trusted Emergency Partner</h1>
+                    <p class="text-lg mb-6 opacity-90 leading-relaxed">Access 24/7 emergency medical assistance with real-time ambulance tracking and instant support.</p>
+                    <% if (!locals.user) { %>
+                        <a href="/user/signup" class="bg-white text-purple-600 px-7 py-3 rounded-full font-semibold hover:bg-gray-100 transition shadow-lg">Get Started</a>
+                    <% } %>
+                </div>
+                <% if (locals.user) { %>
+                    <div class="col-lg-6 mt-5 mt-lg-0">
+                        <div class="hero-user-card">
+                            <div class="d-flex align-items-center">
+                                <img src="<%= user.profileImage || 'https://via.placeholder.com/56' %>" alt="User Profile" class="user-profile-img rounded-full mr-3" style="width: 4rem; height: 4rem;">
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-1">Welcome, <%= user.FullName %></h3>
+                                    <p class="text-sm opacity-80">Your health is our priority!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
         </div>
-        <div class="service-card">
-          <i class="fas fa-clinic-medical service-icon"></i>
-          <h3>Nearby Medical Stores</h3>
-          <p>Locate trusted medical stores near you for quick access to medications.</p>
-          <% if (locals.user) { %>
-            <a href="/user/medical" class="service-button">Find Stores</a>
-          <% } else { %>
-            <a href="/user/signin" class="service-button">Login to Find</a>
-          <% } %>
+    </section>
+
+    <!-- Services Section -->
+    <section class="py-20">
+        <div class="container">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-extrabold text-gray-900">Our Services</h2>
+                <p class="text-gray-600 mt-3 text-lg">Comprehensive healthcare solutions tailored for you</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="service-card">
+                        <a href="/user/ambulances">
+                            <div class="service-icon">
+                                <i class="fas fa-ambulance"></i>
+                            </div>
+                            <h4 class="text-center text-xl font-semibold mb-3">Emergency Ambulance</h4>
+                            <p class="text-gray-600 text-center">24/7 emergency ambulance service with real-time tracking</p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-card">
+                        <a href="/user/medical">
+                            <div class="service-icon">
+                                <i class="fas fa-clinic-medical"></i>
+                            </div>
+                            <h4 class="text-center text-xl font-semibold mb-3">Medical Stores</h4>
+                            <p class="text-gray-600 text-center">Find nearby medical stores and check medicine availability</p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-card">
+                        <a href="/user/chat">
+                            <div class="service-icon">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <h4 class="text-center text-xl font-semibold mb-3">Medical Assistance</h4>
+                            <p class="text-gray-600 text-center">24/7 online medical assistance and consultation</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="service-card">
-          <i class="fas fa-ambulance service-icon"></i>
-          <h3>Get Nearby Ambulance</h3>
-          <p>Access emergency ambulance services in your area with a single click.</p>
-          <% if (locals.user) { %>
-            <a href="/user/ambulances" class="service-button">Get Ambulance</a>
-          <% } else { %>
-            <a href="/user/signin" class="service-button">Login to Access</a>
-          <% } %>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="statistic-item text-center">
+                        <div class="counter">100+</div>
+                        <div class="text-gray-600 font-medium">Ambulances</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="statistic-item text-center">
+                        <div class="counter">500+</div>
+                        <div class="text-gray-600 font-medium">Medical Stores</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="statistic-item text-center">
+                        <div class="counter">1000+</div>
+                        <div class="text-gray-600 font-medium">Users Served</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="statistic-item text-center">
+                        <div class="counter">24/7</div>
+                        <div class="text-gray-600 font-medium">Support</div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Location Section -->
-  <section class="location-section">
-    <h2>Find Your Location</h2>
-    <button class="location-button" id="getLocationBtn">Get My Current Location</button>
-    <div class="location-output" id="locationOutput">Your location will appear here.</div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>About Amwell</h3>
-        <p>Amwell is your go-to platform for seamless healthcare services, offering AI-powered assistance, medical store locators, and emergency support.</p>
-        <div class="social-links">
-          <a href="#"><i class="fab fa-facebook"></i></a>
-          <a href="#"><i class="fab fa-twitter"></i></a>
-          <a href="#"><i class="fab fa-linkedin"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5 class="text-lg font-extrabold mb-4">About Amwell</h5>
+                    <p class="text-purple-100 leading-relaxed">Your trusted healthcare companion providing 24/7 medical assistance and emergency services.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-lg font-extrabold mb-4">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3"><a href="/about" class="text-purple-100 hover:text-white transition font-medium">About Us</a></li>
+                        <li class="mb-3"><a href="/services" class="text-purple-100 hover:text-white transition font-medium">Services</a></li>
+                        <li class="mb-3"><a href="/contact" class="text-purple-100 hover:text-white transition font-medium">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-lg font-extrabold mb-4">Contact Info</h5>
+                    <ul class="list-unstyled text-purple-100">
+                        <li class="mb-3"><i class="fas fa-phone mr-2"></i>Emergency: 108</li>
+                        <li class="mb-3"><i class="fas fa-envelope mr-2"></i>support@amwell.com</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-8 border-purple-200">
+            <div class="text-center text-purple-100">
+                <small>© 2024 Amwell. All rights reserved.</small>
+            </div>
         </div>
-      </div>
-      <div class="footer-section">
-        <h3>Contact Us</h3>
-        <p><i class="fas fa-map-marker-alt"></i> 123 Healthcare Avenue, Medical District</p>
-        <p><i class="fas fa-phone"></i> Emergency: +1 (555) 123-4567</p>
-        <p><i class="fas fa-envelope"></i> support@amwell.com</p>
-        <p><i class="fas fa-clock"></i> 24/7 Support</p>
-      </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="#services">Services</a></li>
-          <li><a href="/user/signin">User Login</a></li>
-          <li><a href="/medical/signin">Medical Login</a></li>
-          <li><a href="/ambulance/signin">Ambulance Login</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2025 Amwell. All rights reserved.</p>
-    </div>
-  </footer>
+    </footer>
 
-  <!-- Geolocation Script -->
-  <script>
-    const getLocationBtn = document.getElementById('getLocationBtn');
-    const locationOutput = document.getElementById('locationOutput');
-
-    getLocationBtn.addEventListener('click', () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            locationOutput.innerHTML = `Your Location: <br> Latitude: ${latitude.toFixed(6)}, Longitude: ${longitude.toFixed(6)}`;
-          },
-          (error) => {
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-                locationOutput.textContent = 'User denied the request for Geolocation.';
-                break;
-              case error.POSITION_UNAVAILABLE:
-                locationOutput.textContent = 'Location information is unavailable.';
-                break;
-              case error.TIMEOUT:
-                locationOutput.textContent = 'The request to get user location timed out.';
-                break;
-              case error.UNKNOWN_ERROR:
-                locationOutput.textContent = 'An unknown error occurred.';
-                break;
-            }
-          }
-        );
-      } else {
-        locationOutput.textContent = 'Geolocation is not supported by this browser.';
-      }
-    });
-  </script>
-
-  <!-- Location Update Script -->
-  <script>
-    function sendUserLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            fetch('/user/update-location', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ latitude, longitude }),
-            })
-              .then((response) => {
-                if (response.ok) {
-                  console.log('Location updated successfully');
-                } else {
-                  console.error('Failed to update location');
-                }
-              })
-              .catch((error) => {
-                console.error('Error sending location:', error);
-              });
-          },
-          (error) => {
-            console.error('Error getting location:', error);
-          }
-        );
-      } else {
-        console.error('Geolocation is not supported by this browser.');
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', sendUserLocation);
-  </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
