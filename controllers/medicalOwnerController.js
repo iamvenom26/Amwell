@@ -179,36 +179,36 @@ exports.renderProfilePage = async (req, res) => {
   }
 };
 
-exports.updateProfile = async (req, res) => {
-  try {
-    const currentUser = req.user;
-    if (!currentUser || currentUser.role !== 'medicalOwner') {
-      return res.status(401).render('error', { error: 'Unauthorized access. Please sign in.' });
-    }
+// exports.updateProfile = async (req, res) => {
+//   try {
+//     const currentUser = req.user;
+//     if (!currentUser || currentUser.role !== 'medicalOwner') {
+//       return res.status(401).render('error', { error: 'Unauthorized access. Please sign in.' });
+//     }
 
-    const { fullName, storeName, email, contactNumber, address } = req.body;
+//     const { fullName, storeName, email, contactNumber, address } = req.body;
 
-    const updatedData = {
-      fullName,
-      storeName,
-      email,
-      contactNumber,
-      address,
-    };
+//     const updatedData = {
+//       fullName,
+//       storeName,
+//       email,
+//       contactNumber,
+//       address,
+//     };
 
-    const updatedMedicalOwner = await MedicalOwner.findByIdAndUpdate(
-      currentUser._id,
-      updatedData,
-      { new: true, runValidators: true }
-    );
+//     const updatedMedicalOwner = await MedicalOwner.findByIdAndUpdate(
+//       currentUser._id,
+//       updatedData,
+//       { new: true, runValidators: true }
+//     );
 
-    // Pass success message to the template
-    res.render('medical/profile', { medicalOwner: updatedMedicalOwner, success: 'Profile updated successfully.', error: null });
-  } catch (err) {
-    console.error('Error updating profile:', err.message);
-    res.status(500).render('medical/profile', { medicalOwner: req.user, success: null, error: 'Something went wrong while updating the profile.' });
-  }
-};
+//     // Pass success message to the template
+//     res.render('medical/profile', { medicalOwner: updatedMedicalOwner, success: 'Profile updated successfully.', error: null });
+//   } catch (err) {
+//     console.error('Error updating profile:', err.message);
+//     res.status(500).render('medical/profile', { medicalOwner: req.user, success: null, error: 'Something went wrong while updating the profile.' });
+//   }
+// };
 exports.handleLogout = (req, res) => {
   try {
     // Clear the authentication cookie
@@ -219,3 +219,75 @@ exports.handleLogout = (req, res) => {
     res.status(500).send('Something went wrong during logout.');
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { fullName, storeName, email, contactNumber, address, latitude, longitude } = req.body;
+    const medicalOwner = await MedicalOwner.findById(req.user.id);
+    if (!medicalOwner) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    // Update fields
+    medicalOwner.fullName = fullName || medicalOwner.fullName;
+    medicalOwner.storeName = storeName || medicalOwner.storeName;
+    medicalOwner.email = email || medicalOwner.email;
+    medicalOwner.contactNumber = contactNumber || medicalOwner.contactNumber;
+    medicalOwner.address = address || medicalOwner.address;
+    medicalOwner.latitude = latitude || medicalOwner.latitude;
+    medicalOwner.longitude = longitude || medicalOwner.longitude;
+
+    // Handle profile image
+    if (req.files?.profileImage) {
+      if (medicalOwner.profileImage) {
+        const oldImagePath = path.join(__dirname, '..', 'Uploads', medicalOwner.profileImage);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      medicalOwner.profileImage = req.files.profileImage[0].filename;
+    }
+
+    // Handle ambulance image
+    if (req.files?.AmbulanceImage) {
+      if (medicalOwner.AmbulanceImage) {
+        const oldImagePath = path.join(__dirname, '..', 'Uploads', medicalOwner.AmbulanceImage);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      medicalOwner.AmbulanceImage = req.files.AmbulanceImage[0].filename;
+    }
+
+    await medicalOwner.save();
+
+    res.render('medicalProfile', {
+      medicalOwner,
+      error: null,
+      success: 'Profile updated successfully!'
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.render('medicalProfile', {
+      medicalOwner: req.user,
+      error: 'Failed to update profile',
+      success: null
+    });
+  }
+};
+
+
+exports.getAllCustomers = async (req, res) => {
+  try {
+    const currentUser = req.user;
+    if (!currentUser || currentUser.role !== 'medicalOwner') {
+      return res.status(401).render('error', { error: 'Unauthorized access. Please sign in.' });
+    }  
+    const customers = await User.find({}).lean();
+    res.render('medical/customers', { customers, user: currentUser });      
+  }    
+  catch (error) {
+    console.error('Error fetching customers:', error.message);
+    res.status(500).render('error', { error: 'Something went wrong.' });
+  }  
+}

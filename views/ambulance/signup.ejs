@@ -3,145 +3,882 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register Ambulance</title>
+  <title>Amwell - Register Ambulance</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 40px;
-      background: linear-gradient(135deg, #f4f9ff 0%, #eef5ff 100%);
+    :root {
+      --bs-primary: #7AB2D3;
+      --bs-secondary: #4A628A;
+      --bs-success: #28a745;
+      --bs-danger: #dc3545;
+      --bs-primary-rgb: 122, 178, 211;
+      --bs-secondary-rgb: 74, 98, 138;
     }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-    h2 {
-      color: #2c3e50;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    input {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
+
+    * {
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
-      font-size: 16px;
     }
+
+    body {
+      font-family: 'Manrope', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #f5f7fa;
+      color: #2c3e50;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        45deg,
+        rgba(122, 178, 211, 0.05) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(122, 178, 211, 0.05) 50%,
+        rgba(122, 178, 211, 0.05) 75%,
+        transparent 75%
+      );
+      background-size: 40px 40px;
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(122, 178, 211, 0.3);
+      border-radius: 50%;
+      animation: float 15s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(1); opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-50vh) scale(0.5); opacity: 0; }
+    }
+
+    .navbar {
+      background: linear-gradient(180deg, var(--bs-secondary), var(--bs-primary));
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 1rem 0;
+      position: fixed;
+      width: 100%;
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      transform: translateY(-5px);
+      opacity: 0.95;
+    }
+
+    .navbar-brand {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .navbar-brand i {
+      margin-right: 0.5rem;
+    }
+
+    .navbar-brand:hover {
+      transform: scale(1.05);
+      color: #ffffff;
+    }
+
+    .nav-link {
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      position: relative;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background: var(--bs-primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .nav-link:hover {
+      color: var(--bs-primary);
+      transform: translateY(-2px);
+    }
+
+    .emergency-btn {
+      background: var(--bs-primary);
+      color: #ffffff;
+      padding: 0.5rem 1.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+      box-shadow: 0 4px 15px rgba(122, 178, 211, 0.4);
+    }
+
+    .emergency-btn:hover {
+      background: var(--bs-secondary);
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(74, 98, 138, 0.6);
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(122, 178, 211, 0.4); }
+      70% { box-shadow: 0 0 0 20px rgba(122, 178, 211, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(122, 178, 211, 0); }
+    }
+
+    .form-section {
+      padding: 5rem 2rem;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 1s ease-in;
+    }
+
+    .form-container {
+      max-width: 600px;
+      width: 100%;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      animation: fadeInUp 0.6s ease;
+      transition: transform 0.3s ease;
+    }
+
+    .form-container:hover {
+      transform: translateY(-5px);
+    }
+
+    h2 {
+      color: var(--bs-secondary);
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2.5rem;
+      font-weight: 700;
+      position: relative;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      width: 50px;
+      height: 3px;
+      background: var(--bs-primary);
+      bottom: -0.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
+      width: 0;
+      transition: width 0.3s ease;
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    input:not([type="file"]):not([type="hidden"]) {
+      width: 100%;
+      padding: 1rem 1rem 0.5rem 2.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      background: #f9fafb;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    input:not([type="file"]):not([type="hidden"]):focus {
+      outline: none;
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 3px rgba(122, 178, 211, 0.1);
+      background: #ffffff;
+    }
+
+    input:not([type="file"]):not([type="hidden"])::placeholder {
+      color: #6b7280;
+      font-size: 0.875rem;
+      opacity: 1;
+    }
+
+    .form-group i {
+      position: absolute;
+      left: 0.75rem;
+      top: 1.25rem;
+      color: var(--bs-secondary);
+      font-size: 1rem;
+      transition: color 0.3s ease;
+    }
+
+    input:not([type="file"]):not([type="hidden"]):focus + i {
+      color: var(--bs-primary);
+    }
+
+    .form-group label:not([for="profileImage"]):not([for="AmbulanceImage"]) {
+      position: absolute;
+      top: 1rem;
+      left: 2.5rem;
+      color: #6b7280;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      pointer-events: none;
+      background: #f9fafb;
+      padding: 0 0.25rem;
+    }
+
+    input:not([type="file"]):not([type="hidden"]):focus + i + label,
+    input:not([type="file"]):not([type="hidden"]):not(:placeholder-shown) + i + label {
+      top: -0.5rem;
+      left: 1rem;
+      font-size: 0.75rem;
+      color: var(--bs-primary);
+      background: #ffffff;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 0.75rem;
+      top: 1.25rem;
+      color: var(--bs-secondary);
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+      color: var(--bs-primary);
+    }
+
+    .password-tooltip {
+      position: absolute;
+      right: -10px;
+      top: 2.5rem;
+      background: #333;
+      color: #fff;
+      padding: 0.5rem;
+      border-radius: 0.3rem;
+      font-size: 0.8rem;
+      display: none;
+      z-index: 10;
+      white-space: nowrap;
+    }
+
+    .password-toggle:hover + .password-tooltip {
+      display: block;
+    }
+
     button {
       width: 100%;
-      padding: 12px;
-      background: #4CAF50;
-      color: white;
+      padding: 0.8rem;
+      background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
+      color: #ffffff;
       border: none;
-      border-radius: 6px;
-      font-size: 16px;
+      border-radius: 0.375rem;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
+
     button:hover {
-      background: #45a049;
+      background: linear-gradient(45deg, var(--bs-secondary), var(--bs-primary));
+      transform: translateY(-2px);
     }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .ripple {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    .spinner {
+      display: none;
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 3px solid #ffffff;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
     .image-upload {
-      margin-bottom: 20px;
-      padding: 15px;
-      border: 2px dashed #ddd;
-      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      border: 2px dashed #d1d5db;
+      border-radius: 0.375rem;
+      background: #f9fafb;
       text-align: center;
+      transition: all 0.3s ease;
     }
+
+    .image-upload:hover {
+      border-color: var(--bs-primary);
+      background: #f3f4f6;
+    }
+
+    .image-upload label {
+      color: var(--bs-secondary);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .image-upload input[type="file"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: none;
+      font-size: 0.875rem;
+      background: transparent;
+    }
+
     .image-preview {
       max-width: 200px;
-      margin: 10px auto;
+      margin: 0.5rem auto;
       display: none;
     }
+
     .image-preview img {
       width: 100%;
       height: auto;
-      border-radius: 6px;
+      border-radius: 0.375rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+
     .loading {
       display: none;
-      color: #666;
+      color: #6b7280;
       text-align: center;
-      margin: 10px 0;
+      margin: 0.5rem 0;
+      font-style: italic;
+      font-size: 0.875rem;
     }
+
     .error {
-      color: #dc3545;
-      font-size: 14px;
-      margin-top: -10px;
-      margin-bottom: 10px;
+      color: var(--bs-danger);
+      font-size: 0.875rem;
+      margin: 0.5rem 0;
       display: none;
+      text-align: center;
+      animation: shake 0.5s ease-in-out;
+      background: #f8d7da;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
     }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+
     .success {
       background: #d4edda;
       color: #155724;
-      padding: 10px;
-      border-radius: 4px;
-      margin-bottom: 15px;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      margin: 0.5rem 0;
       display: none;
+      text-align: center;
+      animation: fadeIn 0.5s ease-in;
+      font-size: 0.875rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    footer {
+      background: linear-gradient(180deg, var(--bs-primary), var(--bs-secondary));
+      color: #ffffff;
+      padding: 3rem 0 1rem;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      padding: 0 2rem;
+    }
+
+    .footer-section h5 {
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .footer-section p, .footer-section li {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      color: #e6f0fa;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.8rem;
+    }
+
+    .footer-section ul li a {
+      color: #e6f0fa;
+      text-decoration: none;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .footer-section ul li a:hover {
+      color: #ffffff;
+      transform: translateX(5px);
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-icons a {
+      color: #e6f0fa;
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .social-icons a:hover {
+      color: #ffffff;
+      transform: scale(1.2);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      margin-top: 2rem;
+      border-top: 1px solid #ffffff33;
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--bs-primary);
+      color: #ffffff;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .back-to-top:hover {
+      background: var(--bs-secondary);
+      transform: scale(1.1);
+    }
+
+    @media (max-width: 768px) {
+      .form-section {
+        padding: 3rem 1rem;
+      }
+
+      .form-container {
+        padding: 1.5rem;
+      }
+
+      h2 {
+        font-size: 2rem;
+      }
+
+      .form-group input:not([type="file"]):not([type="hidden"]) {
+        padding: 0.75rem 0.75rem 0.25rem 2rem;
+        font-size: 0.875rem;
+      }
+
+      .form-group i {
+        left: 0.5rem;
+        top: 1rem;
+        font-size: 0.875rem;
+      }
+
+      .form-group label:not([for="profileImage"]):not([for="AmbulanceImage"]) {
+        left: 2rem;
+        top: 0.75rem;
+        font-size: 0.875rem;
+      }
+
+      .form-group input:not([type="file"]):not([type="hidden"]):focus + i + label,
+      .form-group input:not([type="file"]):not([type="hidden"]):not(:placeholder-shown) + i + label {
+        font-size: 0.625rem;
+        left: 0.75rem;
+        top: -0.5rem;
+      }
+
+      .password-toggle {
+        right: 0.5rem;
+        top: 1rem;
+        font-size: 0.875rem;
+      }
+
+      .image-upload {
+        padding: 0.75rem;
+      }
+
+      .image-upload input[type="file"] {
+        font-size: 0.75rem;
+      }
+
+      button {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+      }
+
+      .back-to-top {
+        width: 2.5rem;
+        height: 2.5rem;
+        bottom: 1.5rem;
+        right: 1.5rem;
+      }
+
+      .password-tooltip {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .form-section {
+        padding: 2rem 1rem;
+      }
+
+      .form-container {
+        max-width: 100%;
+        padding: 1rem;
+      }
+
+      h2 {
+        font-size: 1.75rem;
+      }
+
+      .form-group input:not([type="file"]):not([type="hidden"]) {
+        padding: 0.75rem 0.75rem 0.25rem 1.75rem;
+        font-size: 0.875rem;
+      }
+
+      .form-group i {
+        left: 0.5rem;
+        top: 1rem;
+        font-size: 0.75rem;
+      }
+
+      .form-group label:not([for="profileImage"]):not([for="AmbulanceImage"]) {
+        left: 1.75rem;
+        top: 0.75rem;
+        font-size: 0.875rem;
+      }
+
+      .form-group input:not([type="file"]):not([type="hidden"]):focus + i + label,
+      .form-group input:not([type="file"]):not([type="hidden"]):not(:placeholder-shown) + i + label {
+        font-size: 0.625rem;
+        left: 0.5rem;
+        top: -0.5rem;
+      }
+
+      .password-toggle {
+        right: 0.5rem;
+        top: 1rem;
+        font-size: 0.75rem;
+      }
+
+      .image-upload {
+        padding: 0.5rem;
+      }
+
+      .image-upload label {
+        font-size: 0.875rem;
+      }
+
+      .image-upload input[type="file"] {
+        font-size: 0.75rem;
+      }
+
+      button {
+        padding: 0.7rem;
+        font-size: 0.875rem;
+      }
+
+      .back-to-top {
+        width: 2rem;
+        height: 2rem;
+        bottom: 1rem;
+        right: 1rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Register Your Ambulance</h2>
-
-    <form id="signupForm" action="/ambulance/signup" method="POST" enctype="multipart/form-data">
-      <!-- Profile Image Upload -->
-      <div class="image-upload">
-        <label for="profileImage">Driver Profile Photo</label>
-        <input 
-          type="file" 
-          id="profileImage" 
-          name="profileImage" 
-          accept="image/*"
-          onchange="previewImage(this, 'profilePreview')"
-        />
-        <div id="profilePreview" class="image-preview">
-          <img src="#" alt="Profile Preview" />
-        </div>
-      </div>
-
-      <!-- Ambulance Image Upload -->
-      <div class="image-upload">
-        <label for="AmbulanceImage">Ambulance Photo</label>
-        <input 
-          type="file" 
-          id="AmbulanceImage" 
-          name="AmbulanceImage" 
-          accept="image/*"
-          onchange="previewImage(this, 'ambulancePreview')"
-        />
-        <div id="ambulancePreview" class="image-preview">
-          <img src="#" alt="Ambulance Preview" />
-        </div>
-      </div>
-
-      <input name="driverName" placeholder="Driver Name" required />
-      <input name="ambulanceName" placeholder="Ambulance Name/Number" required />
-      <input name="vehicleNumber" placeholder="Vehicle Number" required />
-      <input name="email" type="email" placeholder="Email" required />
-      <input name="contactNumber" placeholder="Contact Number" required />
-      <input name="licenseNumber" placeholder="Driver License Number" required />
-      <input name="password" type="password" placeholder="Password" required />
-      
-      <!-- Hidden fields for location -->
-      <input type="hidden" name="latitude" id="latitude" />
-      <input type="hidden" name="longitude" id="longitude" />
-
-      <div id="locationStatus" class="loading">Getting your location...</div>
-      <div id="error" class="error"></div>
-      <div id="success" class="success"></div>
-      
-      <button type="submit" id="submitBtn">Register</button>
-    </form>
+  <!-- Particles Background -->
+  <div class="particles">
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 8s;"></div>
   </div>
 
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-heartbeat me-2"></i>Amwell
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/#services">Services</a>
+          </li>
+          <li class="nav-item">
+            <a href="/user/ambulances" class="nav-link emergency-btn">
+              <i class="fas fa-ambulance me-2"></i>Emergency
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Form Section -->
+  <section class="form-section">
+    <div class="form-container">
+      <h2>Register Your Ambulance</h2>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+      </div>
+      <form id="signupForm" action="/ambulance/signup" method="POST" enctype="multipart/form-data">
+        <!-- Profile Image Upload -->
+        <div class="image-upload">
+          <label for="profileImage">Driver Profile Photo</label>
+          <input 
+            type="file" 
+            id="profileImage" 
+            name="profileImage" 
+            accept="image/*"
+            onchange="previewImage(this, 'profilePreview')"
+          />
+          <div id="profilePreview" class="image-preview">
+            <img src="#" alt="Profile Preview" />
+          </div>
+        </div>
+
+        <!-- Ambulance Image Upload -->
+        <div class="image-upload">
+          <label for="AmbulanceImage">Ambulance Photo</label>
+          <input 
+            type="file" 
+            id="AmbulanceImage" 
+            name="AmbulanceImage" 
+            accept="image/*"
+            onchange="previewImage(this, 'ambulancePreview')"
+          />
+          <div id="ambulancePreview" class="image-preview">
+            <img src="#" alt="Ambulance Preview" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <input name="driverName" id="driverName" placeholder="Enter driver name" required />
+          <i class="fas fa-user"></i>
+          <label for="driverName">Driver Name</label>
+        </div>
+        <div class="form-group">
+          <input name="ambulanceName" id="ambulanceName" placeholder="Enter ambulance name/number" required />
+          <i class="fas fa-ambulance"></i>
+          <label for="ambulanceName">Ambulance Name/Number</label>
+        </div>
+        <div class="form-group">
+          <input name="vehicleNumber" id="vehicleNumber" placeholder="Enter vehicle number" required />
+          <i class="fas fa-car"></i>
+          <label for="vehicleNumber">Vehicle Number</label>
+        </div>
+        <div class="form-group">
+          <input name="email" type="email" id="email" placeholder="Enter email" required />
+          <i class="fas fa-envelope"></i>
+          <label for="email">Email</label>
+        </div>
+        <div class="form-group">
+          <input name="contactNumber" id="contactNumber" placeholder="Enter contact number" required />
+          <i class="fas fa-phone"></i>
+          <label for="contactNumber">Contact Number</label>
+        </div>
+        <div class="form-group">
+          <input name="licenseNumber" id="licenseNumber" placeholder="Enter license number" required />
+          <i class="fas fa-id-card"></i>
+          <label for="licenseNumber">Driver License Number</label>
+        </div>
+        <div class="form-group">
+          <input name="password" type="password" id="password" placeholder="Enter password" required />
+          <i class="fas fa-lock"></i>
+          <label for="password">Password</label>
+          <span class="password-toggle" id="password-toggle"><i class="fas fa-eye"></i></span>
+          <span class="password-tooltip">Use at least 8 characters, including a number and a symbol</span>
+        </div>
+
+        <!-- Hidden fields for location -->
+        <input type="hidden" name="latitude" id="latitude" />
+        <input type="hidden" name="longitude" id="longitude" />
+
+        <div id="locationStatus" class="loading">Getting your location...</div>
+        <div id="error" class="error"></div>
+        <div id="success" class="success"></div>
+        
+        <button type="submit" id="submitBtn">Register <span class="spinner"></span></button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h5 class="fs-5">About Amwell</h5>
+        <p class="text-light">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
+        <div class="social-icons">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h5 class="fs-5">Quick Links</h5>
+        <ul>
+          <li><a href="/about" class="fw-medium">About Us</a></li>
+          <li><a href="/services" class="fw-medium">Services</a></li>
+          <li><a href="/contact" class="fw-medium">Contact</a></li>
+          <li><a href="/user/signin" class="fw-medium">User Login</a></li>
+          <li><a href="/medical/signin" class="fw-medium">Medical Login</a></li>
+          <li><a href="/ambulance/signin" class="fw-medium">Ambulance Login</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h5 class="fs-5">Contact Info</h5>
+        <ul>
+          <li><i class="fas fa-phone me-2"></i>Emergency: +1 (555) 123-4567</li>
+          <li><i class="fas fa-envelope me-2"></i>support@amwell.com</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="text-light">© 2025 Amwell. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+
+  <!-- Audio for Form Submission Success -->
+  <audio id="success-sound" preload="auto">
+    <source src="https://cdn.pixabay.com/audio/2023/08/31/audio_6f6e854e43.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     function previewImage(input, previewId) {
       const preview = document.getElementById(previewId);
@@ -165,6 +902,36 @@
       const errorDiv = document.getElementById('error');
       const successDiv = document.getElementById('success');
       const submitBtn = document.getElementById('submitBtn');
+      const spinner = submitBtn.querySelector('.spinner');
+      const successSound = document.getElementById('success-sound');
+      const progressBarFill = document.getElementById('progress-bar-fill');
+      const inputs = form.querySelectorAll('input[required]');
+
+      // Calculate form progress
+      const updateProgress = () => {
+        const totalFields = inputs.length;
+        let filledFields = 0;
+        inputs.forEach(input => {
+          if (input.value.trim()) filledFields++;
+        });
+        const progress = (filledFields / totalFields) * 100;
+        progressBarFill.style.width = `${progress}%`;
+      };
+
+      inputs.forEach(input => {
+        input.addEventListener('input', updateProgress);
+      });
+
+      // Password Visibility Toggle
+      const passwordInput = document.getElementById('password');
+      const passwordToggle = document.getElementById('password-toggle');
+      passwordToggle.addEventListener('click', () => {
+        const type = passwordInput.type === 'password' ? 'text' : 'password';
+        passwordInput.type = type;
+        const icon = passwordToggle.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+      });
 
       // Get location
       if (navigator.geolocation) {
@@ -183,11 +950,87 @@
         );
       }
 
-      // Handle form submission
-      form.onsubmit = async (e) => {
+      // Client-side validation
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        submitBtn.disabled = true;
         errorDiv.style.display = 'none';
+
+        // Required field validation
+        let hasError = false;
+        inputs.forEach(input => {
+          if (!input.value.trim()) {
+            hasError = true;
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = `Please fill in the ${input.name} field.`;
+            input.focus();
+          }
+        });
+        if (hasError) return;
+
+        // Email validation
+        const email = document.getElementById('email').value;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = 'Please enter a valid email address.';
+          document.getElementById('email').focus();
+          return;
+        }
+
+        // Contact number validation
+        const contactNumber = document.getElementById('contactNumber').value;
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        if (!phoneRegex.test(contactNumber)) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = 'Please enter a valid contact number (e.g., +1234567890).';
+          document.getElementById('contactNumber').focus();
+          return;
+        }
+
+        // Password strength validation
+        const password = document.getElementById('password').value;
+        const passwordRegex = /^(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = 'Password must be at least 8 characters long and include a number and a symbol.';
+          document.getElementById('password').focus();
+          return;
+        }
+
+        // Driver name validation
+        const driverName = document.getElementById('driverName').value;
+        const nameRegex = /^[a-zA-Z\s]{2,}$/;
+        if (!nameRegex.test(driverName)) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = 'Driver name must be at least 2 characters long and contain only letters and spaces.';
+          document.getElementById('driverName').focus();
+          return;
+        }
+
+        // Vehicle number validation
+        const vehicleNumber = document.getElementById('vehicleNumber').value;
+        const vehicleRegex = /^[A-Z0-9-]{5,15}$/;
+        if (!vehicleRegex.test(vehicleNumber)) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = 'Vehicle number must be 5-15 characters long and contain only letters, numbers, or hyphens.';
+          document.getElementById('vehicleNumber').focus();
+          return;
+        }
+
+        // License number validation
+        const licenseNumber = document.getElementById('licenseNumber').value;
+        const licenseRegex = /^[A-Z0-9]{7,15}$/;
+        if (!licenseRegex.test(licenseNumber)) {
+          errorDiv.style.display = 'block';
+          errorDiv.textContent = 'License number must be 7-15 characters long and contain only letters and numbers.';
+          document.getElementById('licenseNumber').focus();
+          return;
+        }
+
+        // Show spinner
+        submitBtn.disabled = true;
+        submitBtn.textContent = '';
+        spinner.style.display = 'block';
 
         try {
           const formData = new FormData(form);
@@ -204,16 +1047,72 @@
 
           successDiv.style.display = 'block';
           successDiv.textContent = 'Registration successful! Redirecting...';
+          successSound.play().catch(error => console.log('Audio playback failed:', error));
           setTimeout(() => {
-            window.location.href = '/ambulance/login';
+            window.location.href = '/ambulance/signin';
           }, 2000);
 
         } catch (error) {
           errorDiv.style.display = 'block';
           errorDiv.textContent = error.message;
           submitBtn.disabled = false;
+          submitBtn.textContent = 'Register';
+          spinner.style.display = 'none';
         }
-      };
+      });
+
+      // Button Ripple Effect
+      submitBtn.addEventListener('click', (e) => {
+        if (submitBtn.disabled) return;
+        const rect = submitBtn.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        const diameter = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = `${diameter}px`;
+        ripple.style.left = `${e.clientX - rect.left - diameter / 2}px`;
+        ripple.style.top = `${e.clientY - rect.top - diameter / 2}px`;
+        submitBtn.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+      });
+
+      // Navbar Scroll Effect
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 50) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      });
+
+      // Back to Top Button
+      const backToTop = document.querySelector('.back-to-top');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+          backToTop.classList.add('show');
+        } else {
+          backToTop.classList.remove('show');
+        }
+      });
+
+      // Smooth Scroll for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+          });
+        });
+      });
+
+      // Generate Particles
+      const particlesContainer = document.querySelector('.particles');
+      for (let i = 0; i < 5; i++) {
+        const particle = particlesContainer.children[i];
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.animationDuration = `${10 + Math.random() * 10}s`;
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+      }
     };
   </script>
 </body>

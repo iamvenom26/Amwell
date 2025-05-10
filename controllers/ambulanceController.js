@@ -230,3 +230,18 @@ exports.cancelRequest = async (req, res) => {
 exports.logout = (req, res) => {
   res.clearCookie('token').redirect('/ambulance/signin');
 };
+
+
+exports.getProfile = async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).send('Unauthorized');
+    
+    const ambulance = await Ambulance.findById(req.user._id).lean();
+    if (!ambulance) return res.status(404).send('Ambulance not found');
+
+    res.render('ambulance/profile', { ambulance });
+  } catch (err) {
+    console.error('Error fetching profile:', err);
+    res.status(500).send('Something went wrong.');
+  }
+}

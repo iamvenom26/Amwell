@@ -258,6 +258,7 @@ exports.handleGeminiChat = async (req, res) => {
 
 exports.renderChatPage = async (req, res) => {
   const currentUser = req.user;
+  const profileImagePath = currentUser.profileImage || '/uploads/profiles/default.png'; // Default image path
   if (!currentUser) {
     return res.status(401).send('Unauthorized');
   }
@@ -277,6 +278,7 @@ exports.renderChatPage = async (req, res) => {
       messages,
       currentUser,
       bot: { fullName: 'Amwell Bot', _id: BOT_ID },
+      profileImage:profileImagePath,
     });
   } catch (error) {
     console.error('⚠️ Error rendering chat page:', error.message);
@@ -357,7 +359,7 @@ exports.getAllAmbulances = async (req, res) => {
     const ambulances = await Ambulance.find({}).lean();
 
     // Pass the ambulances variable to the view
-    res.render('user/ambulance-list', { ambulances });
+    res.render('user/ambulance-list', { ambulances ,user:req.user});  // Pass user to the view for authentication check});
   } catch (err) {
     console.error('Error fetching ambulances:', err);
     res.status(500).send('Something went wrong.');
@@ -377,8 +379,10 @@ exports.getAmbulanceById = async (req, res) => {
       console.log(`[getAmbulanceById] Ambulance not found: ${ambulanceId}`);
       return res.status(404).send('Ambulance not found');
     }
+console.log(req.user);
+    // Check if the user is authenticated and has a valid _id
+    const userName = req.user.FullName?.trim() || req.user.fullName?.trim() || req.user.name?.trim() || 'Unknown User';
 
-    const userName = req.user.fullName && req.user.fullName.trim() ? req.user.fullName : 'Unknown User';
 
     console.log(`[getAmbulanceById] Rendering ambulance page for user: ${req.user._id}, ambulance: ${ambulanceId}`);
     res.render('user/ambulance', {
@@ -393,6 +397,7 @@ exports.getAmbulanceById = async (req, res) => {
   }
 };
 const axios = require('axios');
+const user = require('../model/user');
 
 
 exports.getAddressFromCoordinates = async (req, res) => {
@@ -441,5 +446,70 @@ exports.getRequestHistory = async (req, res) => {
   } catch (err) {
       console.error('Error fetching request history:', err);
       res.status(500).send('Something went wrong.');
+  }
+};
+
+
+
+
+const path = require('path');
+const fs = require('fs');
+
+exports.getProfile = async (req, res) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    const user = await User.findById(userId).lean();
+    if (!user) {
+      return res.status(404).json({ error: 'User not found yaaar' });
+    }
+    res.render('user/profile', { user, error: null, success: null });
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).render('user/profile', { user: null, error: 'Server error', success: null });
+  }
+};
+
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { fullName, email, contactNumber, latitude, longitude } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update fields
+    user.fullName = fullName || user.fullName;
+    user.email = email || user.email;
+    user.contactNumber = contactNumber || user.contactNumber;
+    user.latitude = latitude || user.latitude;
+    user.longitude = longitude || user.longitude;
+
+    // Handle profile image
+    if (req.file) {
+      // Delete old image if exists
+      if (user.profileImage) {
+        const oldImagePath = path.join(__dirname, '..', 'uploads', user.profileImage);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      user.profileImage = req.file.filename;
+    }
+
+    await user.save();
+
+    res.render('profile', {
+      user,
+      error: null,
+      success: 'Profile updated successfully!'
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.render('profile', {
+      user: req.user,
+      error: 'Failed to update profile',
+      success: null
+    });
   }
 };

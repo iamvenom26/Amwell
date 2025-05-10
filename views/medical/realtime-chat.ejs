@@ -1,69 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Realtime Chat</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amwell - Realtime Chat</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="/socket.io/socket.io.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-
   <style>
     :root {
-      --primary-color: #2c3e50;
-      --secondary-color: #3498db;
-      --light-bg: #ecf0f1;
-      --dark-bg: #1e272e;
-      --sent-color: #3498db;
-      --received-color: #ffffff;
-      --text-color: #2c3e50;
+      --bs-primary: #7AB2D3;
+      --bs-secondary: #4A628A;
+      --bs-success: #28a745;
+      --bs-danger: #dc3545;
+      --bs-primary-rgb: 122, 178, 211;
+      --bs-secondary-rgb: 74, 98, 138;
     }
 
     * {
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     body {
+      font-family: 'Manrope', sans-serif;
       min-height: 100vh;
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      color: var(--text-color);
       display: flex;
       flex-direction: column;
+      background: #f5f7fa;
+      color: #2c3e50;
+      overflow-x: hidden;
+      position: relative;
     }
 
-    header {
+    body::before {
+      content: '';
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      padding: 1rem 2rem;
-      background-color: rgba(0, 0, 0, 0.4);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        45deg,
+        rgba(122, 178, 211, 0.05) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(122, 178, 211, 0.05) 50%,
+        rgba(122, 178, 211, 0.05) 75%,
+        transparent 75%
+      );
+      background-size: 40px 40px;
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(122, 178, 211, 0.3);
+      border-radius: 50%;
+      animation: float 15s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(1); opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-50vh) scale(0.5); opacity: 0; }
+    }
+
+    .navbar {
+      background: linear-gradient(180deg, var(--bs-secondary), var(--bs-primary));
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 1rem 0;
+      position: fixed;
+      width: 100%;
       z-index: 1000;
+      transition: all 0.3s ease;
     }
 
-    header h1 {
-      font-size: 1.6rem;
-      font-weight: 600;
+    .navbar.scrolled {
+      transform: translateY(-5px);
+      opacity: 0.95;
     }
 
-    .back-home {
-      background: var(--secondary-color);
-      color: #fff;
-      padding: 0.5rem 1.2rem;
-      border-radius: 8px;
-      font-weight: 500;
+    .navbar-brand {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #ffffff;
       text-decoration: none;
-      transition: background 0.3s ease;
+      display: flex;
+      align-items: center;
+      transition: transform 0.3s ease, color 0.3s ease;
     }
 
-    .back-home:hover {
-      background: #2980b9;
+    .navbar-brand i {
+      margin-right: 0.5rem;
+    }
+
+    .navbar-brand:hover {
+      transform: scale(1.05);
+      color: #ffffff;
+    }
+
+    .nav-link {
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      position: relative;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background: var(--bs-primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .nav-link:hover {
+      color: var(--bs-primary);
+      transform: translateY(-2px);
+    }
+
+    .emergency-btn {
+      background: var(--bs-primary);
+      color: #ffffff;
+      padding: 0.75rem 2rem;
+      border-radius: 50rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+      box-shadow: 0 4px 15px rgba(122, 178, 211, 0.4);
+      text-decoration: none;
+      border: none;
+    }
+
+    .emergency-btn:hover {
+      background: var(--bs-secondary);
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(74, 98, 138, 0.6);
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(122, 178, 211, 0.4); }
+      70% { box-shadow: 0 0 0 20px rgba(122, 178, 211, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(122, 178, 211, 0); }
     }
 
     #chat-wrapper {
@@ -71,20 +176,24 @@
       flex-direction: column;
       height: calc(100vh - 70px);
       padding: 1rem 2rem;
+      margin-top: 70px;
+      margin-bottom: 20px;
       position: relative;
+      flex: 1;
     }
 
     #chat-container {
       flex: 1;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
+      background: #ffffff;
+      border-radius: 2rem;
       padding: 20px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       margin-bottom: 80px;
+      animation: fadeInUp 0.6s ease;
     }
 
     .chat-message {
@@ -96,18 +205,23 @@
       word-break: break-word;
       font-size: 1rem;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease;
+    }
+
+    .chat-message:hover {
+      transform: translateY(-3px);
     }
 
     .chat-message.you {
-      background: var(--sent-color);
-      color: white;
+      background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
+      color: #ffffff;
       align-self: flex-end;
       border-bottom-right-radius: 6px;
     }
 
     .chat-message.other {
-      background: var(--received-color);
-      color: var(--text-color);
+      background: #f9fafb;
+      color: #2c3e50;
       align-self: flex-start;
       border-bottom-left-radius: 6px;
     }
@@ -116,14 +230,22 @@
       font-size: 0.85rem;
       font-weight: 500;
       margin-bottom: 4px;
-      color: #7f8c8d;
+      color: #6b7280;
+    }
+
+    .chat-message.you .meta {
+      color: #d1d5db;
     }
 
     .timestamp {
       font-size: 0.75rem;
       margin-top: 6px;
       text-align: right;
-      color: #95a5a6;
+      color: #6b7280;
+    }
+
+    .chat-message.you .timestamp {
+      color: #d1d5db;
     }
 
     #input-area {
@@ -133,51 +255,199 @@
       right: 20px;
       display: flex;
       gap: 12px;
-      background: rgba(255, 255, 255, 0.9);
+      background: #ffffff;
       padding: 10px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
     #message-input {
       flex: 1;
       padding: 0.9rem 1.2rem;
       border-radius: 12px;
-      border: 1px solid #dfe6e9;
-      background: #f0f3f5;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
       font-size: 1rem;
       outline: none;
-      transition: border 0.2s ease;
+      color: #2c3e50;
+      transition: all 0.3s ease;
     }
 
     #message-input:focus {
-      border-color: var(--secondary-color);
+      border-color: var(--bs-primary);
       background: #ffffff;
+      box-shadow: 0 0 5px rgba(122, 178, 211, 0.3);
+    }
+
+    #message-input::placeholder {
+      color: #6b7280;
     }
 
     #send-button {
-      background: var(--secondary-color);
+      background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
       border: none;
       padding: 0.9rem 1.5rem;
       border-radius: 12px;
-      color: #fff;
+      color: #ffffff;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
 
     #send-button:hover {
-      background: #2980b9;
+      background: linear-gradient(45deg, var(--bs-secondary), var(--bs-primary));
+      transform: translateY(-2px);
+    }
+
+    .ripple {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
     }
 
     #typing-indicator {
       font-size: 0.9rem;
-      color: #dfe6e9;
+      color: #6b7280;
       margin-top: 8px;
       min-height: 24px;
       padding-left: 6px;
       font-style: italic;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #typing-indicator.active {
+      opacity: 1;
+    }
+
+    .receiver-image {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--bs-primary);
+      transition: transform 0.3s ease;
+    }
+
+    .receiver-image:hover {
+      transform: scale(1.1);
+    }
+
+    footer {
+      background: linear-gradient(180deg, var(--bs-primary), var(--bs-secondary));
+      color: #ffffff;
+      padding: 3rem 0 1rem;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      padding: 0 2rem;
+    }
+
+    .footer-section h5 {
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .footer-section p, .footer-section li {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      color: #e6f0fa;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.8rem;
+    }
+
+    .footer-section ul li a {
+      color: #e6f0fa;
+      text-decoration: none;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .footer-section ul li a:hover {
+      color: #ffffff;
+      transform: translateX(5px);
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-icons a {
+      color: #e6f0fa;
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .social-icons a:hover {
+      color: #ffffff;
+      transform: scale(1.2);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      margin-top: 2rem;
+      border-top: 1px solid #ffffff33;
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--bs-primary);
+      color: #ffffff;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .back-to-top:hover {
+      background: var(--bs-secondary);
+      transform: scale(1.1);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @media (max-width: 768px) {
@@ -189,41 +459,182 @@
         max-width: 90%;
       }
 
-      header h1 {
-        font-size: 1.2rem;
+      .navbar-brand {
+        font-size: 1.5rem;
+      }
+
+      .emergency-btn {
+        padding: 0.5rem 1.5rem;
+        font-size: 0.9rem;
+      }
+
+      #input-area {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+      }
+
+      #send-button {
+        padding: 0.7rem 1.2rem;
+      }
+
+      .receiver-image {
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      #message-input {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+      }
+
+      #send-button {
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .back-to-top {
+        width: 2.5rem;
+        height: 2.5rem;
+        bottom: 1.5rem;
+        right: 1.5rem;
       }
     }
   </style>
 </head>
-
 <body>
+  <!-- Particles Background -->
+  <div class="particles">
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 8s;"></div>
+  </div>
 
-  <header>
-    <h1>Chat with <%= receiver.FullName || receiver.fullName %></h1>
-    <a class="back-home" href="/user/medical">Back to Home</a>
-  </header>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-heartbeat me-2"></i>Amwell
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item">
+            <a class="nav-link" href="/medical/dashboard">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/medical/realtime-chat">Customers</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/medical/profile">Profile</a>
+          </li>
+          <li class="nav-item">
+            <a href="/user/ambulances" class="nav-link emergency-btn">
+              <i class="fas fa-ambulance me-2"></i>Emergency
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/medical/logout">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
+  <!-- Chat Wrapper -->
   <div id="chat-wrapper">
-    <div id="chat-container">
-      <% messages.forEach(msg => { %>
-        <div class="chat-message <%= msg.sender.toString() === currentUser._id.toString() ? 'you' : 'other' %>">
-          <div class="meta">
-            <%= msg.senderModel %> (<%= msg.sender.toString() === currentUser._id.toString() ? 'You' : 'Other' %>)
+    <div class="container">
+      <div class="chat-header d-flex align-items-center gap-2 mb-3">
+        <% if (receiver.profileImage) { %>
+          <img src="<%= receiver.profileImage %>" alt="Receiver Profile" class="receiver-image" onerror="this.onerror=null; this.src='/images/default.png';">
+        <% } else { %>
+          <img src="/images/default.png" alt="Default Profile" class="receiver-image">
+        <% } %>
+        <h1 class="fs-4 fw-bold" style="color: var(--bs-secondary);">Chat with <%= receiver.FullName || receiver.fullName %></h1>
+      </div>
+      <div id="chat-container">
+        <% messages.forEach(msg => { %>
+          <div class="chat-message <%= msg.sender.toString() === currentUser._id.toString() ? 'you' : 'other' %>">
+            <div class="meta">
+              <%= msg.senderModel %> (<%= msg.sender.toString() === currentUser._id.toString() ? 'You' : 'Other' %>)
+            </div>
+            <div class="text"><%= msg.message %></div>
+            <div class="timestamp"><%= msg.timestamp.toLocaleString() %></div>
           </div>
-          <div class="text"><%= msg.message %></div>
-          <div class="timestamp"><%= msg.timestamp.toLocaleString() %></div>
-        </div>
-      <% }); %>
+        <% }); %>
+      </div>
     </div>
 
     <div id="input-area">
       <input type="text" id="message-input" placeholder="Type your message..." />
-      <button id="send-button">Send</button>
+      <button id="send-button"><i class="fas fa-paper-plane me-2"></i>Send</button>
     </div>
 
     <div id="typing-indicator"></div>
   </div>
 
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h5 class="fs-5">About Amwell</h5>
+        <p class="text-light">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
+        <div class="social-icons">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h5 class="fs-5">Quick Links</h5>
+        <ul>
+          <li><a href="/about" class="fw-medium">About Us</a></li>
+          <li><a href="/services" class="fw-medium">Services</a></li>
+          <li><a href="/contact" class="fw-medium">Contact</a></li>
+          <li><a href="/user/signin" class="fw-medium">User Login</a></li>
+          <li><a href="/medical/signin" class="fw-medium">Medical Login</a></li>
+          <li><a href="/ambulance/signin" class="fw-medium">Ambulance Login</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h5 class="fs-5">Contact Info</h5>
+        <ul>
+          <li><i class="fas fa-phone me-2"></i>Emergency: +1 (555) 123-4567</li>
+          <li><i class="fas fa-envelope me-2"></i>support@amwell.com</li>
+          <li class="mt-2">
+            <div class="social-icons">
+              <a href="#"><i class="fab fa-facebook-f"></i></a>
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="text-light">© 2025 Amwell. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+
+  <!-- Audio for Welcome Sound -->
+  <audio id="welcome-sound" preload="auto">
+    <source src="https://cdn.pixabay.com/audio/2023/08/31/audio_6f6e854e43.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const socket = io();
 
@@ -250,8 +661,15 @@
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
     const typingIndicator = document.getElementById('typing-indicator');
+    const welcomeSound = document.getElementById('welcome-sound');
 
-    sendButton.addEventListener('click', () => {
+    // Play Welcome Sound on Load
+    window.addEventListener('load', () => {
+      welcomeSound.play().catch(error => console.log('Audio playback failed:', error));
+    });
+
+    // Send Message
+    sendButton.addEventListener('click', (e) => {
       const message = messageInput.value.trim();
       if (message) {
         socket.emit('chatMessage', {
@@ -263,9 +681,21 @@
           message
         });
         messageInput.value = '';
+
+        // Ripple Effect on Send Button
+        const rect = sendButton.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        const diameter = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = `${diameter}px`;
+        ripple.style.left = `${e.clientX - rect.left - diameter / 2}px`;
+        ripple.style.top = `${e.clientY - rect.top - diameter / 2}px`;
+        sendButton.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
       }
     });
 
+    // Typing Indicator
     messageInput.addEventListener('input', () => {
       socket.emit('typing', { room, sender: currentUser.fullName });
     });
@@ -285,17 +715,56 @@
 
     socket.on('typing', ({ sender }) => {
       typingIndicator.textContent = `${sender} is typing...`;
+      typingIndicator.classList.add('active');
       setTimeout(() => {
         typingIndicator.textContent = '';
+        typingIndicator.classList.remove('active');
       }, 2000);
     });
 
-    // Scroll to bottom on page load
+    // Navbar Scroll Effect
+    window.addEventListener('scroll', () => {
+      const navbar = document.querySelector('.navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    // Back to Top Button
+    const backToTop = document.querySelector('.back-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        backToTop.classList.add('show');
+      } else {
+        backToTop.classList.remove('show');
+      }
+    });
+
+    // Smooth Scroll for Anchor Links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    // Scroll to Bottom on Page Load
     window.onload = () => {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     };
+
+    // Generate Particles
+    const particlesContainer = document.querySelector('.particles');
+    for (let i = 0; i < 5; i++) {
+      const particle = particlesContainer.children[i];
+      particle.style.left = `${Math.random() * 100}%`;
+      particle.style.animationDuration = `${10 + Math.random() * 10}s`;
+      particle.style.animationDelay = `${Math.random() * 5}s`;
+    }
   </script>
-
 </body>
-
 </html>

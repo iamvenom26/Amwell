@@ -41,11 +41,11 @@
       height: 100%;
       background: linear-gradient(
         45deg,
-        rgba(124, 58, 237, 0.05) 25%,
+        rgba(122, 178, 211, 0.05) 25%,
         transparent 25%,
         transparent 50%,
-        rgba(124, 58, 237, 0.05) 50%,
-        rgba(124, 58, 237, 0.05) 75%,
+        rgba(122, 178, 211, 0.05) 50%,
+        rgba(122, 178, 211, 0.05) 75%,
         transparent 75%
       );
       background-size: 40px 40px;
@@ -54,7 +54,7 @@
     }
 
     .navbar {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      background: linear-gradient(180deg, #4A628A, #7AB2D3);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       padding: 1rem 0;
       position: fixed;
@@ -70,9 +70,7 @@
     .navbar-brand {
       font-size: 2rem;
       font-weight: 800;
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #ffffff;
       transition: transform 0.3s ease;
     }
 
@@ -94,13 +92,13 @@
     }
 
     .nav-link {
-      color: #1f2937;
+      color: #ffffff;
       font-weight: 600;
       transition: color 0.3s ease, transform 0.3s ease;
     }
 
     .nav-link:hover {
-      color: #7c3aed;
+      color: #7AB2D3;
       transform: translateY(-2px);
     }
 
@@ -130,7 +128,7 @@
 
     #dashboard-container {
       background: #ffffff;
-      border-radius: 1rem;
+      border-radius: 2rem;
       border: 1px solid #e5e7eb;
       padding: 1.5rem;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -168,9 +166,7 @@
     .section-title {
       font-size: 1.5rem;
       font-weight: 700;
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #4A628A;
       margin-bottom: 1rem;
     }
 
@@ -218,8 +214,8 @@
     }
 
     #status-select:focus {
-      border-color: #7c3aed;
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+      border-color: #7AB2D3;
+      box-shadow: 0 0 0 3px rgba(122, 178, 211, 0.1);
     }
 
     .action-btn {
@@ -232,20 +228,20 @@
     }
 
     .toggle-requests-btn {
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      background: linear-gradient(45deg, #7AB2D3, #4A628A);
     }
 
     .toggle-requests-btn:hover {
-      background: linear-gradient(45deg, #6d28d9, #9333ea);
+      background: linear-gradient(45deg, #4A628A, #7AB2D3);
       transform: scale(1.05);
     }
 
     .update-profile-btn {
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      background: linear-gradient(45deg, #7AB2D3, #4A628A);
     }
 
     .update-profile-btn:hover {
-      background: linear-gradient(45deg, #6d28d9, #9333ea);
+      background: linear-gradient(45deg, #4A628A, #7AB2D3);
       transform: scale(1.05);
     }
 
@@ -281,14 +277,14 @@
     }
 
     footer {
-      background: linear-gradient(180deg, #581c87, #7c3aed);
+      background: linear-gradient(180deg, #7AB2D3, #4A628A);
       color: #ffffff;
       padding: 6rem 0 3rem;
       margin-top: auto;
     }
 
     footer a {
-      color: #d1d5db;
+      color: #e6f0fa;
       text-decoration: none;
       transition: color 0.3s ease, transform 0.3s ease;
     }
@@ -312,7 +308,7 @@
       position: fixed;
       bottom: 2rem;
       right: 2rem;
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      background: #7AB2D3;
       color: #fff;
       width: 3rem;
       height: 3rem;
@@ -333,6 +329,7 @@
     }
 
     .back-to-top:hover {
+      background: #4A628A;
       transform: scale(1.1);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
@@ -515,37 +512,37 @@
       <div class="row g-4">
         <div class="col-md-4">
           <h5 class="text-lg font-extrabold mb-4">About Amwell</h5>
-          <p class="text-purple-100 leading-relaxed">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
+          <p class="text-gray-100 leading-relaxed">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
         </div>
         <div class="col-md-4">
           <h5 class="text-lg font-extrabold mb-4">Quick Links</h5>
           <ul class="list-unstyled">
-            <li class="mb-3"><a href="/about" class="text-purple-100 hover:text-white transition font-medium">About Us</a></li>
-            <li class="mb-3"><a href="/services" class="text-purple-100 hover:text-white transition font-medium">Services</a></li>
-            <li class="mb-3"><a href="/contact" class="text-purple-100 hover:text-white transition font-medium">Contact</a></li>
-            <li class="mb-3"><a href="/user/signin" class="text-purple-100 hover:text-white transition font-medium">User Login</a></li>
-            <li class="mb-3"><a href="/medical/signin" class="text-purple-100 hover:text-white transition font-medium">Medical Login</a></li>
-            <li class="mb-3"><a href="/ambulance/signin" class="text-purple-100 hover:text-white transition font-medium">Ambulance Login</a></li>
+            <li class="mb-3"><a href="/about" class="text-gray-100 hover:text-white transition font-medium">About Us</a></li>
+            <li class="mb-3"><a href="/services" class="text-gray-100 hover:text-white transition font-medium">Services</a></li>
+            <li class="mb-3"><a href="/contact" class="text-gray-100 hover:text-white transition font-medium">Contact</a></li>
+            <li class="mb-3"><a href="/user/signin" class="text-gray-100 hover:text-white transition font-medium">User Login</a></li>
+            <li class="mb-3"><a href="/medical/signin" class="text-gray-100 hover:text-white transition font-medium">Medical Login</a></li>
+            <li class="mb-3"><a href="/ambulance/signin" class="text-gray-100 hover:text-white transition font-medium">Ambulance Login</a></li>
           </ul>
         </div>
         <div class="col-md-4">
           <h5 class="text-lg font-extrabold mb-4">Contact Info</h5>
-          <ul class="list-unstyled text-purple-100">
+          <ul class="list-unstyled text-gray-100">
             <li class="mb-3"><i class="fas fa-phone mr-2"></i>Emergency: +1 (555) 123-4567</li>
             <li class="mb-3"><i class="fas fa-envelope mr-2"></i>support@amwell.com</li>
             <li class="mt-4">
               <div class="social-icons">
-                <a href="#" class="text-purple-100"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="text-purple-100"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="text-purple-100"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="text-purple-100"><i class="fab fa-linkedin"></i></a>
+                <a href="#" class="text-gray-100"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-gray-100"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-gray-100"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-gray-100"><i class="fab fa-linkedin"></i></a>
               </div>
             </li>
           </ul>
         </div>
       </div>
-      <hr class="my-8 border-purple-200">
-      <div class="text-center text-purple-100">
+      <hr class="my-8 border-gray-200">
+      <div class="text-center text-gray-100">
         <small>© 2025 Amwell. All rights reserved.</small>
       </div>
     </div>

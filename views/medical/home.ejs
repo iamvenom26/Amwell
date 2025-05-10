@@ -4,222 +4,450 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Medical Owner Dashboard - Amwell</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary-color: #2c3e50;
-      --secondary-color: #3498db;
-      --accent-color: #e74c3c;
-      --text-color: #333;
-      --light-bg: #f5f6fa;
+      --bs-primary: #7AB2D3;
+      --bs-secondary: #4A628A;
+      --bs-success: #28a745;
+      --bs-danger: #dc3545;
+      --bs-primary-rgb: 122, 178, 211;
+      --bs-secondary-rgb: 74, 98, 138;
     }
 
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
+      font-family: 'Manrope', sans-serif;
       min-height: 100vh;
+      background: #f5f7fa;
+      color: #2c3e50;
+      overflow-x: hidden;
+      position: relative;
+      display: flex;
+    }
+
+    /* Background Pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        45deg,
+        rgba(122, 178, 211, 0.05) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(122, 178, 211, 0.05) 50%,
+        rgba(122, 178, 211, 0.05) 75%,
+        transparent 75%
+      );
+      background-size: 40px 40px;
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    /* Floating Particles Animation */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(122, 178, 211, 0.3);
+      border-radius: 50%;
+      animation: float 15s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(1); opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-50vh) scale(0.5); opacity: 0; }
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, var(--bs-secondary), var(--bs-primary));
+      color: #ffffff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      padding: 2rem 1rem;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 2rem;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: 1rem;
+    }
+
+    .sidebar-nav a {
+      color: #d1d5db;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      transform: translateX(5px);
+    }
+
+    .sidebar-nav a i {
+      margin-right: 0.75rem;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 250px;
+      flex: 1;
+      padding: 2rem;
       display: flex;
       flex-direction: column;
-      background: linear-gradient(135deg, rgba(44, 62, 80, 0.97), rgba(52, 152, 219, 0.97)),
-                  url('https://images.unsplash.com/photo-1538108149393-fbbd81895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
-      color: white;
+      min-height: 100vh;
+      animation: fadeIn 1s ease-in;
     }
 
     /* Header */
     .header {
-      background: rgba(44, 62, 80, 0.9);
-      padding: 1rem 0;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 2rem;
-    }
-
-    .site-logo {
-      color: white;
-      font-size: 1.8rem;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-    }
-
-    .nav-links a {
-      color: white;
-      text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 1rem;
-      transition: color 0.3s, background 0.3s;
-    }
-
-    .nav-links a:hover {
-      color: var(--secondary-color);
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Welcome Banner */
-    .welcome-banner {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 2rem;
-      text-align: center;
-      margin: 5rem auto 2rem;
-      max-width: 1000px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      animation: fadeInUp 0.6s ease;
-    }
-
-    .welcome-banner h1 {
-      font-size: 2rem;
-      color: var(--secondary-color);
-      margin-bottom: 0.5rem;
-    }
-
-    .welcome-banner p {
-      font-size: 1.1rem;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    /* Dashboard Container */
-    .dashboard-container {
-      max-width: 1000px;
-      margin: 0 auto 2rem;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-      background: rgba(15, 26, 46, 0.9);
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-      animation: fadeInUp 0.6s ease;
-    }
-
-    /* Profile Card */
-    .profile-card {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
+      background: #ffffff;
+      border-radius: 1rem;
       padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      margin-bottom: 2rem;
     }
 
-    .profile-details {
+    .header-left {
       display: flex;
       align-items: center;
       gap: 1rem;
     }
 
-    .profile-icon {
-      font-size: 2.5rem;
-      color: var(--secondary-color);
+    .header-left h1 {
+      font-size: 1.8rem;
+      color: var(--bs-secondary);
     }
 
-    .profile-info h2 {
-      font-size: 1.6rem;
-      color: var(--secondary-color);
-      margin-bottom: 0.5rem;
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
 
-    .profile-info p {
+    .search-bar {
+      position: relative;
+    }
+
+    .search-bar input {
+      padding: 0.5rem 2.5rem 0.5rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 20px;
       font-size: 0.95rem;
-      color: rgba(255, 255, 255, 0.8);
-      margin-bottom: 0.3rem;
+      width: 250px;
+      background: #f9fafb;
+      transition: all 0.3s ease;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 5px rgba(122, 178, 211, 0.3);
+    }
+
+    .search-bar i {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--bs-secondary);
+    }
+
+    .user-dropdown {
+      position: relative;
+    }
+
+    .user-dropdown-toggle {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-    }
-
-    .edit-profile-btn {
-      padding: 0.8rem 1.5rem;
-      background: var(--secondary-color);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 0.95rem;
+      background: #f9fafb;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
       cursor: pointer;
-      transition: all 0.3s;
-      text-decoration: none;
+      transition: all 0.3s ease;
     }
 
-    .edit-profile-btn:hover {
-      background: #2980b9;
-      transform: translateY(-2px);
+    .user-dropdown-toggle:hover {
+      background: #e5e7eb;
+    }
+
+    .user-dropdown-toggle img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--bs-primary);
+    }
+
+    .user-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 1000;
+    }
+
+    .user-dropdown:hover .user-dropdown-menu {
+      display: block;
+    }
+
+    .user-dropdown-menu a {
+      display: block;
+      padding: 0.75rem 1.5rem;
+      color: var(--bs-secondary);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: background 0.3s ease;
+    }
+
+    .user-dropdown-menu a:hover {
+      background: #f3f4f6;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stat-icon {
+      font-size: 2rem;
+      color: var(--bs-primary);
+    }
+
+    .stat-info h3 {
+      font-size: 1.2rem;
+      color: var(--bs-secondary);
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-info p {
+      font-size: 1.5rem;
+      color: var(--bs-primary);
     }
 
     /* Customers Section */
     .customers-section {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
+      background: #ffffff;
+      border-radius: 1rem;
       padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
     }
 
     .section-title {
       font-size: 1.5rem;
-      color: var(--secondary-color);
+      color: var(--bs-secondary);
       margin-bottom: 1rem;
-      text-align: center;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      width: 50px;
+      height: 3px;
+      background: var(--bs-primary);
+      bottom: -0.5rem;
+      left: 0;
     }
 
     .customers-list {
       list-style: none;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-template-columns: 1fr;
       gap: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
     }
 
     .customer-item {
-      background: rgba(255, 255, 255, 0.05);
+      background: #f9fafb;
       border-radius: 8px;
       padding: 1rem;
-      text-align: center;
-      transition: background 0.3s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s, transform 0.3s;
+      position: relative;
+      overflow: hidden;
     }
 
     .customer-item:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: #f3f4f6;
+      transform: translateY(-3px);
     }
 
     .customer-item a {
-      color: var(--secondary-color);
+      color: var(--bs-primary);
       text-decoration: none;
       font-size: 1rem;
-      display: block;
+      transition: color 0.3s;
     }
 
     .customer-item a:hover {
-      color: #63a0ff;
+      color: var(--bs-secondary);
+    }
+
+    .customer-action {
+      background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
+      color: #ffffff;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .customer-action:hover {
+      background: linear-gradient(45deg, var(--bs-secondary), var(--bs-primary));
+    }
+
+    .new-badge {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: var(--bs-danger);
+      color: #ffffff;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+      animation: pulse 2s infinite;
     }
 
     .no-customers {
-      color: rgba(255, 255, 255, 0.7);
+      color: #6b7280;
       text-align: center;
       font-size: 0.95rem;
     }
 
+    /* Recent Activity Section */
+    .activity-section {
+      background: #ffffff;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      flex: 1;
+    }
+
+    .activity-list {
+      list-style: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      font-size: 1.5rem;
+      color: var(--bs-primary);
+    }
+
+    .activity-info p {
+      font-size: 0.95rem;
+      color: var(--bs-secondary);
+      margin-bottom: 0.2rem;
+    }
+
+    .activity-info span {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
     /* Footer */
     .footer {
-      background: rgba(44, 62, 80, 0.9);
-      color: white;
+      background: linear-gradient(180deg, var(--bs-primary), var(--bs-secondary));
+      color: #ffffff;
       padding: 3rem 0 1rem;
       margin-top: auto;
     }
@@ -233,24 +461,22 @@
       padding: 0 2rem;
     }
 
-    .footer-section {
-      margin-bottom: 2rem;
-    }
-
-    .footer-section h3 {
-      color: var(--secondary-color);
+    .footer-section h5 {
+      color: #ffffff;
       margin-bottom: 1.5rem;
       font-size: 1.2rem;
+      font-weight: 700;
     }
 
-    .footer-section p {
+    .footer-section p, .footer-section li {
       line-height: 1.6;
       margin-bottom: 1rem;
-      color: rgba(255, 255, 255, 0.7);
+      color: #e6f0fa;
     }
 
     .footer-section ul {
       list-style: none;
+      padding: 0;
     }
 
     .footer-section ul li {
@@ -258,132 +484,72 @@
     }
 
     .footer-section ul li a {
-      color: rgba(255, 255, 255, 0.7);
+      color: #e6f0fa;
       text-decoration: none;
-      transition: color 0.3s;
+      transition: color 0.3s ease, transform 0.3s ease;
     }
 
     .footer-section ul li a:hover {
-      color: var(--secondary-color);
+      color: #ffffff;
+      transform: translateX(5px);
     }
 
-    .social-links {
+    .social-icons {
       display: flex;
       gap: 1rem;
-      margin-top: 1.5rem;
+      margin-top: 1rem;
     }
 
-    .social-links a {
-      color: white;
+    .social-icons a {
+      color: #e6f0fa;
       font-size: 1.2rem;
-      transition: color 0.3s;
+      transition: transform 0.3s ease;
     }
 
-    .social-links a:hover {
-      color: var(--secondary-color);
+    .social-icons a:hover {
+      color: #ffffff;
+      transform: scale(1.2);
     }
 
     .footer-bottom {
       text-align: center;
       padding-top: 2rem;
       margin-top: 2rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid #ffffff33;
     }
 
-    /* Animations */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* Back to Top Button */
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--bs-primary);
+      color: #ffffff;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 200;
     }
 
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .welcome-banner {
-        margin: 4rem 1rem 1rem;
-        padding: 1.5rem;
-      }
-
-      .welcome-banner h1 {
-        font-size: 1.8rem;
-      }
-
-      .welcome-banner p {
-        font-size: 1rem;
-      }
-
-      .dashboard-container {
-        margin: 0 1rem 1rem;
-        padding: 1.5rem;
-      }
-
-      .profile-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-      }
-
-      .profile-details {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .profile-icon {
-        font-size: 2rem;
-      }
-
-      .profile-info h2 {
-        font-size: 1.4rem;
-      }
-
-      .profile-info p {
-        font-size: 0.9rem;
-      }
-
-      .edit-profile-btn {
-        width: 100%;
-        text-align: center;
-      }
-
-      .customers-list {
-        grid-template-columns: 1fr;
-      }
-
-      .section-title {
-        font-size: 1.3rem;
-      }
-
-      .nav-links {
-        gap: 1rem;
-      }
-
-      .nav-links a {
-        padding: 0.5rem;
-        font-size: 0.9rem;
-      }
-
-      .site-logo {
-        font-size: 1.5rem;
-      }
+    .back-to-top.show {
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    @media (max-width: 480px) {
-      .welcome-banner {
-        margin: 3.5rem 0.5rem 0.5rem;
-        padding: 1rem;
-      }
-
-      .dashboard-container {
-        margin: 0 0.5rem 0.5rem;
-        padding: 1rem;
-      }
-
-      .customer-item a {
-        font-size: 0.9rem;
-      }
+    .back-to-top:hover {
+      background: var(--bs-secondary);
+      transform: scale(1.1);
     }
 
     .profile-image {
-      border: 4px solid rgba(255, 255, 255, 0.2);
+      border: 2px solid var(--bs-primary);
       transition: transform 0.3s ease;
     }
 
@@ -391,84 +557,186 @@
       transform: scale(1.05);
     }
 
-    .store-image {
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    .ripple {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-250px);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .search-bar input {
+        width: 100%;
+      }
+
+      .user-dropdown {
+        width: 100%;
+      }
+
+      .user-dropdown-toggle {
+        justify-content: center;
+      }
+
+      .user-dropdown-menu {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .header-left h1 {
+        font-size: 1.5rem;
+      }
+
+      .stat-card {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .section-title {
+        font-size: 1.3rem;
+      }
+
+      .customer-item {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .customer-action {
+        width: 100%;
+        text-align: center;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <nav class="nav-container">
-      <a href="/" class="site-logo">Amwell</a>
-      <div class="nav-links">
-        <a href="/medical/dashboard">Dashboard</a>
-        <a href="/medical/realtime-chat">Customers</a>
-        <a href="/medical/profile">Profile</a>
-        <a href="/medical/logout">Logout</a>
-      </div>
-    </nav>
-  </header>
-
-  <!-- Welcome Banner -->
-  <div class="welcome-banner">
-    <h1>Welcome, <%= user.fullName %></h1>
-    <% if (user.profileImage) { %>
-      <img 
-        src="<%= user.profileImage %>" 
-        alt="Profile Image"
-        onerror="this.onerror=null; this.src='/images/default.png';"
-        class="profile-image"
-        style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin: 1rem 0;"
-      >
-    <% } else { %>
-      <img 
-        src="/images/default.png"
-        alt="Default Profile"
-        class="profile-image"
-        style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin: 1rem 0;"
-      >
-    <% } %>
-    <p>Manage your medical store and connect with customers on Amwell</p>
+  <!-- Particles Background -->
+  <div class="particles">
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 8s;"></div>
   </div>
 
-  <!-- Dashboard Container -->
-  <div class="dashboard-container">
-    <!-- Profile Card -->
-    <div class="profile-card">
-      <div class="profile-details">
-        <% if (user.AmbulanceImage) { %>
-          <img 
-            src="<%= user.AmbulanceImage %>" 
-            alt="Store Image"
-            onerror="this.onerror=null; this.src='/images/default-store.png';"
-            style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;"
-          >
-        <% } else { %>
-          <i class="fas fa-store profile-icon"></i>
-        <% } %>
-        <div class="profile-info">
-          <h2><%= user.shopName || 'Your Medical Store' %></h2>
-          <p><i class="fas fa-user"></i> Owner: <%= user.fullName %></p>
-          <p><i class="fas fa-map-marker-alt"></i> Address: <%= user.address || 'Not specified' %></p>
-          <p><i class="fas fa-phone"></i> Contact: <%= user.contactNumber || 'Not specified' %></p>
-          <% if (user.email) { %>
-            <p><i class="fas fa-envelope"></i> Email: <%= user.email %></p>
-          <% } %>
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <i class="fas fa-heartbeat"></i> Amwell
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="/medical/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+      <li><a href="/medical/customers"><i class="fas fa-users"></i> Customers</a></li>
+      <li><a href="/medical/profile"><i class="fas fa-user"></i> Profile</a></li>
+      <li><a href="/user/ambulances"><i class="fas fa-ambulance"></i> Emergency</a></li>
+      <li><a href="/medical/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>Welcome, <%= user.fullName %></h1>
+      </div>
+      <div class="header-right">
+        <div class="search-bar">
+          <input type="text" placeholder="Search customers..." id="customer-search">
+          <i class="fas fa-search"></i>
+        </div>
+        <div class="user-dropdown">
+          <div class="user-dropdown-toggle">
+            <% if (user.profileImage) { %>
+              <img src="<%= user.profileImage %>" alt="Profile Image" class="profile-image" onerror="this.onerror=null; this.src='/images/default.png';">
+            <% } else { %>
+              <img src="/images/default.png" alt="Default Profile" class="profile-image">
+            <% } %>
+            <span><%= user.fullName %></span>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="user-dropdown-menu">
+            <a href="/medical/profile">Profile</a>
+            <a href="/medical/logout">Logout</a>
+          </div>
         </div>
       </div>
-      <a href="/medical/profile" class="edit-profile-btn">Edit Profile</a>
     </div>
 
-    <!-- Connected Customers -->
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <i class="fas fa-users stat-icon"></i>
+        <div class="stat-info">
+          <h3>Total Customers</h3>
+          <p><%= users.length %></p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-envelope stat-icon"></i>
+        <div class="stat-info">
+          <h3>New Messages</h3>
+          <p>5</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-star stat-icon"></i>
+        <div class="stat-info">
+          <h3>Store Rating</h3>
+          <p>4.8</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customers Section -->
     <div class="customers-section">
       <h2 class="section-title">Connected Customers</h2>
-      <ul class="customers-list">
-        <% users.forEach(user => { %>
+      <ul class="customers-list" id="customers-list">
+        <% users.forEach((user, index) => { %>
           <% if (user._id) { %>
             <li class="customer-item">
-              <a href="/medical/realtime-chat/<%= user._id %>"><%= user.FullName || user.fullName || 'Unknown User' %></a>
+              <a href="/medical/realtime-chat/<%= user._id %>">
+                <%= user.FullName || user.fullName || 'Unknown User' %>
+              </a>
+              <a href="/medical/realtime-chat/<%= user._id %>" class="customer-action">Chat Now</a>
+              <% if (index < 2) { %>
+                <span class="new-badge">New</span>
+              <% } %>
             </li>
           <% } %>
         <% }); %>
@@ -477,44 +745,92 @@
         <% } %>
       </ul>
     </div>
-  </div>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>About Amwell</h3>
-        <p>Amwell is your go-to platform for seamless healthcare services, offering AI-powered assistance, medical store locators, and emergency support.</p>
-        <div class="social-links">
-          <a href="#"><i class="fab fa-facebook"></i></a>
-          <a href="#"><i class="fab fa-twitter"></i></a>
-          <a href="#"><i class="fab fa-linkedin"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
+    <!-- Recent Activity Section -->
+    <div class="activity-section">
+      <h2 class="section-title">Recent Activity</h2>
+      <ul class="activity-list">
+        <li class="activity-item">
+          <i class="fas fa-comment activity-icon"></i>
+          <div class="activity-info">
+            <p>John Doe sent a message</p>
+            <span>2 hours ago</span>
+          </div>
+        </li>
+        <li class="activity-item">
+          <i class="fas fa-user-plus activity-icon"></i>
+          <div class="activity-info">
+            <p>New customer Jane Smith connected</p>
+            <span>5 hours ago</span>
+          </div>
+        </li>
+        <li class="activity-item">
+          <i class="fas fa-comment activity-icon"></i>
+          <div class="activity-info">
+            <p>Mary Johnson sent a message</p>
+            <span>1 day ago</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h5 class="fs-5">About Amwell</h5>
+          <p class="text-light">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
+          <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h5 class="fs-5">Quick Links</h5>
+          <ul>
+            <li><a href="/about" class="fw-medium">About Us</a></li>
+            <li><a href="/services" class="fw-medium">Services</a></li>
+            <li><a href="/contact" class="fw-medium">Contact</a></li>
+            <li><a href="/user/signin" class="fw-medium">User Login</a></li>
+            <li><a href="/medical/signin" class="fw-medium">Medical Login</a></li>
+            <li><a href="/ambulance/signin" class="fw-medium">Ambulance Login</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h5 class="fs-5">Contact Info</h5>
+          <ul>
+            <li><i class="fas fa-phone me-2"></i>Emergency: +1 (555) 123-4567</li>
+            <li><i class="fas fa-envelope me-2"></i>support@amwell.com</li>
+            <li class="mt-2">
+              <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+              </div>
+            </li>
+          </ul>
         </div>
       </div>
-      <div class="footer-section">
-        <h3>Contact Us</h3>
-        <p><i class="fas fa-map-marker-alt"></i> 123 Healthcare Avenue, Medical District</p>
-        <p><i class="fas fa-phone"></i> Emergency: +1 (555) 123-4567</p>
-        <p><i class="fas fa-envelope"></i> support@amwell.com</p>
-        <p><i class="fas fa-clock"></i> 24/7 Support</p>
+      <div class="footer-bottom">
+        <p class="text-light">© 2025 Amwell. All rights reserved.</p>
       </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/#services">Services</a></li>
-          <li><a href="/user/signin">User Login</a></li>
-          <li><a href="/medical/signin">Medical Login</a></li>
-          <li><a href="/ambulance/signin">Ambulance Login</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2025 Amwell. All rights reserved.</p>
-    </div>
-  </footer>
+    </footer>
+  </div>
 
+  <!-- Back to Top Button -->
+  <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+
+  <!-- Audio for Welcome Sound -->
+  <audio id="welcome-sound" preload="auto">
+    <source src="https://cdn.pixabay.com/audio/2023/08/31/audio_6f6e854e43.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
@@ -524,11 +840,74 @@
       fullName: '<%= user.fullName %>'
     };
 
+    const welcomeSound = document.getElementById('welcome-sound');
+    const customerSearch = document.getElementById('customer-search');
+    const customersList = document.getElementById('customers-list');
+
     socket.emit('authenticate', {
       userId: user.id,
       role: user.role,
       fullName: user.fullName
     });
+
+    socket.on('connect', () => {
+      welcomeSound.play().catch(error => console.log('Audio playback failed:', error));
+    });
+
+    // Search Functionality
+    customerSearch.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const customerItems = customersList.querySelectorAll('.customer-item');
+      customerItems.forEach(item => {
+        const customerName = item.querySelector('a').textContent.toLowerCase();
+        item.style.display = customerName.includes(searchTerm) ? 'flex' : 'none';
+      });
+    });
+
+    // Back to Top Button
+    const backToTop = document.querySelector('.back-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        backToTop.classList.add('show');
+      } else {
+        backToTop.classList.remove('show');
+      }
+    });
+
+    // Smooth Scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    // Customer Item Ripple Effect
+    const customerActions = document.querySelectorAll('.customer-action');
+    customerActions.forEach(action => {
+      action.addEventListener('click', (e) => {
+        const rect = action.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        const diameter = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = `${diameter}px`;
+        ripple.style.left = `${e.clientX - rect.left - diameter / 2}px`;
+        ripple.style.top = `${e.clientY - rect.top - diameter / 2}px`;
+        action.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+      });
+    });
+
+    // Generate Particles
+    const particlesContainer = document.querySelector('.particles');
+    for (let i = 0; i < 5; i++) {
+      const particle = particlesContainer.children[i];
+      particle.style.left = `${Math.random() * 100}%`;
+      particle.style.animationDuration = `${10 + Math.random() * 10}s`;
+      particle.style.animationDelay = `${Math.random() * 5}s`;
+    }
   </script>
 </body>
 </html>

@@ -23,5 +23,6 @@ router.get('/realtime-chat/:userId', controller.handleGetRealtimeChat);
 // New route for updating medical owner profile
 router.get('/profile', checkForAthenticationCookie('token', ['medicalOwner']), controller.renderProfilePage);
 router.post('/profile', checkForAthenticationCookie('token', ['medicalOwner']), controller.updateProfile);
+router.get('/customers', checkForAthenticationCookie('token', ['medicalOwner']), controller.getAllCustomers);
 
 module.exports = router;

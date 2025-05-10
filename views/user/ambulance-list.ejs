@@ -6,14 +6,21 @@
     <title>Amwell - Emergency Medical Services</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <style>
+        :root {
+            --bs-primary: #7AB2D3;
+            --bs-secondary: #4A628A;
+            --bs-primary-rgb: 122, 178, 211;
+            --bs-secondary-rgb: 74, 98, 138;
+            --status-online: #6BCBEA;
+            --status-busy: #ECC94B;
+            --status-offline: #F28C8C;
+        }
+
         body {
             font-family: 'Manrope', sans-serif;
             background-color: #f5f7fa;
@@ -21,7 +28,7 @@
         }
 
         .navbar {
-            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            background: var(--bs-secondary);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
             padding: 1rem 0;
             position: fixed;
@@ -37,14 +44,13 @@
         .navbar-brand {
             font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(45deg, #7c3aed, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--bs-primary);
             transition: transform 0.3s ease;
         }
 
         .navbar-brand:hover {
             transform: scale(1.05);
+            color: #ffffff;
         }
 
         .user-profile-img {
@@ -61,38 +67,39 @@
         }
 
         .nav-link {
-            color: #1f2937;
+            color: #ffffff;
             font-weight: 600;
             transition: color 0.3s ease, transform 0.3s ease;
         }
 
         .nav-link:hover {
-            color: #7c3aed;
+            color: var(--bs-primary);
             transform: translateY(-2px);
         }
 
         .emergency-btn {
-            background-color: #dc2626;
+            background-color: var(--bs-primary);
             color: #ffffff;
             padding: 0.75rem 2rem;
-            border-radius: 9999px;
+            border-radius: 50rem;
             font-weight: 600;
             transition: all 0.3s ease;
             animation: pulse 2s infinite;
-            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+            box-shadow: 0 4px 15px rgba(122, 178, 211, 0.4);
+            border: none;
         }
 
         .emergency-btn:hover {
-            background-color: #b91c1c;
+            background-color: var(--bs-secondary);
             transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+            box-shadow: 0 6px 20px rgba(74, 98, 138, 0.6);
         }
 
         .header-section {
             margin-top: 100px;
             padding: 3rem 0;
             text-align: center;
-            background: linear-gradient(45deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1));
+            background: linear-gradient(45deg, rgba(122, 178, 211, 0.1), rgba(74, 98, 138, 0.1));
             border-radius: 2rem;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
             margin-bottom: 3rem;
@@ -102,10 +109,7 @@
         .header-section h1 {
             font-size: 3rem;
             font-weight: 800;
-            color: #1f2937;
-            background: linear-gradient(45deg, #7c3aed, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--bs-secondary);
             margin-bottom: 1rem;
         }
 
@@ -151,7 +155,7 @@
         }
 
         .ambulance-details {
-            color: #1f2937;
+            color: var(--bs-secondary);
             font-size: 1rem;
             padding: 1.75rem;
             text-align: left;
@@ -165,13 +169,13 @@
         }
 
         .ambulance-details i {
-            color: #7c3aed;
+            color: var(--bs-primary);
             margin-right: 0.5rem;
         }
 
         .ambulance-details strong {
             font-weight: 700;
-            color: #1f2937;
+            color: var(--bs-secondary);
         }
 
         .status {
@@ -189,26 +193,26 @@
         }
 
         .status-online {
-            background-color: #48BB78;
-            color: white;
+            background-color: var(--status-online);
+            color: #ffffff;
         }
 
         .status-busy {
-            background-color: #ECC94B;
+            background-color: var(--status-busy);
             color: #2D3748;
         }
 
         .status-offline {
-            background-color: #dc2626;
-            color: white;
+            background-color: var(--status-offline);
+            color: #ffffff;
         }
 
         .btn {
             padding: 0.75rem 2rem;
-            background: linear-gradient(45deg, #7c3aed, #a855f7);
-            color: #fff;
+            background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
+            color: #ffffff;
             border: none;
-            border-radius: 9999px;
+            border-radius: 50rem;
             font-size: 1.1rem;
             font-weight: 600;
             text-decoration: none;
@@ -216,24 +220,24 @@
             display: inline-block;
             margin: 0.75rem 0 1.5rem;
             align-self: center;
-            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+            box-shadow: 0 4px 15px rgba(122, 178, 211, 0.4);
         }
 
         .btn:hover {
-            background: linear-gradient(45deg, #6d28d9, #9333ea);
+            background: linear-gradient(45deg, var(--bs-secondary), var(--bs-primary));
             transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6);
+            box-shadow: 0 6px 20px rgba(74, 98, 138, 0.6);
         }
 
         footer {
-            background: linear-gradient(180deg, #581c87, #7c3aed);
+            background: linear-gradient(180deg, var(--bs-secondary), var(--bs-primary));
             color: #ffffff;
             padding: 6rem 0 3rem;
             position: relative;
         }
 
         footer a {
-            color: #d1d5db;
+            color: #e6f0fa;
             text-decoration: none;
             transition: color 0.3s ease, transform 0.3s ease;
         }
@@ -257,8 +261,8 @@
             position: fixed;
             bottom: 2rem;
             right: 2rem;
-            background: linear-gradient(45deg, #7c3aed, #a855f7);
-            color: #fff;
+            background: var(--bs-primary);
+            color: #ffffff;
             width: 3rem;
             height: 3rem;
             border-radius: 50%;
@@ -282,9 +286,9 @@
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
-            70% { box-shadow: 0 0 0 20px rgba(220, 38, 38, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(122, 178, 211, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(122, 178, 211, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(122, 178, 211, 0); }
         }
 
         @keyframes fadeIn {
@@ -335,12 +339,11 @@
     </style>
 </head>
 <body>
-
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <i class="fas fa-heartbeat text-red-500 mr-2"></i>Amwell
+                <i class="fas fa-heartbeat me-2"></i>Amwell
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -350,13 +353,13 @@
                     <% if (locals.user) { %>
                         <li class="nav-item">
                             <a href="/user/ambulances" class="nav-link emergency-btn">
-                                <i class="fas fa-ambulance mr-2"></i>Emergency
+                                <i class="fas fa-ambulance me-2"></i>Emergency
                             </a>
                         </li>
                         <li class="nav-item dropdown ms-3">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                                <img src="<%= user.profileImage || 'https://via.placeholder.com/40' %>" alt="User Profile" class="user-profile-img rounded-full mr-2">
-                                <span class="font-medium"><%= user.fullName %></span>
+                                <img src="<%= user.profileImage || 'https://via.placeholder.com/40' %>" alt="User Profile" class="user-profile-img rounded-circle me-2">
+                                <span class="fw-medium"><%= user.FullName %></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="/user/profile">Profile</a></li>
@@ -366,7 +369,7 @@
                         </li>
                     <% } else { %>
                         <li class="nav-item">
-                            <a class="nav-link bg-gradient-to-r from-purple-600 to-pink-500 text-white px-5 py-2 rounded-full font-semibold hover:from-purple-700 hover:to-pink-600 transition" href="/user/signin">Login</a>
+                            <a class="nav-link btn bg-primary text-white px-4 py-2 rounded-pill fw-semibold" href="/user/signin">Login</a>
                         </li>
                     <% } %>
                 </ul>
@@ -383,7 +386,7 @@
     </section>
 
     <!-- Ambulance List Section -->
-    <section class="py-20">
+    <section class="py-5">
         <div class="container">
             <div class="row g-4">
                 <% ambulances.forEach(ambulance => { %>
@@ -414,34 +417,34 @@
         <div class="container">
             <div class="row g-4">
                 <div class="col-md-4">
-                    <h5 class="text-lg font-extrabold mb-4">About Amwell</h5>
-                    <p class="text-purple-100 leading-relaxed">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
+                    <h5 class="fs-5 fw-bold mb-4">About Amwell</h5>
+                    <p class="text-light">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
                 </div>
                 <div class="col-md-4">
-                    <h5 class="text-lg font-extrabold mb-4">Quick Links</h5>
+                    <h5 class="fs-5 fw-bold mb-4">Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-3"><a href="/about" class="text-purple-100 hover:text-white transition font-medium">About Us</a></li>
-                        <li class="mb-3"><a href="/services" class="text-purple-100 hover:text-white transition font-medium">Services</a></li>
-                        <li class="mb-3"><a href="/contact" class="text-purple-100 hover:text-white transition font-medium">Contact</a></li>
+                        <li class="mb-3"><a href="/about" class="text-light hover:text-white">About Us</a></li>
+                        <li class="mb-3"><a href="/services" class="text-light hover:text-white">Services</a></li>
+                        <li class="mb-3"><a href="/contact" class="text-light hover:text-white">Contact</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h5 class="text-lg font-extrabold mb-4">Contact Info</h5>
-                    <ul class="list-unstyled text-purple-100">
-                        <li class="mb-3"><i class="fas fa-phone mr-2"></i>Emergency: 108</li>
-                        <li class="mb-3"><i class="fas fa-envelope mr-2"></i>support@amwell.com</li>
+                    <h5 class="fs-5 fw-bold mb-4">Contact Info</h5>
+                    <ul class="list-unstyled text-light">
+                        <li class="mb-3"><i class="fas fa-phone me-2"></i>Emergency: 108</li>
+                        <li class="mb-3"><i class="fas fa-envelope me-2"></i>support@amwell.com</li>
                         <li class="mt-4">
                             <div class="social-icons">
-                                <a href="#" class="text-purple-100"><i class="fab fa-facebook-f"></i></a>
-                                <a href="#" class="text-purple-100"><i class="fab fa-twitter"></i></a>
-                                <a href="#" class="text-purple-100"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="text-light"><i class="fab fa-facebook-f"></i></a>
+                                <a href="#" class="text-light"><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="text-light"><i class="fab fa-instagram"></i></a>
                             </div>
                         </li>
                     </ul>
                 </div>
             </div>
-            <hr class="my-8 border-purple-200">
-            <div class="text-center text-purple-100">
+            <hr class="my-4 border-light">
+            <div class="text-center text-light">
                 <small>© 2025 Amwell. All rights reserved.</small>
             </div>
         </div>

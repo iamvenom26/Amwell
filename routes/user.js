@@ -39,8 +39,8 @@ router.get('/chat/:userId', checkForAthenticationCookie('token', ['user']), user
 router.get('/users', checkForAthenticationCookie('token', ['user']), userController.getAllUsersExceptCurrent);
 router.get('/medical', checkForAthenticationCookie('token', ['user']), userController.getNearMedical);
 router.delete('/chatbot', checkForAthenticationCookie('token', ['user']), userController.clearChatbot);
-router.get('/ambulances', userController.getAllAmbulances);
-router.get('/ambulance/:id', userController.getAmbulanceById);
+router.get('/ambulances',  checkForAthenticationCookie('token', ['user']),userController.getAllAmbulances);
+router.get('/ambulance/:id', checkForAthenticationCookie('token', ['user']),userController.getAmbulanceById);
 router.get('/request-history', checkForAthenticationCookie('token', ['user']), userController.getRequestHistory);
-
+router.get('/profile', checkForAthenticationCookie('token', ['user']), userController.getProfile);
 module.exports = router;

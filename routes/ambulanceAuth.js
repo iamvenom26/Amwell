@@ -24,5 +24,5 @@ router.post('/status', checkForAthenticationCookie('token', ['ambulance']), ambu
 router.get('/live-location/:userId', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.getLiveLocationData);
 router.get('/chat/:userId', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.handleGetRealtimeChat);
 router.get('/request-history', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.getRequestHistory);
-
+router.get('/profile', checkForAthenticationCookie('token', ['ambulance']), ambulanceController.getProfile);
 module.exports = router;

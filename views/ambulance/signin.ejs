@@ -3,24 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Amwell - Ambulance Login</title>
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Tailwind CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Amwell - Medical Owner Login</title>
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Manrope', sans-serif;
-      background-color: #f5f7fa;
-      overflow-x: hidden;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      background: #f5f7fa;
+      color: #2c3e50;
+      overflow-x: hidden;
       position: relative;
     }
 
@@ -34,11 +37,11 @@
       height: 100%;
       background: linear-gradient(
         45deg,
-        rgba(124, 58, 237, 0.05) 25%,
+        rgba(122, 178, 211, 0.05) 25%,
         transparent 25%,
         transparent 50%,
-        rgba(124, 58, 237, 0.05) 50%,
-        rgba(124, 58, 237, 0.05) 75%,
+        rgba(122, 178, 211, 0.05) 50%,
+        rgba(122, 178, 211, 0.05) 75%,
         transparent 75%
       );
       background-size: 40px 40px;
@@ -46,236 +49,269 @@
       opacity: 0.5;
     }
 
-    .navbar {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    /* Floating Particles Animation */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(122, 178, 211, 0.3);
+      border-radius: 50%;
+      animation: float 15s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(1); opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-50vh) scale(0.5); opacity: 0; }
+    }
+
+    /* Header Styles */
+    .header {
+      background: linear-gradient(180deg, #4A628A, #7AB2D3);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       padding: 1rem 0;
       position: fixed;
       width: 100%;
+      top: 0;
       z-index: 1000;
-      transition: transform 0.3s ease;
+      transition: all 0.3s ease;
     }
 
-    .navbar.scrolled {
-      transform: translateY(-10px);
+    .header.scrolled {
+      transform: translateY(-5px);
+      opacity: 0.95;
     }
 
-    .navbar-brand {
-      font-size: 2rem;
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+    }
+
+    .site-logo {
+      font-size: 1.8rem;
       font-weight: 800;
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      transition: transform 0.3s ease;
+      color: #ffffff;
+      text-decoration: none;
+      transition: transform 0.3s ease, color 0.3s ease;
     }
 
-    .navbar-brand:hover {
+    .site-logo:hover {
       transform: scale(1.05);
+      color: #ffffff;
     }
 
-    .nav-link {
-      color: #1f2937;
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: #ffffff;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 1rem;
       font-weight: 600;
+      position: relative;
       transition: color 0.3s ease, transform 0.3s ease;
     }
 
-    .nav-link:hover {
-      color: #7c3aed;
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background: #7AB2D3;
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: #7AB2D3;
       transform: translateY(-2px);
     }
 
-    .emergency-btn {
-      background-color: #dc2626;
-      color: #ffffff;
-      padding: 0.75rem 2rem;
-      border-radius: 9999px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      animation: pulse 2s infinite;
-      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    /* Signin Section */
+    .signin-section {
+      padding: 5rem 2rem;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    .emergency-btn:hover {
-      background-color: #b91c1c;
-      transform: scale(1.1);
-      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+    .signin-container {
+      max-width: 400px;
+      width: 100%;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      animation: fadeInUp 0.6s ease;
+      transition: transform 0.3s ease;
     }
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    .signin-container:hover {
+      transform: translateY(-5px);
     }
 
-  
-
-    h2 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .section-header {
       text-align: center;
       margin-bottom: 2rem;
     }
 
-    .error {
-      background-color: #dc2626;
-      color: #ffffff;
-      text-align: center;
-      padding: 0.8rem;
-      margin-bottom: 1.5rem;
-      border-radius: 0.5rem;
-      font-size: 0.95rem;
+    .section-header h1 {
+      font-size: 2.5rem;
+      color: #4A628A;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-header p {
+      color: #6b7280;
+      font-size: 1.1rem;
+    }
+
+    .signin-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
     .form-group {
-      position: relative;
-      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
     }
 
-    input {
-      width: 100%;
-      padding: 0.8rem 0.8rem 0.8rem 2.5rem;
+    .form-group label {
+      color: #2c3e50;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      padding: 0.8rem;
       border: 1px solid #d1d5db;
-      border-radius: 0.5rem;
-      font-size: 1rem;
+      border-radius: 5px;
       background: #f9fafb;
+      color: #2c3e50;
+      font-size: 1rem;
       transition: all 0.3s ease;
     }
 
-    input:focus {
+    .form-group input:focus {
       outline: none;
-      border-color: #7c3aed;
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+      border-color: #7AB2D3;
       background: #ffffff;
+      box-shadow: 0 0 5px rgba(122, 178, 211, 0.3);
     }
 
-    .form-group i {
-      position: absolute;
-      left: 0.8rem;
-      top: 50%;
-      transform: translateY(-50%);
+    .form-group input::placeholder {
       color: #6b7280;
-      font-size: 1rem;
     }
 
-    label {
-      position: absolute;
-      top: 0.8rem;
-      left: 2.5rem;
-      color: #6b7280;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      pointer-events: none;
-    }
-
-    input:focus + i + label,
-    input:not(:placeholder-shown) + i + label {
-      top: -0.5rem;
-      left: 1rem;
-      font-size: 0.8rem;
-      color: #7c3aed;
-      background: #ffffff;
-      padding: 0 0.2rem;
-    }
-
-    button {
-      width: 100%;
-      padding: 1rem;
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
-      color: #ffffff;
+    .submit-button {
+      padding: 0.8rem;
+      background: linear-gradient(45deg, #7AB2D3, #4A628A);
+      color: white;
       border: none;
-      border-radius: 0.5rem;
+      border-radius: 5px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+      margin-top: 1rem;
     }
 
-    button:hover {
-      background: linear-gradient(45deg, #6d28d9, #9333ea);
+    .submit-button:hover {
+      background: linear-gradient(45deg, #4A628A, #7AB2D3);
       transform: translateY(-2px);
     }
 
-    .forgot-password {
-      display: block;
+    .ripple {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    .signup-link {
       text-align: center;
       margin-top: 1rem;
-      color: #7c3aed;
-      text-decoration: none;
+      color: #6b7280;
       font-size: 0.95rem;
+    }
+
+    .signup-link a {
+      color: #7AB2D3;
+      text-decoration: none;
+      font-weight: 500;
       transition: color 0.3s ease;
     }
 
-    .forgot-password:hover {
-      color: #a855f7;
+    .signup-link a:hover {
+      color: #4A628A;
+      text-decoration: underline;
     }
 
-    footer {
-      background: linear-gradient(180deg, #581c87, #7c3aed);
+    /* Footer Styles */
+    .footer {
+      background: linear-gradient(180deg, #7AB2D3, #4A628A);
       color: #ffffff;
       padding: 3rem 0 1rem;
       margin-top: auto;
     }
 
-    .footer-content {
+    .footer p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #e6f0fa;
+      text-align: center;
+    }
+
+    .footer::before {
+      content: '';
+      display: block;
       max-width: 1200px;
       margin: 0 auto;
+      padding: 0 2rem;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 2rem;
-      padding: 0 2rem;
+      margin-bottom: 2rem;
     }
 
-    .footer-section h3 {
-      color: #ffffff;
-      margin-bottom: 1.5rem;
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
-
-    .footer-section p {
-      line-height: 1.6;
-      margin-bottom: 1rem;
-      color: #d1d5db;
-    }
-
-    .footer-section ul {
-      list-style: none;
-    }
-
-    .footer-section ul li {
-      margin-bottom: 0.8rem;
-    }
-
-    .footer-section ul li a {
-      color: #d1d5db;
-      text-decoration: none;
-      transition: color 0.3s ease, transform 0.3s ease;
-    }
-
-    .footer-section ul li a:hover {
-      color: #ffffff;
-      transform: translateX(5px);
-    }
-
-    .social-links {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-
-    .social-links a {
-      color: #d1d5db;
-      font-size: 1.2rem;
-      transition: transform 0.3s ease;
-    }
-
-    .social-links a:hover {
-      color: #ffffff;
-      transform: scale(1.2);
+    .footer::before {
+      content: "About Amwell Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind. | Quick Links About Us Services Contact User Login Medical Login Ambulance Login | Contact Info Emergency: +1 (555) 123-4567 support@amwell.com";
+      display: none;
     }
 
     .footer-bottom {
@@ -285,11 +321,12 @@
       border-top: 1px solid #ffffff33;
     }
 
+    /* Back to Top Button */
     .back-to-top {
       position: fixed;
       bottom: 2rem;
       right: 2rem;
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      background: #7AB2D3;
       color: #fff;
       width: 3rem;
       height: 3rem;
@@ -310,46 +347,61 @@
     }
 
     .back-to-top:hover {
+      background: #4A628A;
       transform: scale(1.1);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
 
-    @keyframes fadeIn {
+    /* Animations */
+    @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(50px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
+    /* Responsive Design */
     @media (max-width: 768px) {
-      .container {
-        margin: 1rem 1rem 1rem;
-        padding: 2rem;
-        padding-top: 4rem; /* Adjusted padding-top for smaller screens */
-        max-width: 400px;
+      .signin-section {
+        padding: 3rem 1rem;
       }
 
-      h2 {
-        font-size: 1.6rem;
+      .section-header h1 {
+        font-size: 2rem;
       }
 
-      input, button {
-        font-size: 0.95rem;
+      .signin-container {
+        padding: 1.5rem;
       }
 
-      .forgot-password {
+      .nav-links {
+        gap: 1rem;
+      }
+
+      .nav-links a {
+        padding: 0.5rem;
         font-size: 0.9rem;
       }
 
-      .navbar-brand {
+      .site-logo {
         font-size: 1.5rem;
       }
+    }
 
-      .emergency-btn {
-        padding: 0.5rem 1.5rem;
+    @media (max-width: 480px) {
+      .signin-section {
+        padding: 2rem 1rem;
+      }
+
+      .signin-container {
+        max-width: 100%;
+      }
+
+      .form-group input {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+      }
+
+      .submit-button {
+        padding: 0.7rem;
         font-size: 0.9rem;
       }
 
@@ -360,141 +412,86 @@
         right: 1.5rem;
       }
     }
-
-    @media (max-width: 480px) {
-      .container {
-        margin: 1rem 0.5rem 0.5rem;
-        padding: 1.5rem;
-        padding-top: 3.5rem; /* Further adjusted padding-top for very small screens */
-        max-width: 90%;
-      }
-
-      h2 {
-        font-size: 1.4rem;
-      }
-
-      input, button {
-        padding: 0.7rem;
-        font-size: 0.9rem;
-      }
-
-      .form-group i {
-        left: 0.7rem;
-        font-size: 0.9rem;
-      }
-
-      label {
-        left: 2.2rem;
-        font-size: 0.95rem;
-      }
-
-      input:focus + i + label,
-      input:not(:placeholder-shown) + i + label {
-        font-size: 0.75rem;
-      }
-    }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg fixed-top">
-    <div class="container">
-      <a class="navbar-brand" href="/">
-        <i class="fas fa-heartbeat text-red-500 mr-2"></i>Amwell
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto align-items-center">
-          <li class="nav-item">
-            <a class="nav-link" href="/">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/#services">Services</a>
-          </li>
-          <li class="nav-item">
-            <a href="/user/ambulances" class="nav-link emergency-btn">
-              <i class="fas fa-ambulance mr-2"></i>Emergency
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Form Container -->
-  <div class="container">
-    <h2>Ambulance Login</h2>
-    <% if (locals.error) { %>
-      <div class="error"><%= error %></div>
-    <% } %>
-    <form action="/ambulance/signin" method="POST">
-      <div class="form-group">
-        <input name="email" type="email" id="email" placeholder=" " required />
-        <i class="fas fa-envelope"></i>
-        <label for="email">Email</label>
-      </div>
-      <div class="form-group">
-        <input name="password" type="password" id="password" placeholder=" " required />
-        <i class="fas fa-lock"></i>
-        <label for="password">Password</label>
-      </div>
-      <button type="submit">Sign In</button>
-      <a href="/ambulance/signup" class="forgot-password">Don't have an account?</a>
-    </form>
+  <!-- Particles Background -->
+  <div class="particles">
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 8s;"></div>
   </div>
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>About Amwell</h3>
-        <p>Amwell is your go-to platform for seamless healthcare services, offering AI-powered assistance, medical store locators, and emergency support.</p>
-        <div class="social-links">
-          <a href="#"><i class="fab fa-facebook"></i></a>
-          <a href="#"><i class="fab fa-twitter"></i></a>
-          <a href="#"><i class="fab fa-linkedin"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav-container">
+      <a href="/" class="site-logo"><i class="fas fa-heartbeat mr-2"></i>Amwell</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/#services">Services</a>
+        <% if (locals.user) { %>
+          <a href="/user/logout">Logout</a>
+        <% } else { %>
+          <a href="/medical/signup">Sign Up</a>
+        <% } %>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Signin Section -->
+  <section class="signin-section">
+    <div class="signin-container">
+      <div class="section-header">
+        <h1><i class="fas fa-sign-in-alt mr-2"></i>Ambulance Owner Login</h1>
+        <p>Access your Amwell Ambulance dashboard.</p>
+      </div>
+      <form action="/ambulance/signin" method="POST" class="signin-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input name="email" id="email" type="email" placeholder="Enter email" required />
         </div>
-      </div>
-      <div class="footer-section">
-        <h3>Contact Us</h3>
-        <p><i class="fas fa-map-marker-alt mr-2"></i>123 Healthcare Avenue, Medical District</p>
-        <p><i class="fas fa-phone mr-2"></i>Emergency: +1 (555) 123-4567</p>
-        <p><i class="fas fa-envelope mr-2"></i>support@amwell.com</p>
-        <p><i class="fas fa-clock mr-2"></i>24/7 Support</p>
-      </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/#services">Services</a></li>
-          <li><a href="/user/signin">User Login</a></li>
-          <li><a href="/medical/signin">Medical Login</a></li>
-          <li><a href="/ambulance/signin">Ambulance Login</a></li>
-        </ul>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input name="password" id="password" type="password" placeholder="Enter password" required />
+        </div>
+        <button type="submit" class="submit-button">Sign In</button>
+      </form>
+      <div class="signup-link">
+        <p>Don't have an account? <a href="/ambulance/signup">Sign Up</a></p>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>© 2025 Amwell. All rights reserved.</p>
-    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 Amwell. All rights reserved.</p>
   </footer>
 
   <!-- Back to Top Button -->
   <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Audio for Welcome Sound -->
+  <audio id="welcome-sound" preload="auto">
+    <source src="https://cdn.pixabay.com/audio/2023/08/31/audio_6f6e854e43.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
 
   <script>
-    // Navbar Scroll Effect
+    // Play Welcome Sound on Load
+    const welcomeSound = document.getElementById('welcome-sound');
+    window.addEventListener('load', () => {
+      welcomeSound.play().catch(error => console.log('Audio playback failed:', error));
+    });
+
+    // Header Scroll Effect
     window.addEventListener('scroll', () => {
-      const navbar = document.querySelector('.navbar');
+      const header = document.querySelector('.header');
       if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
+        header.classList.add('scrolled');
       } else {
-        navbar.classList.remove('scrolled');
+        header.classList.remove('scrolled');
       }
     });
 
@@ -508,7 +505,7 @@
       }
     });
 
-    // Smooth Scroll for anchor links
+    // Smooth Scroll for Anchor Links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -517,6 +514,29 @@
         });
       });
     });
+
+    // Submit Button Ripple Effect
+    const submitButton = document.querySelector('.submit-button');
+    submitButton.addEventListener('click', (e) => {
+      const rect = submitButton.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      const diameter = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = `${diameter}px`;
+      ripple.style.left = `${e.clientX - rect.left - diameter / 2}px`;
+      ripple.style.top = `${e.clientY - rect.top - diameter / 2}px`;
+      submitButton.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
+
+    // Generate Particles
+    const particlesContainer = document.querySelector('.particles');
+    for (let i = 0; i < 5; i++) {
+      const particle = particlesContainer.children[i];
+      particle.style.left = `${Math.random() * 100}%`;
+      particle.style.animationDuration = `${10 + Math.random() * 10}s`;
+      particle.style.animationDelay = `${Math.random() * 5}s`;
+    }
   </script>
 </body>
 </html>

@@ -1,24 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Amwell - Realtime Chat</title>
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Tailwind CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Socket.IO -->
   <script src="/socket.io/socket.io.js"></script>
-
   <style>
+    :root {
+      --bs-primary: #7AB2D3;
+      --bs-secondary: #4A628A;
+      --bs-primary-rgb: 122, 178, 211;
+      --bs-secondary-rgb: 74, 98, 138;
+      --status-online: #6BCBEA;
+      --status-offline: #F28C8C;
+    }
+
     body {
       font-family: 'Manrope', sans-serif;
-      background-color: #f5f7fa;
+      background: #f5f7fa;
       overflow-x: hidden;
       min-height: 100vh;
       display: flex;
@@ -26,7 +32,6 @@
       position: relative;
     }
 
-    /* Background Pattern */
     body::before {
       content: '';
       position: fixed;
@@ -36,11 +41,11 @@
       height: 100%;
       background: linear-gradient(
         45deg,
-        rgba(124, 58, 237, 0.05) 25%,
+        rgba(122, 178, 211, 0.05) 25%,
         transparent 25%,
         transparent 50%,
-        rgba(124, 58, 237, 0.05) 50%,
-        rgba(124, 58, 237, 0.05) 75%,
+        rgba(122, 178, 211, 0.05) 50%,
+        rgba(122, 178, 211, 0.05) 75%,
         transparent 75%
       );
       background-size: 40px 40px;
@@ -49,35 +54,119 @@
     }
 
     .navbar {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      background: linear-gradient(180deg, var(--bs-secondary), var(--bs-primary));
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       padding: 1rem 0;
       position: fixed;
       width: 100%;
       z-index: 1000;
-      transition: transform 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .navbar.scrolled {
-      transform: translateY(-10px);
+      transform: translateY(-5px);
+      opacity: 0.95;
     }
 
     .navbar-brand {
       font-size: 2rem;
       font-weight: 800;
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      transition: transform 0.3s ease;
+      color: var(--bs-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .navbar-brand i {
+      margin-right: 0.5rem;
+      color: var(--bs-primary);
     }
 
     .navbar-brand:hover {
       transform: scale(1.05);
+      color: #ffffff;
+    }
+
+    .nav-link {
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      position: relative;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background: var(--bs-primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .nav-link:hover {
+      color: var(--bs-primary);
+      transform: translateY(-2px);
+    }
+
+    .emergency-btn {
+      background: var(--bs-primary);
+      color: #ffffff;
+      padding: 0.75rem 2rem;
+      border-radius: 50rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+      box-shadow: 0 4px 15px rgba(122, 178, 211, 0.4);
+      text-decoration: none;
+      border: none;
+    }
+
+    .emergency-btn:hover {
+      background: var(--bs-secondary);
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(74, 98, 138, 0.6);
+    }
+
+    .login-btn {
+      background: var(--bs-primary);
+      color: #ffffff;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .login-btn:hover {
+      background: var(--bs-secondary);
+      transform: scale(1.05);
+    }
+
+    .ripple {
+      position: absolute;
+      background: rgba(122, 178, 211, 0.3);
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
     }
 
     .user-profile-img {
       width: 2.5rem;
       height: 2.5rem;
+      border-radius: 50%;
       object-fit: cover;
       border: 2px solid #ffffff;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -85,35 +174,54 @@
     }
 
     .user-profile-img:hover {
-      transform: rotate(360deg);
-    }
-
-    .nav-link {
-      color: #1f2937;
-      font-weight: 600;
-      transition: color 0.3s ease, transform 0.3s ease;
-    }
-
-    .nav-link:hover {
-      color: #7c3aed;
-      transform: translateY(-2px);
-    }
-
-    .emergency-btn {
-      background-color: #dc2626;
-      color: #ffffff;
-      padding: 0.75rem 2rem;
-      border-radius: 9999px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      animation: pulse 2s infinite;
-      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
-    }
-
-    .emergency-btn:hover {
-      background-color: #b91c1c;
       transform: scale(1.1);
-      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+    }
+
+    .dropdown-toggle {
+      color: #ffffff;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .dropdown-toggle:hover {
+      color: var(--bs-primary);
+    }
+
+    .dropdown-menu {
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 0.5rem;
+    }
+
+    .dropdown-item {
+      color: var(--bs-secondary);
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+
+    .dropdown-item:hover {
+      background: #e6f0fa;
+      color: var(--bs-primary);
+    }
+
+    .dropdown-divider {
+      border-top: 1px solid #d1d5db;
+    }
+
+    .navbar-toggler {
+      border: none;
+      padding: 0.5rem;
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(122, 178, 211, 0.8)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
     }
 
     #chat-wrapper {
@@ -127,7 +235,7 @@
 
     #chat-container {
       background: #ffffff;
-      border-radius: 1rem;
+      border-radius: 2rem;
       border: 1px solid #e5e7eb;
       padding: 1.5rem;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -147,6 +255,8 @@
       flex-direction: column;
       gap: 1rem;
       padding-right: 0.5rem;
+      max-height: calc(60vh - 5rem);
+      flex-grow: 1;
     }
 
     .chat-messages::-webkit-scrollbar {
@@ -154,17 +264,37 @@
     }
 
     .chat-messages::-webkit-scrollbar-track {
-      background: #e9d5ff;
+      background: #e6f0fa;
       border-radius: 4px;
     }
 
     .chat-messages::-webkit-scrollbar-thumb {
-      background: #6b7280;
+      background: var(--bs-secondary);
       border-radius: 4px;
     }
 
     .chat-messages::-webkit-scrollbar-thumb:hover {
-      background: #4b5563;
+      background: var(--bs-primary);
+    }
+
+    .load-more-btn {
+      background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
+      color: #ffffff;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      text-align: center;
+      font-weight: 600;
+      margin: 0 auto;
+      display: block;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(122, 178, 211, 0.4);
+      border: none;
+      cursor: pointer;
+    }
+
+    .load-more-btn:hover {
+      background: linear-gradient(45deg, var(--bs-secondary), var(--bs-primary));
+      transform: scale(1.05);
     }
 
     .chat-message {
@@ -173,6 +303,12 @@
       gap: 0.75rem;
       max-width: 70%;
       animation: slideUp 0.3s ease-in;
+      transition: transform 0.2s ease;
+      position: relative;
+    }
+
+    .chat-message:hover {
+      transform: translateY(-2px);
     }
 
     .chat-message.you {
@@ -185,24 +321,29 @@
     }
 
     .message-content {
-      background: #e9d5ff;
       padding: 0.75rem 1.25rem;
       border-radius: 1rem;
       position: relative;
-      color: #1f2937;
+      color: var(--bs-secondary);
       font-size: 1rem;
       word-break: break-word;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .message-content:hover {
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
     }
 
     .chat-message.you .message-content {
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
       color: #ffffff;
       border-bottom-right-radius: 0.25rem;
     }
 
     .chat-message.other .message-content {
-      background: #f3f4f6;
+      background: #e6f0fa;
       border-bottom-left-radius: 0.25rem;
     }
 
@@ -213,15 +354,56 @@
       font-weight: 500;
     }
 
+    .chat-message.you .message-meta {
+      color: #d1d5db;
+    }
+
     .message-timestamp {
       font-size: 0.75rem;
       color: #6b7280;
       margin-top: 0.25rem;
       text-align: right;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .chat-message.you .message-timestamp {
       text-align: left;
+      justify-content: flex-start;
+      color: #d1d5db;
+    }
+
+    .seen-indicator {
+      font-size: 0.65rem;
+      color: var(--status-online);
+      display: none;
+    }
+
+    .seen-indicator.show {
+      display: inline;
+    }
+
+    .reaction {
+      position: absolute;
+      bottom: -0.5rem;
+      right: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .chat-message.you .reaction {
+      right: auto;
+      left: 0.5rem;
+    }
+
+    .reaction:hover {
+      transform: scale(1.2);
+    }
+
+    .reaction.reacted {
+      color: #ef4444;
     }
 
     .profile-img {
@@ -237,9 +419,11 @@
       background: #f9fafb;
       padding: 0.75rem 1rem;
       border-top: 1px solid #e5e7eb;
-      border-radius: 0 0 1rem 1rem;
+      border-radius: 0 0 2rem 2rem;
       display: flex;
       gap: 0.75rem;
+      align-items: center;
+      position: relative;
     }
 
     #message-input {
@@ -254,12 +438,36 @@
     }
 
     #message-input:focus {
-      border-color: #7c3aed;
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 3px rgba(122, 178, 211, 0.1);
+    }
+
+    #message-input::placeholder {
+      color: #9ca3af;
+      font-style: italic;
+      transition: opacity 0.3s ease;
+    }
+
+    #message-input:focus::placeholder {
+      opacity: 0;
+    }
+
+    .char-counter {
+      font-size: 0.75rem;
+      color: #6b7280;
+      position: absolute;
+      right: 4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: none;
+    }
+
+    .char-counter.show {
+      display: block;
     }
 
     #send-button {
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
       border: none;
       padding: 0.75rem;
       border-radius: 50%;
@@ -267,7 +475,7 @@
       font-size: 1rem;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+      box-shadow: 0 4px 15px rgba(122, 178, 211, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -276,16 +484,22 @@
     }
 
     #send-button:hover {
-      background: linear-gradient(45deg, #6d28d9, #9333ea);
+      background: linear-gradient(45deg, var(--bs-secondary), var(--bs-primary));
       transform: scale(1.1);
     }
 
     #typing-indicator {
       font-size: 0.9rem;
-      color: #6b7280;
+      color: var(--bs-secondary);
       padding: 0.5rem 1rem;
       font-style: italic;
       min-height: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #typing-indicator.show {
+      opacity: 1;
     }
 
     #sidebar {
@@ -293,7 +507,7 @@
       left: 1rem;
       width: 240px;
       background: #ffffff;
-      border-radius: 1rem;
+      border-radius: 2rem;
       padding: 1.5rem;
       border: 1px solid #e5e7eb;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -301,6 +515,11 @@
       flex-direction: column;
       gap: 1rem;
       z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    #sidebar:hover {
+      transform: translateY(-5px);
     }
 
     .sidebar-profile {
@@ -320,7 +539,7 @@
     .sidebar-profile-name {
       font-size: 1.25rem;
       font-weight: 700;
-      color: #1f2937;
+      color: var(--bs-secondary);
     }
 
     .sidebar-profile-role {
@@ -335,56 +554,101 @@
     }
 
     .sidebar-btn {
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      background: linear-gradient(45deg, var(--bs-primary), var(--bs-secondary));
       color: #ffffff;
       padding: 0.75rem;
       border-radius: 0.5rem;
       text-align: center;
       font-weight: 600;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+      box-shadow: 0 4px 15px rgba(122, 178, 211, 0.4);
       text-decoration: none;
     }
 
     .sidebar-btn:hover {
-      background: linear-gradient(45deg, #6d28d9, #9333ea);
+      background: linear-gradient(45deg, var(--bs-secondary), var(--bs-primary));
       transform: scale(1.05);
     }
 
     footer {
-      background: linear-gradient(180deg, #581c87, #7c3aed);
+      background: linear-gradient(180deg, var(--bs-primary), var(--bs-secondary));
       color: #ffffff;
-      padding: 6rem 0 3rem;
+      padding: 3rem 0 1rem;
       margin-top: auto;
     }
 
-    footer a {
-      color: #d1d5db;
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      padding: 0 2rem;
+    }
+
+    .footer-section h5 {
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .footer-section p, .footer-section li {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      color: #e6f0fa;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.8rem;
+    }
+
+    .footer-section ul li a {
+      color: #e6f0fa;
       text-decoration: none;
       transition: color 0.3s ease, transform 0.3s ease;
     }
 
-    footer a:hover {
+    .footer-section ul li a:hover {
       color: #ffffff;
       transform: translateX(5px);
     }
 
+    .social-icons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
     .social-icons a {
-      font-size: 1.5rem;
-      margin: 0 0.75rem;
+      color: #e6f0fa;
+      font-size: 1.2rem;
       transition: transform 0.3s ease;
     }
 
     .social-icons a:hover {
+      color: #ffffff;
       transform: scale(1.2);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      margin-top: 2rem;
+      border-top: 1px solid #ffffff33;
     }
 
     .back-to-top {
       position: fixed;
       bottom: 2rem;
       right: 2rem;
-      background: linear-gradient(45deg, #7c3aed, #a855f7);
-      color: #fff;
+      background: var(--bs-primary);
+      color: #ffffff;
       width: 3rem;
       height: 3rem;
       border-radius: 50%;
@@ -404,14 +668,14 @@
     }
 
     .back-to-top:hover {
+      background: var(--bs-secondary);
       transform: scale(1.1);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
 
     @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
-      70% { box-shadow: 0 0 0 20px rgba(220, 38, 38, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(122, 178, 211, 0.4); }
+      70% { box-shadow: 0 0 0 20px rgba(122, 178, 211, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(122, 178, 211, 0); }
     }
 
     @keyframes fadeIn {
@@ -443,6 +707,11 @@
 
       #chat-container {
         padding: 1rem;
+        min-height: 50vh;
+      }
+
+      .chat-messages {
+        max-height: calc(50vh - 5rem);
       }
 
       .chat-message {
@@ -453,11 +722,29 @@
         padding: 0.5rem 1rem;
       }
 
+      .char-counter {
+        right: 3.5rem;
+      }
+
       .back-to-top {
         width: 2.5rem;
         height: 2.5rem;
         bottom: 1.5rem;
         right: 1.5rem;
+      }
+
+      .navbar-brand {
+        font-size: 1.5rem;
+      }
+
+      .user-profile-img {
+        width: 2rem;
+        height: 2rem;
+      }
+
+      .emergency-btn, .login-btn {
+        padding: 0.5rem 1.2rem;
+        font-size: 0.9rem;
       }
     }
   </style>
@@ -467,7 +754,7 @@
   <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
       <a class="navbar-brand" href="/">
-        <i class="fas fa-heartbeat text-red-500 mr-2"></i>Amwell
+        <i class="fas fa-heartbeat me-2"></i>Amwell
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
@@ -483,13 +770,13 @@
           <% if (locals.currentUser) { %>
             <li class="nav-item">
               <a href="/user/ambulances" class="nav-link emergency-btn">
-                <i class="fas fa-ambulance mr-2"></i>Emergency
+                <i class="fas fa-ambulance me-2"></i>Emergency
               </a>
             </li>
             <li class="nav-item dropdown ms-3">
               <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                <img src="<%= currentUser.profileImage || 'https://via.placeholder.com/40' %>" alt="User Profile" class="user-profile-img rounded-full mr-2">
-                <span class="font-medium"><%= currentUser.fullName %></span>
+                <img src="<%= currentUser.profileImage || 'https://via.placeholder.com/40' %>" alt="User Profile" class="user-profile-img rounded-circle me-2">
+                <span class="fw-medium"><%= currentUser.fullName %></span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="/user/profile">Profile</a></li>
@@ -499,7 +786,7 @@
             </li>
           <% } else { %>
             <li class="nav-item">
-              <a class="nav-link bg-gradient-to-r from-purple-600 to-pink-500 text-white px-5 py-2 rounded-full font-semibold hover:from-purple-700 hover:to-pink-600 transition" href="/user/signin">Login</a>
+              <a class="nav-link login-btn" href="/user/signin">Login</a>
             </li>
           <% } %>
         </ul>
@@ -516,28 +803,34 @@
         <div class="sidebar-profile-role"><%= receiverRole %></div>
       </div>
       <div class="sidebar-actions">
-        <a href="#" class="sidebar-btn"><i class="fas fa-phone mr-2"></i>Call</a>
-        <a href="/user/profile/<%= receiverId %>" class="sidebar-btn"><i class="fas fa-user mr-2"></i>View Profile</a>
+        <a href="#" class="sidebar-btn"><i class="fas fa-phone me-2"></i>Call</a>
+        <a href="/user/profile/<%= receiverId %>" class="sidebar-btn"><i class="fas fa-user me-2"></i>View Profile</a>
       </div>
     </div>
     <div id="chat-container">
       <div class="chat-messages">
-        <% messages.forEach(msg => { %>
-          <div class="chat-message <%= msg.sender.toString() === currentUser._id.toString() ? 'you' : 'other' %>">
+        <button id="load-more-btn" class="load-more-btn" style="display: none;">Load More</button>
+        <% messages.forEach((msg, index) => { %>
+          <div class="chat-message <%= msg.sender.toString() === currentUser._id.toString() ? 'you' : 'other' %>" data-message-id="<%= index %>">
             <img src="<%= msg.sender.toString() === currentUser._id.toString() ? (currentUser.profileImage || 'https://via.placeholder.com/40') : (receiverProfileImage || 'https://via.placeholder.com/40') %>" alt="Profile" class="profile-img">
             <div class="message-content">
               <div class="message-meta">
                 <%= msg.senderModel %> (<%= msg.sender.toString() === currentUser._id.toString() ? 'You' : 'Other' %>)
               </div>
               <div class="text"><%= msg.message %></div>
-              <div class="message-timestamp"><%= msg.timestamp.toLocaleString() %></div>
+              <div class="message-timestamp">
+                <%= msg.timestamp.toLocaleString() %>
+                <span class="seen-indicator">Seen</span>
+              </div>
+              <span class="reaction" data-reaction="heart"><i class="far fa-heart"></i></span>
             </div>
           </div>
         <% }); %>
       </div>
       <div id="typing-indicator"></div>
       <div id="input-area">
-        <input type="text" id="message-input" placeholder="Type your message..." />
+        <input type="text" id="message-input" placeholder="Type your message..." maxlength="500">
+        <span class="char-counter" id="char-counter">0/500</span>
         <button id="send-button"><i class="fas fa-paper-plane"></i></button>
       </div>
     </div>
@@ -545,53 +838,54 @@
 
   <!-- Footer -->
   <footer>
-    <div class="container">
-      <div class="row g-4">
-        <div class="col-md-4">
-          <h5 class="text-lg font-extrabold mb-4">About Amwell</h5>
-          <p class="text-purple-100 leading-relaxed">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
-        </div>
-        <div class="col-md-4">
-          <h5 class="text-lg font-extrabold mb-4">Quick Links</h5>
-          <ul class="list-unstyled">
-            <li class="mb-3"><a href="/about" class="text-purple-100 hover:text-white transition font-medium">About Us</a></li>
-            <li class="mb-3"><a href="/services" class="text-purple-100 hover:text-white transition font-medium">Services</a></li>
-            <li class="mb-3"><a href="/contact" class="text-purple-100 hover:text-white transition font-medium">Contact</a></li>
-            <li class="mb-3"><a href="/user/signin" class="text-purple-100 hover:text-white transition font-medium">User Login</a></li>
-            <li class="mb-3"><a href="/medical/signin" class="text-purple-100 hover:text-white transition font-medium">Medical Login</a></li>
-            <li class="mb-3"><a href="/ambulance/signin" class="text-purple-100 hover:text-white transition font-medium">Ambulance Login</a></li>
-          </ul>
-        </div>
-        <div class="col-md-4">
-          <h5 class="text-lg font-extrabold mb-4">Contact Info</h5>
-          <ul class="list-unstyled text-purple-100">
-            <li class="mb-3"><i class="fas fa-phone mr-2"></i>Emergency: +1 (555) 123-4567</li>
-            <li class="mb-3"><i class="fas fa-envelope mr-2"></i>support@amwell.com</li>
-            <li class="mt-4">
-              <div class="social-icons">
-                <a href="#" class="text-purple-100"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="text-purple-100"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="text-purple-100"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="text-purple-100"><i class="fab fa-linkedin"></i></a>
-              </div>
-            </li>
-          </ul>
-        </div>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h5 class="fs-5">About Amwell</h5>
+        <p class="text-light">Your trusted healthcare companion providing 24/7 medical assistance and emergency services to ensure your safety and peace of mind.</p>
       </div>
-      <hr class="my-8 border-purple-200">
-      <div class="text-center text-purple-100">
-        <small>© 2025 Amwell. All rights reserved.</small>
+      <div class="footer-section">
+        <h5 class="fs-5">Quick Links</h5>
+        <ul>
+          <li><a href="/about" class="fw-medium">About Us</a></li>
+          <li><a href="/services" class="fw-medium">Services</a></li>
+          <li><a href="/contact" class="fw-medium">Contact</a></li>
+          <li><a href="/user/signin" class="fw-medium">User Login</a></li>
+          <li><a href="/medical/signin" class="fw-medium">Medical Login</a></li>
+          <li><a href="/ambulance/signin" class="fw-medium">Ambulance Login</a></li>
+        </ul>
       </div>
+      <div class="footer-section">
+        <h5 class="fs-5">Contact Info</h5>
+        <ul>
+          <li><i class="fas fa-phone me-2"></i>Emergency: +1 (555) 123-4567</li>
+          <li><i class="fas fa-envelope me-2"></i>support@amwell.com</li>
+          <li class="mt-2">
+            <div class="social-icons">
+              <a href="#"><i class="fab fa-facebook-f"></i></a>
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="text-light">© 2025 Amwell. All rights reserved.</p>
     </div>
   </footer>
 
   <!-- Back to Top Button -->
   <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
 
+  <!-- Audio for New Message Notification -->
+  <audio id="message-sound" preload="auto">
+    <source src="https://cdn.pixabay.com/audio/2023/08/31/audio_6f6e854e43.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Chat JavaScript -->
   <script>
     const socket = io();
 
@@ -623,38 +917,54 @@
     const chatMessages = document.querySelector('.chat-messages');
     const sidebar = document.getElementById('sidebar');
     const inputArea = document.getElementById('input-area');
+    const charCounter = document.getElementById('char-counter');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const messageSound = document.getElementById('message-sound');
 
-    // Function to scroll to the bottom of the chat
     const scrollToBottom = () => {
       chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
     };
 
-    // Position sidebar to align its bottom with input area's bottom
     const positionSidebar = () => {
-      if (window.innerWidth > 992) { // Only position on desktop
+      if (window.innerWidth > 992) {
         const inputAreaRect = inputArea.getBoundingClientRect();
         const windowHeight = window.innerHeight;
         const bottomPosition = windowHeight - inputAreaRect.bottom;
-        sidebar.style.bottom = `${bottomPosition + 10}px`; // Add 10px offset
-        sidebar.style.top = 'auto'; // Override top positioning
+        sidebar.style.bottom = `${bottomPosition + 10}px`;
+        sidebar.style.top = 'auto';
       } else {
         sidebar.style.bottom = 'auto';
         sidebar.style.top = '80px';
       }
     };
 
-    // Initial positioning and on resize
     window.addEventListener('resize', positionSidebar);
     window.addEventListener('load', positionSidebar);
     window.addEventListener('scroll', positionSidebar);
 
-    // Scroll to bottom on page load
     window.onload = () => {
       scrollToBottom();
       positionSidebar();
+      if (chatMessages.children.length > 1) {
+        loadMoreBtn.style.display = 'block';
+      }
+      setTimeout(() => {
+        document.querySelectorAll('.chat-message.you .seen-indicator').forEach(indicator => {
+          indicator.classList.add('show');
+        });
+      }, 2000);
     };
 
-    // Send message
+    messageInput.addEventListener('input', () => {
+      const length = messageInput.value.length;
+      charCounter.textContent = `${length}/500`;
+      if (length > 0) {
+        charCounter.classList.add('show');
+      } else {
+        charCounter.classList.remove('show');
+      }
+    });
+
     sendButton.addEventListener('click', () => {
       const message = messageInput.value.trim();
       if (message) {
@@ -667,44 +977,120 @@
           message
         });
         messageInput.value = '';
+        charCounter.classList.remove('show');
       }
     });
 
-    // Emit typing event
     messageInput.addEventListener('input', () => {
       socket.emit('typing', { room, sender: currentUser.fullName });
     });
 
-    // Receive new message
     socket.on('chatMessage', ({ senderId, senderModel, message, timestamp }) => {
       const messageElement = document.createElement('div');
       const isCurrentUser = senderId === currentUser.id;
+      const messageId = Date.now();
       messageElement.className = `chat-message ${isCurrentUser ? 'you' : 'other'}`;
+      messageElement.setAttribute('data-message-id', messageId);
       messageElement.innerHTML = `
         <img src="${isCurrentUser ? currentUser.profileImage : receiverProfileImage}" alt="Profile" class="profile-img">
         <div class="message-content">
           <div class="message-meta">${senderModel} (${isCurrentUser ? 'You' : 'Other'})</div>
           <div class="text">${message}</div>
-          <div class="message-timestamp">${new Date(timestamp).toLocaleString()}</div>
+          <div class="message-timestamp">
+            ${new Date(timestamp).toLocaleString()}
+            ${isCurrentUser ? '<span class="seen-indicator">Seen</span>' : ''}
+          </div>
+          <span class="reaction" data-reaction="heart"><i class="far fa-heart"></i></span>
         </div>
       `;
       chatMessages.appendChild(messageElement);
       scrollToBottom();
-      positionSidebar(); // Reposition sidebar after new message
+      positionSidebar();
+
+      if (!isCurrentUser) {
+        messageSound.play().catch(error => console.log('Audio playback failed:', error));
+      }
+
+      if (isCurrentUser) {
+        setTimeout(() => {
+          const seenIndicator = messageElement.querySelector('.seen-indicator');
+          if (seenIndicator) {
+            seenIndicator.classList.add('show');
+          }
+        }, 2000);
+      }
     });
 
-    // Typing indicator
     socket.on('typing', ({ sender }) => {
       typingIndicator.textContent = `${sender} is typing...`;
+      typingIndicator.classList.add('show');
       setTimeout(() => {
         typingIndicator.textContent = '';
+        typingIndicator.classList.remove('show');
       }, 2000);
     });
 
-    // MutationObserver to detect DOM changes in chat-messages
+    chatMessages.addEventListener('click', (e) => {
+      const reaction = e.target.closest('.reaction');
+      if (reaction) {
+        const icon = reaction.querySelector('i');
+        reaction.classList.toggle('reacted');
+        if (reaction.classList.contains('reacted')) {
+          icon.classList.replace('far', 'fas');
+        } else {
+          icon.classList.replace('fas', 'far');
+        }
+      }
+    });
+
+    chatMessages.addEventListener('click', (e) => {
+      const messageContent = e.target.closest('.message-content');
+      if (messageContent && !e.target.closest('.reaction')) {
+        const text = messageContent.querySelector('.text').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          alert('Message copied to clipboard!');
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+        });
+      }
+    });
+
+    let loadedMessageCount = chatMessages.children.length - 1;
+    loadMoreBtn.addEventListener('click', () => {
+      const dummyMessages = [
+        { sender: currentUser.id, senderModel: 'User', message: 'This is an older message.', timestamp: new Date(Date.now() - 1000000) },
+        { sender: receiverId, senderModel: receiverModel, message: 'Another older message here.', timestamp: new Date(Date.now() - 2000000) }
+      ];
+
+      dummyMessages.forEach((msg, index) => {
+        const messageElement = document.createElement('div');
+        const isCurrentUser = msg.sender === currentUser.id;
+        const messageId = `older-${loadedMessageCount + index}`;
+        messageElement.className = `chat-message ${isCurrentUser ? 'you' : 'other'}`;
+        messageElement.setAttribute('data-message-id', messageId);
+        messageElement.innerHTML = `
+          <img src="${isCurrentUser ? currentUser.profileImage : receiverProfileImage}" alt="Profile" class="profile-img">
+          <div class="message-content">
+            <div class="message-meta">${msg.senderModel} (${isCurrentUser ? 'You' : 'Other'})</div>
+            <div class="text">${msg.message}</div>
+            <div class="message-timestamp">
+              ${msg.timestamp.toLocaleString()}
+              ${isCurrentUser ? '<span class="seen-indicator show">Seen</span>' : ''}
+            </div>
+            <span class="reaction" data-reaction="heart"><i class="far fa-heart"></i></span>
+          </div>
+        `;
+        chatMessages.insertBefore(messageElement, chatMessages.children[1]);
+        loadedMessageCount++;
+      });
+
+      if (loadedMessageCount >= 10) {
+        loadMoreBtn.style.display = 'none';
+      }
+    });
+
     const observer = new MutationObserver((mutations) => {
       mutations.forEach(() => {
-        // Check if user is near the bottom before auto-scrolling
         const isNearBottom = chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight < 100;
         if (isNearBottom) {
           scrollToBottom();
@@ -714,7 +1100,6 @@
 
     observer.observe(chatMessages, { childList: true, subtree: true });
 
-    // Smooth Scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -724,24 +1109,35 @@
       });
     });
 
-    // Navbar Scroll Effect
     window.addEventListener('scroll', () => {
       const navbar = document.querySelector('.navbar');
+      const backToTop = document.querySelector('.back-to-top');
       if (window.scrollY > 50) {
         navbar.classList.add('scrolled');
       } else {
         navbar.classList.remove('scrolled');
       }
-    });
-
-    // Back to Top Button
-    const backToTop = document.querySelector('.back-to-top');
-    window.addEventListener('scroll', () => {
       if (window.scrollY > 300) {
         backToTop.classList.add('show');
       } else {
         backToTop.classList.remove('show');
       }
+    });
+
+    const addRippleEffect = (e, button) => {
+      const rect = button.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      const diameter = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = `${diameter}px`;
+      ripple.style.left = `${e.clientX - rect.left - diameter / 2}px`;
+      ripple.style.top = `${e.clientY - rect.top - diameter / 2}px`;
+      button.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    };
+
+    document.querySelectorAll('.emergency-btn, .login-btn, .sidebar-btn, .load-more-btn, #send-button').forEach(button => {
+      button.addEventListener('click', (e) => addRippleEffect(e, button));
     });
   </script>
 </body>
