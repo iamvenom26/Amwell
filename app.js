@@ -20,7 +20,7 @@ const PORT = 128;
 
 // MongoDB Connection
 mongoose
-  .connect('mongodb://localhost:27017/amwelllu')
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
